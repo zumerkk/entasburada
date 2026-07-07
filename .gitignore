@@ -11,3 +11,4 @@ coverage
 apps/web/public/uploads
 apps/admin/public/uploads
 data/import-sources
+.vercel
