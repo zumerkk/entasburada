@@ -1,0 +1,116 @@
+[
+  {
+    "id": "cust-test-standard",
+    "email": "bayi1@entasburada.com",
+    "password": "Bayi2026!",
+    "companyName": "Entas Test Bayi",
+    "authorizedPerson": "Ayse Bayi",
+    "phone": "05550000001",
+    "city": "Istanbul",
+    "deliveryAddress": "Istanbul test bayi teslimat adresi",
+    "status": "approved",
+    "segment": "standard",
+    "tierName": "Standart Bayi",
+    "tierRank": "Bronz",
+    "accountManager": "Satış Operasyon",
+    "supportLevel": "Mesai içi destek",
+    "paymentTermDays": 7,
+    "creditLimit": "75000",
+    "approvalLimit": "25000",
+    "freeShippingThreshold": "15000",
+    "priorityLevel": 1,
+    "perks": [
+      "Temel bayi fiyatları",
+      "CSV hızlı sipariş",
+      "Teklif takibi",
+      "Standart sevkiyat planı"
+    ],
+    "baseDiscountRate": 12,
+    "brandDiscounts": {
+      "MRSMAX": 15
+    },
+    "categoryDiscounts": {
+      "Hirdavat": 16,
+      "Musluk": 14
+    },
+    "specialNetPrices": {}
+  },
+  {
+    "id": "cust-test-industrial",
+    "email": "sanayi@entasburada.com",
+    "password": "Sanayi2026!",
+    "companyName": "Sanayi Test Musteri",
+    "authorizedPerson": "Mehmet Sanayi",
+    "phone": "05550000002",
+    "city": "Kocaeli",
+    "deliveryAddress": "Kocaeli OSB test teslimat adresi",
+    "status": "approved",
+    "segment": "industrial",
+    "tierName": "Sanayi Pro",
+    "tierRank": "Gümüş",
+    "accountManager": "Endüstriyel Satış Ekibi",
+    "supportLevel": "Öncelikli teknik destek",
+    "paymentTermDays": 21,
+    "creditLimit": "250000",
+    "approvalLimit": "100000",
+    "freeShippingThreshold": "7500",
+    "priorityLevel": 2,
+    "perks": [
+      "Yüksek marka iskontosu",
+      "Öncelikli teklif dönüşü",
+      "Kısmi sevkiyat planlama",
+      "Stok ayırma önceliği"
+    ],
+    "baseDiscountRate": 18,
+    "brandDiscounts": {
+      "EUROMIX": 20,
+      "MRSMAX": 19
+    },
+    "categoryDiscounts": {
+      "Pompa": 22,
+      "Hortum": 21,
+      "Oto": 20
+    },
+    "specialNetPrices": {}
+  },
+  {
+    "id": "cust-test-project",
+    "email": "proje@entasburada.com",
+    "password": "Proje2026!",
+    "companyName": "Proje Test Kurumsal",
+    "authorizedPerson": "Elif Proje",
+    "phone": "05550000003",
+    "city": "Ankara",
+    "deliveryAddress": "Ankara proje santiyesi test teslimat adresi",
+    "status": "approved",
+    "segment": "project",
+    "tierName": "Kurumsal Proje",
+    "tierRank": "Platin",
+    "accountManager": "Proje Satış Lideri",
+    "supportLevel": "Acil proje hattı",
+    "paymentTermDays": 45,
+    "creditLimit": "750000",
+    "approvalLimit": "300000",
+    "freeShippingThreshold": "0",
+    "priorityLevel": 3,
+    "perks": [
+      "Özel net fiyat",
+      "Proje bazlı vade",
+      "Ayrılmış stok planı",
+      "Hızlandırılmış sevkiyat"
+    ],
+    "baseDiscountRate": 22,
+    "brandDiscounts": {
+      "EUROMIX": 24,
+      "MRSMAX": 23
+    },
+    "categoryDiscounts": {
+      "Elektrikli": 26,
+      "Bahce": 25,
+      "Banyo": 24
+    },
+    "specialNetPrices": {
+      "JL4304A": "95.00"
+    }
+  }
+]

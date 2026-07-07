@@ -1,0 +1,13 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+node_modules
+.next
+.turbo
+dist
+coverage
+*.tsbuildinfo
+apps/web/public/uploads
+apps/admin/public/uploads
+data/import-sources

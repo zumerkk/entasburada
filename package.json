@@ -1,0 +1,33 @@
+{
+  "name": "entasburada-platform",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@11.7.0",
+  "scripts": {
+    "dev": "turbo dev --parallel",
+    "dev:web": "pnpm --filter @entas/web dev",
+    "dev:admin": "pnpm --filter @entas/admin dev",
+    "build": "turbo build",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
+    "import:suppliers": "tsx scripts/import-supplier-data.ts",
+    "catalog:sync": "tsx scripts/sync-catalog-store.ts",
+    "db:validate": "pnpm --filter @entas/database db:validate",
+    "db:generate": "pnpm --filter @entas/database db:generate",
+    "db:push": "pnpm --filter @entas/database db:push",
+    "db:studio": "pnpm --filter @entas/database db:studio",
+    "db:import-commercial": "tsx scripts/import-commercial-json-to-prisma.ts",
+    "smoke:commercial": "tsx scripts/smoke-commercial-flow.ts"
+  },
+  "dependencies": {
+    "@entas/catalog": "workspace:*",
+    "@entas/import-engine": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsx": "^4.20.5",
+    "turbo": "^2.6.1",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}

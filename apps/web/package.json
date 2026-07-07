@@ -1,0 +1,29 @@
+{
+  "name": "@entas/web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3000",
+    "build": "next build",
+    "start": "next start --port 3000",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@entas/catalog": "workspace:*",
+    "@entas/pricing-engine": "workspace:*",
+    "@entas/ui": "workspace:*",
+    "@entas/validation": "workspace:*",
+    "@tanstack/react-query": "^5.83.0",
+    "lucide-react": "^0.468.0",
+    "next": "16.2.10",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-hook-form": "^7.52.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0"
+  }
+}

@@ -1,0 +1,110 @@
+import { Building2, FileText, Heart, Menu, PhoneCall, Search, ShieldCheck, ShoppingCart, UserRound } from "lucide-react";
+import { loadCustomerCart } from "../lib/cart-repository";
+import { getCatalogNavigation } from "../lib/catalog-repository";
+import { getCurrentCustomer } from "../lib/customer-auth";
+
+export async function Header() {
+  const [catalogNavigation, customer] = await Promise.all([getCatalogNavigation(), getCurrentCustomer()]);
+  const cart = customer ? await loadCustomerCart(customer) : null;
+  const megaItems = catalogNavigation.slice(0, 10);
+
+  return (
+    <header className="siteHeader">
+      <div className="topBar">
+        <div className="shell topBarInner">
+          <span>Hızlı teslimat</span>
+          <span>Güvenli bayi alışverişi</span>
+          <span>Teknik destek</span>
+          <a href="/orders">Sipariş takibi</a>
+          <a href={customer ? "/quick-order" : "/login?next=/quick-order"}>Hızlı sipariş</a>
+          <a href={customer ? "/account" : "/login"}>{customer ? customer.companyName : "Bayi girişi"}</a>
+          <a href="/dealer-application">Bayi başvurusu</a>
+        </div>
+      </div>
+      <div className="mainHeader">
+        <div className="shell mainHeaderInner">
+          <a className="brand" href="/" aria-label="ENTAŞBURADA ana sayfa">
+            <span className="brandMark">E</span>
+            <span>
+              ENTAŞBURADA
+              <small>Profesyonel B2B Tedarik</small>
+            </span>
+          </a>
+          <a className="catalogCta" href="/catalog">
+            Ana Katalog
+          </a>
+          <form className="searchBox" action="/catalog">
+            <button type="button" className="categoryButton">
+              <Menu size={18} aria-hidden="true" />
+              Kategori
+            </button>
+            <label className="srOnly" htmlFor="site-search">
+              Ürün, SKU, barkod veya teknik özellik ara
+            </label>
+            <input id="site-search" name="q" type="search" placeholder="Ürün, SKU, barkod, marka veya teknik özellik ara" />
+            <button type="submit" className="searchButton" aria-label="Ara">
+              <Search size={20} aria-hidden="true" />
+            </button>
+          </form>
+          <div className="headerActions">
+            <a className="supportLink" href="tel:+902120000000">
+              <PhoneCall size={18} aria-hidden="true" />
+              <span>
+                Teknik destek
+                <strong>0212 000 00 00</strong>
+              </span>
+            </a>
+            <a className="headerIcon" href={customer ? "/account" : "/login"} title="Bayi hesabım">
+              <UserRound size={20} aria-hidden="true" />
+            </a>
+            <a className="headerIcon" href="/favorites" title="Favoriler">
+              <Heart size={20} aria-hidden="true" />
+            </a>
+            <a className="headerIcon" href="/quote" title="Teklif listem">
+              <FileText size={20} aria-hidden="true" />
+            </a>
+            <a className="headerIcon" href={customer ? "/cart" : "/login"} title={customer ? `${cart?.items.length ?? 0} sepet satırı` : "Sepet için bayi girişi gerekir"}>
+              <ShoppingCart size={20} aria-hidden="true" />
+            </a>
+          </div>
+        </div>
+      </div>
+      <nav className="megaNav" aria-label="Ana kategoriler">
+        <div className="shell megaNavInner">
+          {megaItems.map((category) => (
+            <a href={category.href} key={category.slug}>
+              {category.label}
+              <small>{category.count.toLocaleString("tr-TR")}</small>
+            </a>
+          ))}
+        </div>
+      </nav>
+      <div className="mobileHeader">
+        <a className="brand compact" href="/">
+          <span className="brandMark">E</span>
+          <span>ENTAŞBURADA</span>
+        </a>
+        <div className="mobileHeaderActions">
+          <a className="mobileCatalogLink" href="/catalog">
+            Ana Katalog
+          </a>
+          <a className="mobileCatalogLink" href={customer ? "/quick-order" : "/login?next=/quick-order"}>
+            Hızlı Sipariş
+          </a>
+          <a className="headerIcon" href="/dealer-application" title="Bayi başvurusu">
+            <Building2 size={20} aria-hidden="true" />
+          </a>
+          <a className="headerIcon" href={customer ? "/account" : "/login"} title="Bayi girişi">
+            <ShieldCheck size={20} aria-hidden="true" />
+          </a>
+        </div>
+      </div>
+      <form className="mobileSearch" action="/catalog">
+        <input name="q" type="search" placeholder="SKU, barkod veya ürün ara" />
+        <button type="submit" aria-label="Ara">
+          <Search size={18} aria-hidden="true" />
+        </button>
+      </form>
+    </header>
+  );
+}

@@ -1,0 +1,75 @@
+# Changelog
+
+## 2026-07-07
+
+- Üretim omurgası hazırlığı:
+  - Prisma şeması mevcut teklif, sipariş, sepet ve bildirim JSON sözleşmesini kayıpsız taşıyacak alanlarla genişletildi.
+  - `@entas/database` PrismaClient singleton, bağlantı kontrolü ve disconnect yardımcıları export edecek hale getirildi.
+  - `pnpm db:push`, `pnpm db:studio`, `pnpm db:import-commercial` ve `pnpm smoke:commercial` komutları eklendi.
+  - `scripts/import-commercial-json-to-prisma.ts` mevcut müşteri, teklif, sipariş, sepet ve bildirim verisini PostgreSQL'e aktarmak için eklendi.
+  - `scripts/smoke-commercial-flow.ts` canlı ticari akışı uçtan uca test edip test verisini geri yükleyen otomatik smoke test olarak eklendi.
+- Bayi paneli UI/UX yenileme:
+  - `/account` ekranı kurumsal bayi çalışma alanı olarak yeniden tasarlandı.
+  - Bronz, Gümüş ve Platin bayi seviyeleri için farklı vade, limit, destek, öncelik ve ayrıcalık verileri eklendi.
+  - Hızlı Sipariş, Sepet, Teklif Al, Katalog ve Takip aksiyonları tek satırlık hızlı erişim alanına taşındı.
+  - Aktif teklif, açık sipariş, sepet ve limit özetleri daha okunabilir kartlara dönüştürüldü.
+  - Ayrıcalıklar, fiyat motoru ve bildirimler için sağ yan panel eklendi.
+  - Üst kategori şeridi taşma/kırpılma hissini azaltacak şekilde yatay akışa iyileştirildi.
+  - Admin teklif/sipariş listelerinde filtre alanı responsive hale getirildi; geniş tablolar sayfayı taşırmak yerine panel içinde kaydırılıyor.
+  - Canlı smoke testte public teklif, admin fiyatlandırma, siparişe dönüştürme, sipariş operasyon güncelleme, sepetten teklif, sepetten direkt sipariş ve bildirim akışları doğrulandı.
+- Bayi, fiyat, sepet, entegrasyon ve bildirim turu:
+  - 3 test bayi hesabı eklendi: `bayi1@entasburada.com`, `sanayi@entasburada.com`, `proje@entasburada.com`.
+  - Bayi login/logout, `/account` bayi paneli ve müşteri özel fiyatlandırma eklendi.
+  - Segment, marka, kategori ve özel net fiyat kuralları eklendi.
+  - Katalog ve ürün detay fiyatları bayi oturumuna göre fiyatlı/fiyat kilitli hale getirildi.
+  - `/quick-order`, `/cart`, `GET/POST /api/cart` ve `POST /api/cart/checkout` eklendi.
+  - Sepetten teklif oluşturma ve doğrudan sipariş oluşturma akışları eklendi.
+  - XML izleme ekranı `/admin/integrations` eklendi; fiyat değişimi, stok değişimi, yeni ürün, fiyatsız satır ve hata metrikleri gösteriliyor.
+  - Bildirim deposu, müşteri bildirimleri, admin bildirim ekranı `/admin/notifications` eklendi.
+  - `PRODUCTION_ROADMAP.md` ile PostgreSQL/Prisma geçişi ve bilinçli ertelenen ERP/kargo/rol/deploy işleri notlandı.
+- Canlı B2B teklif-sipariş akışı:
+  - `/quote` formu gerçek teklif kaydı oluşturacak şekilde bağlandı.
+  - Ürün kartı ve ürün detay “Teklif İste” bağlantıları SKU/ürün adı ön doldurmalı hale getirildi.
+  - `/quote/success`, `/quote/[code]`, `/orders` ve `/orders/[code]` müşteri takip ekranları eklendi.
+  - `POST /api/quotes`, `GET /api/quotes?code=...` ve `GET /api/orders?code=...` public uçları eklendi.
+  - Admin teklif fiyatlandırma, onay, red ve siparişe dönüştürme aksiyonları canlı veri mutasyonu yapıyor.
+  - Admin sipariş finans, stok, sevkiyat, depo ve durum güncelleme aksiyonları canlı veri mutasyonu yapıyor.
+  - `/api/admin/quotes` ve `/api/admin/orders` endpointlerine admin mutasyon desteği eklendi.
+- Katalog/admin hata giderme turu:
+  - `CATALOG_AND_ADMIN_AUDIT.md`, `CATALOG_FIX_PLAN.md`, `CATEGORY_MAPPING_REPORT.md`, `FINAL_CATALOG_STATUS.md` eklendi.
+  - `/admin/quotes` ve `/admin/orders` route'ları eklendi.
+  - Legacy `/admin#quotes` ve `/admin#orders` hashleri yeni route'lara yönlendirildi.
+  - `/api/admin/quotes` ve `/api/admin/orders` endpointleri eklendi.
+  - Hızlı katalog ve header mega menü gerçek katalog navigasyonuna bağlandı.
+  - `group` tabanlı kategori sözlüğü ve fallback araması eklendi.
+  - Public katalogda boş ana kategori için ilgili/tüm ürün fallback mesajı eklendi.
+- `PROJECT_AUDIT.md` ve `IMPLEMENTATION_PLAN.md` oluşturuldu.
+- `@entas/catalog` paketi eklendi.
+  - Import edilen ürünler katalog kaydına dönüştürülüyor.
+  - Yeni ürünler `DRAFT` yaşam döngüsüyle başlıyor.
+  - Admin publish aksiyonu ürünleri `ACTIVE` ve public görünür yapıyor.
+  - Public DTO fiyat ve gerçek stok miktarı taşımıyor.
+  - Admin DTO fiyat ve gerçek stok miktarı taşıyor.
+  - Draft/publish, audit, fiyat gizleme ve stok maskeleme testleri eklendi.
+- `pnpm catalog:sync` komutu eklendi.
+  - `data/import-results/supplier-products.json` dosyasından `data/catalog-store.json` üretiyor.
+  - `data/audit-log.json` içine import/publish olaylarını yazıyor.
+- Public web katalog gerçek ithal veriye bağlandı.
+  - Ana sayfa, katalog ve ürün detay sayfaları demo ürün listesinden ayrıldı.
+  - Katalog arama, kategori, marka, kaynak, stok ve sayfalama filtreleri eklendi.
+  - Public fiyat mesajı güncellendi: “Bayi fiyatlarını görmek ve sipariş oluşturmak için giriş yapın.”
+- API uçları eklendi.
+  - `GET /api/health`
+  - `GET /api/products`
+  - `GET /api/admin/products`
+- Admin panel ana uygulama altına alındı.
+  - `/admin/login`
+  - `/admin`
+  - `/admin/products`
+  - `/admin/import`
+- Admin aksiyonları eklendi.
+  - Import senkronizasyonu
+  - Senkronize et ve yayınla
+  - Tüm taslakları yayına al
+  - Seçili ürünleri yayına al
+- README yeni tek-port çalışma modeline göre güncellendi.

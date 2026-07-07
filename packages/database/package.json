@@ -1,0 +1,21 @@
+{
+  "name": "@entas/database",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "db:validate": "DATABASE_URL=${DATABASE_URL:-postgresql://entas:entas@localhost:5432/entasburada?schema=public} prisma validate --schema prisma/schema.prisma",
+    "db:generate": "DATABASE_URL=${DATABASE_URL:-postgresql://entas:entas@localhost:5432/entasburada?schema=public} prisma generate --schema prisma/schema.prisma",
+    "db:push": "DATABASE_URL=${DATABASE_URL:-postgresql://entas:entas@localhost:5432/entasburada?schema=public} prisma db push --schema prisma/schema.prisma",
+    "db:studio": "DATABASE_URL=${DATABASE_URL:-postgresql://entas:entas@localhost:5432/entasburada?schema=public} prisma studio --schema prisma/schema.prisma",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.14.0"
+  },
+  "devDependencies": {
+    "prisma": "^6.14.0"
+  }
+}

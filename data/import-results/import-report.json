@@ -1,0 +1,36 @@
+{
+  "generatedAt": "2026-07-07T11:02:02.826Z",
+  "sources": [
+    {
+      "key": "mirsan-efiyat",
+      "name": "Mirsan EFIYAT XML",
+      "path": "data/import-sources/EFIYATkopyasi.xml",
+      "totalRows": 343,
+      "acceptedRows": 343,
+      "issueCount": 0,
+      "issues": []
+    },
+    {
+      "key": "euromix-stock",
+      "name": "EuroMix Stok XML",
+      "path": "data/import-sources/EuromixStoklar.xml",
+      "url": "https://bayi.euro-mix.com.tr/C79BE2D9-04CE-4B5B-A51C-7E8F78E25FE3/EuromixStoklar.xml",
+      "totalRows": 2617,
+      "acceptedRows": 2617,
+      "issueCount": 0,
+      "issues": []
+    }
+  ],
+  "totals": {
+    "products": 2960,
+    "inStock": 1218,
+    "lowStock": 177,
+    "outOfStock": 1565,
+    "pricedRows": 2372,
+    "zeroPriceRows": 588,
+    "duplicateSkuCount": 0,
+    "duplicateBarcodeCount": 0
+  },
+  "duplicateSkus": [],
+  "duplicateBarcodes": []
+}
