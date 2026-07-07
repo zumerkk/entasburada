@@ -98,7 +98,7 @@ function findWorkspaceRoot(startDir: string): string {
   let current = startDir;
 
   while (current !== path.dirname(current)) {
-    if (existsSync(path.join(current, "pnpm-workspace.yaml"))) {
+    if (isWorkspaceRoot(current)) {
       return current;
     }
 
@@ -106,4 +106,8 @@ function findWorkspaceRoot(startDir: string): string {
   }
 
   return startDir;
+}
+
+function isWorkspaceRoot(dir: string): boolean {
+  return existsSync(path.join(dir, "pnpm-workspace.yaml")) || existsSync(path.join(dir, "data", "customer-accounts.json"));
 }

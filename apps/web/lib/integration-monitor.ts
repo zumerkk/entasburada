@@ -40,7 +40,7 @@ export interface IntegrationHealth {
   sources: IntegrationSourceHealth[];
 }
 
-const rootDir = existsSync(path.join(process.cwd(), "pnpm-workspace.yaml")) ? process.cwd() : path.resolve(process.cwd(), "../..");
+const rootDir = findWorkspaceRoot(process.cwd());
 const importProductsPath = path.join(rootDir, "data", "import-results", "supplier-products.json");
 
 export async function getIntegrationHealth(): Promise<IntegrationHealth> {
@@ -129,4 +129,22 @@ async function readJson<T>(filePath: string, fallback: T): Promise<T> {
 
     throw error;
   }
+}
+
+function findWorkspaceRoot(startDir: string): string {
+  let current = startDir;
+
+  while (current !== path.dirname(current)) {
+    if (
+      existsSync(path.join(current, "pnpm-workspace.yaml")) ||
+      existsSync(path.join(current, "data", "catalog-store.json")) ||
+      existsSync(path.join(current, "data", "import-results", "supplier-products.json"))
+    ) {
+      return current;
+    }
+
+    current = path.dirname(current);
+  }
+
+  return startDir;
 }
