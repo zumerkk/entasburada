@@ -1,10 +1,11 @@
-import { Building2, FileText, Heart, Menu, PhoneCall, Search, ShieldCheck, ShoppingCart, UserRound } from "lucide-react";
+import { Building2, FileText, Menu, PhoneCall, Search, ShieldCheck, ShoppingCart, UserRound } from "lucide-react";
 import { loadCustomerCart } from "../lib/cart-repository";
+import { getBrandSettings } from "../lib/brand-settings";
 import { getCatalogNavigation } from "../lib/catalog-repository";
 import { getCurrentCustomer } from "../lib/customer-auth";
 
 export async function Header() {
-  const [catalogNavigation, customer] = await Promise.all([getCatalogNavigation(), getCurrentCustomer()]);
+  const [catalogNavigation, customer, brandSettings] = await Promise.all([getCatalogNavigation(), getCurrentCustomer(), getBrandSettings()]);
   const cart = customer ? await loadCustomerCart(customer) : null;
   const megaItems = catalogNavigation.slice(0, 10);
 
@@ -24,10 +25,12 @@ export async function Header() {
       <div className="mainHeader">
         <div className="shell mainHeaderInner">
           <a className="brand" href="/" aria-label="ENTAŞBURADA ana sayfa">
-            <span className="brandMark">E</span>
+            <span className="brandLogoFrame">
+              <img className="brandLogo" src={brandSettings.headerLogoUrl} alt="" />
+            </span>
             <span>
-              ENTAŞBURADA
-              <small>Profesyonel B2B Tedarik</small>
+              {brandSettings.siteTitle}
+              <small>{brandSettings.tagline}</small>
             </span>
           </a>
           <a className="catalogCta" href="/catalog">
@@ -57,9 +60,6 @@ export async function Header() {
             <a className="headerIcon" href={customer ? "/account" : "/login"} title="Bayi hesabım">
               <UserRound size={20} aria-hidden="true" />
             </a>
-            <a className="headerIcon" href="/favorites" title="Favoriler">
-              <Heart size={20} aria-hidden="true" />
-            </a>
             <a className="headerIcon" href="/quote" title="Teklif listem">
               <FileText size={20} aria-hidden="true" />
             </a>
@@ -81,8 +81,10 @@ export async function Header() {
       </nav>
       <div className="mobileHeader">
         <a className="brand compact" href="/">
-          <span className="brandMark">E</span>
-          <span>ENTAŞBURADA</span>
+          <span className="brandLogoFrame">
+            <img className="brandLogo" src={brandSettings.mobileLogoUrl} alt="" />
+          </span>
+          <span>{brandSettings.siteTitle}</span>
         </a>
         <div className="mobileHeaderActions">
           <a className="mobileCatalogLink" href="/catalog">

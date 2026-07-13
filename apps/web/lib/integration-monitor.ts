@@ -1,5 +1,5 @@
 import "server-only";
-import { existsSync, statSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { ImportedSupplierProduct } from "@entas/catalog";
@@ -68,8 +68,7 @@ export async function getIntegrationHealth(): Promise<IntegrationHealth> {
       const products = store.products.filter((product) => product.sourceKey === source.key);
       const importedSourceProducts = importedProducts.filter((product) => product.sourceKey === source.key);
       const sourceChangeMetrics = changeMetrics(importedSourceProducts, existingByKey);
-      const filePath = path.resolve(rootDir, source.path);
-      const fileUpdatedAt = existsSync(filePath) ? statSync(filePath).mtime.toISOString() : undefined;
+      const fileUpdatedAt = importReport?.generatedAt ?? store.updatedAt;
       const status = source.issueCount > 0 ? "error" : source.acceptedRows === 0 ? "warning" : "ok";
 
       return {
@@ -88,7 +87,7 @@ export async function getIntegrationHealth(): Promise<IntegrationHealth> {
         pendingNewProducts: sourceChangeMetrics.pendingNewProducts,
         pendingPriceChanges: sourceChangeMetrics.pendingPriceChanges,
         pendingStockChanges: sourceChangeMetrics.pendingStockChanges,
-        ...(fileUpdatedAt ? { fileUpdatedAt } : {})
+        fileUpdatedAt
       };
     })
   };

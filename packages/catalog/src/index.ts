@@ -20,6 +20,14 @@ export interface ImportedSupplierProduct {
   listPrice: string;
   stockQuantity: number;
   stockStatus: StockStatus;
+  stockQuantityKnown?: boolean;
+  description?: string;
+  technicalSpecs?: Array<{ label: string; value: string }>;
+  minOrder?: number;
+  packageQuantity?: number;
+  cartonQuantity?: number;
+  palletQuantity?: number;
+  warrantyMonths?: number;
   imageUrl?: string;
   sourceUrl?: string;
   priceVisibleToPublic: false;
@@ -44,6 +52,14 @@ export interface CatalogProductRecord {
   listPrice: string;
   stockQuantity: number;
   stockStatus: StockStatus;
+  stockQuantityKnown?: boolean;
+  description?: string;
+  technicalSpecs?: Array<{ label: string; value: string }>;
+  minOrder?: number;
+  packageQuantity?: number;
+  cartonQuantity?: number;
+  palletQuantity?: number;
+  warrantyMonths?: number;
   imageUrl?: string;
   sourceUrl?: string;
   status: ProductStatus;
@@ -100,9 +116,11 @@ export interface PublicCatalogProduct {
   manufacturerCode?: string;
   category: string;
   categoryPath: string[];
+  description?: string;
   image: string;
   stockTone: StockStatus;
   stockLabel: string;
+  stockQuantityKnown: boolean;
   badges: string[];
   unitType: string;
   minOrder: number;
@@ -455,6 +473,7 @@ export function searchCatalogRecords(store: CatalogStore, filters: CatalogSearch
 
 export function toPublicProduct(product: CatalogProductRecord): PublicCatalogProduct {
   const specs = stripEmptySpecs([
+    ...(product.technicalSpecs ?? []),
     { label: "Birim", value: product.unitType },
     { label: "Kategori", value: product.category },
     { label: "Marka", value: product.brand },
@@ -471,16 +490,18 @@ export function toPublicProduct(product: CatalogProductRecord): PublicCatalogPro
     manufacturerCode: product.manufacturerCode,
     category: product.category,
     categoryPath: product.categoryPath,
+    description: product.description,
     image: product.imageUrl ?? FALLBACK_IMAGE,
     stockTone: product.stockStatus,
-    stockLabel: stockLabel(product.stockStatus),
+    stockLabel: stockLabel(product.stockStatus, product.stockQuantityKnown !== false),
+    stockQuantityKnown: product.stockQuantityKnown !== false,
     badges: product.priceDisplayMode === "CONTACT_REP" ? [product.sourceName, "Temsilci fiyatı"] : [product.sourceName],
     unitType: product.unitType,
-    minOrder: 1,
-    packageQuantity: 1,
-    cartonQuantity: 1,
-    palletQuantity: 1,
-    warrantyMonths: 0,
+    minOrder: positiveInteger(product.minOrder, 1),
+    packageQuantity: positiveInteger(product.packageQuantity, 1),
+    cartonQuantity: positiveInteger(product.cartonQuantity, 1),
+    palletQuantity: positiveInteger(product.palletQuantity, 1),
+    warrantyMonths: nonNegativeInteger(product.warrantyMonths, 0),
     taxRate: toNumber(product.taxRate),
     priceDisplayMode: product.priceDisplayMode,
     specs
@@ -635,6 +656,14 @@ function toCatalogRecord(imported: ImportedSupplierProduct, now: string, slug: s
     listPrice: imported.listPrice,
     stockQuantity: imported.stockQuantity,
     stockStatus: imported.stockStatus,
+    stockQuantityKnown: imported.stockQuantityKnown,
+    description: imported.description,
+    technicalSpecs: imported.technicalSpecs,
+    minOrder: imported.minOrder,
+    packageQuantity: imported.packageQuantity,
+    cartonQuantity: imported.cartonQuantity,
+    palletQuantity: imported.palletQuantity,
+    warrantyMonths: imported.warrantyMonths,
     imageUrl: imported.imageUrl,
     sourceUrl: imported.sourceUrl,
     status: existing?.status ?? "DRAFT",
@@ -671,7 +700,10 @@ function createSummary(products: CatalogProductRecord[]): CatalogSummary {
   };
 }
 
-function stockLabel(status: StockStatus): string {
+function stockLabel(status: StockStatus, quantityKnown = true): string {
+  if (!quantityKnown) {
+    return "Stok teyidi gerekli";
+  }
   if (status === "in_stock") {
     return "Stokta";
   }
@@ -789,6 +821,14 @@ function productMatchesKeywords(product: CatalogProductRecord, keywords: string[
 function toNumber(value: string): number {
   const parsed = Number(value.replace(",", "."));
   return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function positiveInteger(value: number | undefined, fallback: number): number {
+  return Number.isFinite(value) && Number(value) > 0 ? Math.max(1, Math.round(Number(value))) : fallback;
+}
+
+function nonNegativeInteger(value: number | undefined, fallback: number): number {
+  return Number.isFinite(value) && Number(value) >= 0 ? Math.max(0, Math.round(Number(value))) : fallback;
 }
 
 function stripEmptySpecs(specs: Array<{ label: string; value: string }>): Array<{ label: string; value: string }> {

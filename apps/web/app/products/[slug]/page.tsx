@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { Box, FileText, Heart, PackageCheck, Scale, ShieldCheck, ShoppingCart, Truck } from "lucide-react";
 import { PriceGate, StockBadge, StatusPill } from "@entas/ui";
+import { ProductViewTracker } from "../../../components/AnalyticsTracker";
 import { getPricedPublicProductBySlug, getPublicProductBySlug } from "../../../lib/catalog-repository";
 import { getCurrentCustomer } from "../../../lib/customer-auth";
 
@@ -27,6 +28,15 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
   return (
     <main className="productDetailPage">
+      <ProductViewTracker
+        product={{
+          productSlug: product.slug,
+          productName: product.name,
+          sku: product.sku,
+          brand: product.brand,
+          category: product.category
+        }}
+      />
       <section className="shell breadcrumb">
         <a href="/">Ana sayfa</a>
         <span>/</span>
@@ -142,7 +152,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         </div>
         <div className="tabPanel">
           <div>
-            <h2>Teknik özellikler</h2>
+            <h2>Ürün bilgileri</h2>
+            {product.description ? <p className="productDescription">{product.description}</p> : null}
             <div className="specTable">
               {product.specs.map((spec) => (
                 <div key={spec.label}>

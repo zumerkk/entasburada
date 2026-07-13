@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { authenticateCustomer, CUSTOMER_COOKIE } from "../../lib/customer-auth";
+import { authenticateCustomer, createCustomerSessionToken, CUSTOMER_COOKIE } from "../../lib/customer-auth";
 
 export async function customerLoginAction(formData: FormData): Promise<void> {
   const email = getString(formData, "email");
@@ -15,9 +15,10 @@ export async function customerLoginAction(formData: FormData): Promise<void> {
   }
 
   const cookieStore = await cookies();
-  cookieStore.set(CUSTOMER_COOKIE, customer.id, {
+  cookieStore.set(CUSTOMER_COOKIE, createCustomerSessionToken(customer.id), {
     httpOnly: true,
     sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
     path: "/",
     maxAge: 60 * 60 * 24 * 14
   });

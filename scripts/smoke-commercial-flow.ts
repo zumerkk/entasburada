@@ -1,6 +1,8 @@
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { loadEnvFile } from "node:process";
 import { fileURLToPath } from "node:url";
+import { createSessionToken } from "../apps/web/lib/session-token";
 
 interface JsonResponse<T> {
   body: T;
@@ -45,10 +47,26 @@ interface CartResponse {
 }
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+loadLocalWebEnv();
 const baseUrl = process.env.ENTAS_BASE_URL ?? "http://localhost:3000";
-const adminCookie = "entas_admin_session=dev-admin-session";
-const customerCookie = "entas_customer_session=cust-test-project";
+const adminCookie = `entas_admin_session=${encodeURIComponent(process.env.ADMIN_SESSION_SECRET ?? "dev-admin-session")}`;
+const customerCookie = `entas_customer_session=${createSessionToken(
+  "cust-test-project",
+  process.env.AUTH_SECRET?.trim() || "local-dev-auth-secret",
+  60 * 60
+)}`;
 const mutableFiles = ["data/quotes.json", "data/orders.json", "data/carts.json", "data/notifications.json"];
+
+function loadLocalWebEnv(): void {
+  try {
+    loadEnvFile(path.join(rootDir, "apps", "web", ".env.local"));
+  } catch (error) {
+    const code = typeof error === "object" && error !== null && "code" in error ? String(error.code) : "";
+    if (code !== "ENOENT") {
+      throw error;
+    }
+  }
+}
 
 async function main(): Promise<void> {
   const backups = await backupMutableFiles();

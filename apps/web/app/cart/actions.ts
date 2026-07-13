@@ -4,12 +4,14 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { addCartItems, clearCart, updateCartQuantities, type CartItemInput } from "../../lib/cart-repository";
 import { createOrderFromCustomerCart, createQuoteFromCustomerCart } from "../../lib/cart-checkout";
+import { trackCartEvent } from "../../lib/analytics-repository";
 import { requireCustomer } from "../../lib/customer-auth";
 
 export async function addQuickOrderItemsAction(formData: FormData): Promise<void> {
   const customer = await requireCustomer();
   const items = [...itemsFromForm(formData), ...(await itemsFromUpload(formData))];
   await addCartItems(customer, items);
+  await Promise.all(items.map((item) => trackCartEvent(customer, "cart_add", { productName: item.productName, sku: item.sku, quantity: item.quantity, unit: item.unit })));
   revalidateCartPaths();
   redirect("/cart");
 }
@@ -17,13 +19,14 @@ export async function addQuickOrderItemsAction(formData: FormData): Promise<void
 export async function updateCartAction(formData: FormData): Promise<void> {
   const customer = await requireCustomer();
   const itemIds = formData.getAll("itemId").map(String);
-  await updateCartQuantities(
+  const cart = await updateCartQuantities(
     customer,
     itemIds.map((itemId) => ({
       itemId,
       quantity: Number(getString(formData, `quantity:${itemId}`))
     }))
   );
+  await trackCartEvent(customer, "cart_add", { cartTotal: String(cart.items.length), quantity: cart.items.length });
   revalidateCartPaths();
   redirect("/cart");
 }
@@ -31,6 +34,7 @@ export async function updateCartAction(formData: FormData): Promise<void> {
 export async function clearCartAction(): Promise<void> {
   const customer = await requireCustomer();
   await clearCart(customer);
+  await trackCartEvent(customer, "cart_clear");
   revalidateCartPaths();
   redirect("/cart");
 }
@@ -38,6 +42,7 @@ export async function clearCartAction(): Promise<void> {
 export async function createQuoteFromCartAction(): Promise<void> {
   const customer = await requireCustomer();
   const quote = await createQuoteFromCustomerCart(customer);
+  await trackCartEvent(customer, "quote_intent", { cartTotal: quote.totalAmount });
   revalidateCartPaths();
   redirect(`/quote/${encodeURIComponent(quote.trackingCode)}`);
 }
@@ -45,6 +50,7 @@ export async function createQuoteFromCartAction(): Promise<void> {
 export async function createOrderFromCartAction(): Promise<void> {
   const customer = await requireCustomer();
   const order = await createOrderFromCustomerCart(customer);
+  await trackCartEvent(customer, "order_create", { cartTotal: order.totalAmount });
   revalidateCartPaths();
   redirect(`/orders/${encodeURIComponent(order.trackingCode)}`);
 }

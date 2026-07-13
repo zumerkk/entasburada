@@ -1,9 +1,13 @@
 import "server-only";
 import { existsSync } from "node:fs";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { hashPassword, SCRYPT_PREFIX, verifyPassword } from "./password-hash";
+import { createSessionToken, verifySessionToken } from "./session-token";
+
+export { hashPassword, verifyPassword };
 
 export type CustomerStatus = "approved" | "pending" | "suspended";
 export type CustomerSegment = "standard" | "industrial" | "project";
@@ -49,12 +53,25 @@ export async function getCustomers(): Promise<CustomerAccount[]> {
 export async function authenticateCustomer(email: string, password: string): Promise<CustomerAccount | null> {
   const normalizedEmail = email.trim().toLocaleLowerCase("tr-TR");
   const customers = await getCustomers();
-  return customers.find((customer) => customer.email.toLocaleLowerCase("tr-TR") === normalizedEmail && customer.password === password) ?? null;
+  const customer = customers.find((entry) => entry.email.toLocaleLowerCase("tr-TR") === normalizedEmail) ?? null;
+  if (!customer || !verifyPassword(password, customer.password)) {
+    return null;
+  }
+
+  if (!customer.password.startsWith(SCRYPT_PREFIX)) {
+    await upgradeLegacyPassword(customer.id, password);
+  }
+
+  return customer;
+}
+
+export function createCustomerSessionToken(customerId: string, maxAgeSeconds = SESSION_MAX_AGE_SECONDS): string {
+  return createSessionToken(customerId, sessionSecret(), maxAgeSeconds);
 }
 
 export async function getCurrentCustomer(): Promise<CustomerAccount | null> {
   const cookieStore = await cookies();
-  const id = cookieStore.get(CUSTOMER_COOKIE)?.value;
+  const id = verifySessionToken(cookieStore.get(CUSTOMER_COOKIE)?.value ?? "", sessionSecret());
   if (!id) {
     return null;
   }
@@ -70,6 +87,32 @@ export async function requireCustomer(): Promise<CustomerAccount> {
   }
 
   return customer;
+}
+
+const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 14;
+
+function sessionSecret(): string {
+  const secret = process.env.AUTH_SECRET?.trim();
+  if (secret) {
+    return secret;
+  }
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("AUTH_SECRET must be set in production.");
+  }
+  return "local-dev-auth-secret";
+}
+
+async function upgradeLegacyPassword(customerId: string, password: string): Promise<void> {
+  const customers = await getCustomers();
+  const index = customers.findIndex((customer) => customer.id === customerId);
+  if (index < 0) {
+    return;
+  }
+
+  customers[index] = { ...customers[index]!, password: hashPassword(password) };
+  const tmpPath = `${customersPath}.tmp`;
+  await writeFile(tmpPath, `${JSON.stringify(customers, null, 2)}\n`);
+  await rename(tmpPath, customersPath);
 }
 
 async function ensureCustomersFile(): Promise<void> {

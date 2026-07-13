@@ -9,6 +9,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const params = await searchParams;
   const error = getParam(params, "error");
   const next = getParam(params, "next");
+  const showTestAccounts = process.env.NODE_ENV !== "production";
 
   return (
     <main>
@@ -19,12 +20,14 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <p>
             Fiyatlar, iskonto, sepet, vadeli ödeme ve teslimat avantajları yalnızca onaylı bayi oturumunda görünür.
           </p>
-          <div className="testAccountList">
-            <strong>Test bayi hesapları</strong>
-            <span>bayi1@entasburada.com / Bayi2026!</span>
-            <span>sanayi@entasburada.com / Sanayi2026!</span>
-            <span>proje@entasburada.com / Proje2026!</span>
-          </div>
+          {showTestAccounts ? (
+            <div className="testAccountList">
+              <strong>Test bayi hesapları</strong>
+              <span>bayi1@entasburada.com / Bayi2026!</span>
+              <span>sanayi@entasburada.com / Sanayi2026!</span>
+              <span>proje@entasburada.com / Proje2026!</span>
+            </div>
+          ) : null}
         </div>
         <form className="loginPanel" action={customerLoginAction}>
           {error ? <div className="formError">{error}</div> : null}

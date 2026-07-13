@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@entas/catalog": "workspace:*",
+    "@entas/import-engine": "workspace:*",
     "@entas/pricing-engine": "workspace:*",
     "@entas/ui": "workspace:*",
     "@entas/validation": "workspace:*",
@@ -20,6 +21,8 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-hook-form": "^7.52.0",
+    "server-only": "^0.0.1",
+    "sharp": "^0.34.5",
     "zod": "^3.23.8"
   },
   "devDependencies": {

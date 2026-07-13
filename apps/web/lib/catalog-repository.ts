@@ -292,11 +292,11 @@ function logCatalogQuery(filters: PublicProductFilters, total: number, durationM
   });
 }
 
-async function saveCatalogStore(store: CatalogStore): Promise<void> {
+export async function saveCatalogStore(store: CatalogStore): Promise<void> {
   await writeJson(catalogStorePath, store);
 }
 
-async function appendAuditLogs(logs: AuditLogEntry[]): Promise<void> {
+export async function appendAuditLogs(logs: AuditLogEntry[]): Promise<void> {
   if (logs.length === 0) {
     return;
   }

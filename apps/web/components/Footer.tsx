@@ -1,12 +1,18 @@
-export function Footer() {
+import { getBrandSettings } from "../lib/brand-settings";
+
+export async function Footer() {
+  const brandSettings = await getBrandSettings();
+
   return (
     <footer className="siteFooter">
       <div className="shell footerGrid">
         <div>
           <a className="brand footerBrand" href="/">
-            <span className="brandMark">E</span>
+            <span className="brandLogoFrame">
+              <img className="brandLogo" src={brandSettings.footerLogoUrl} alt="" />
+            </span>
             <span>
-              ENTAŞBURADA
+              {brandSettings.siteTitle}
               <small>Hırdavat ve yapı market B2B platformu</small>
             </span>
           </a>
@@ -39,7 +45,7 @@ export function Footer() {
         </div>
       </div>
       <div className="shell footerBottom">
-        <span>© 2026 ENTAŞBURADA</span>
+        <span>© 2026 {brandSettings.siteTitle}</span>
         <span>Fiyatlar yalnızca onaylı bayi hesaplarında gösterilir.</span>
       </div>
     </footer>

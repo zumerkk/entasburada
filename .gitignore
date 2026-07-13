@@ -11,4 +11,12 @@ coverage
 apps/web/public/uploads
 apps/admin/public/uploads
 data/import-sources
+data/catalog-imports
+data/ai-import-jobs.json
 .vercel
+
+# calisma-zamani veri depolari repoya girmez (deploy kiti rsync ile tasir)
+data/*.json
+
+# kaynak PDF katalogları repoya girmez
+Pdfler/

@@ -1,5 +1,6 @@
 import { Filter, Search, SlidersHorizontal } from "lucide-react";
 import { EmptyState, ProductCard, StatusPill } from "@entas/ui";
+import { CatalogSearchTracker } from "../../components/AnalyticsTracker";
 import { getCatalogFacets, getCatalogNavigation, getPricedPublicProducts } from "../../lib/catalog-repository";
 import { getCurrentCustomer } from "../../lib/customer-auth";
 import type { StockStatus } from "@entas/catalog";
@@ -40,6 +41,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
 
   return (
     <main className="catalogPage">
+      <CatalogSearchTracker searchTerm={q} resultCount={products.total} category={category} group={group || products.appliedCategoryLabel} brand={brand} />
       <section className="shell pageIntro compact">
         <div>
           <span className="eyebrow dark">Ürün kataloğu</span>
