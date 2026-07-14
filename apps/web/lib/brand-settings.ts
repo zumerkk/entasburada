@@ -80,7 +80,7 @@ const defaultSettings: BrandSettings = {
     segmentTargets: [],
     closeOnOutsideClick: true,
     closeOnEsc: true,
-    autoCloseOnEnded: false,
+    autoCloseOnEnded: true,
     updatedAt: new Date(0).toISOString()
   }
 };
@@ -178,7 +178,7 @@ function normalizeVideoPopup(value: VideoPopupSettingsInput): VideoPopupSettings
     segmentTargets: Array.isArray(value.segmentTargets) ? value.segmentTargets.map(clean).filter(Boolean) : [],
     closeOnOutsideClick: value.closeOnOutsideClick !== false,
     closeOnEsc: value.closeOnEsc !== false,
-    autoCloseOnEnded: Boolean(value.autoCloseOnEnded),
+    autoCloseOnEnded: value.autoCloseOnEnded !== false,
     updatedAt: clean(value.updatedAt) || new Date().toISOString()
   };
 }

@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { X } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Volume2, VolumeX, X } from "lucide-react";
 import { shouldShowVideoPopup, type VideoPopupFrequency, type VideoPopupState } from "../lib/video-popup-policy";
 
 interface PublicVideoPopupResponse {
@@ -23,11 +23,46 @@ interface PublicVideoPopupResponse {
   autoCloseOnEnded: boolean;
 }
 
-const storageKey = "entasburada.videoPopup";
+const storageKey = "entasburada.videoPopup.v2";
 
 export function VideoPopup() {
   const [settings, setSettings] = useState<PublicVideoPopupResponse | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [needsPlaybackStart, setNeedsPlaybackStart] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const playPromptRef = useRef<HTMLButtonElement>(null);
+  const videoSource = useMemo(() => settings?.videoUrl?.trim() ?? "", [settings]);
+
+  const closePopup = useCallback(() => {
+    const state = readState();
+    writeState({
+      ...state,
+      dismissedAt: new Date().toISOString(),
+      lastShownAt: new Date().toISOString()
+    });
+    setIsOpen(false);
+  }, []);
+
+  const startPlayback = useCallback(async () => {
+    const video = videoRef.current;
+    if (!video) {
+      return;
+    }
+
+    video.muted = false;
+    video.volume = 1;
+    setIsMuted(false);
+
+    try {
+      await video.play();
+      setNeedsPlaybackStart(false);
+    } catch {
+      setNeedsPlaybackStart(true);
+    }
+  }, []);
 
   useEffect(() => {
     if (window.location.pathname.startsWith("/admin")) {
@@ -52,13 +87,10 @@ export function VideoPopup() {
         });
 
         if (shouldShow) {
+          setNeedsPlaybackStart(false);
+          setIsMuted(false);
           setSettings(payload);
           setIsOpen(true);
-          writeState({
-            ...state,
-            firstShownAt: state.firstShownAt ?? new Date().toISOString(),
-            lastShownAt: new Date().toISOString()
-          });
         }
       })
       .catch(() => {
@@ -71,34 +103,81 @@ export function VideoPopup() {
   }, []);
 
   useEffect(() => {
-    if (!settings?.closeOnEsc || !isOpen) {
+    if (!isOpen) {
       return;
     }
 
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+      if (event.key === "Escape" && settings?.closeOnEsc) {
         closePopup();
+        return;
+      }
+
+      if (event.key !== "Tab") {
+        return;
+      }
+
+      const panel = panelRef.current;
+      if (!panel) {
+        return;
+      }
+
+      const focusable = Array.from(panel.querySelectorAll<HTMLElement>("button:not(:disabled), a[href]"))
+        .filter((element) => element.getClientRects().length > 0);
+      if (focusable.length === 0) {
+        event.preventDefault();
+        return;
+      }
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!first || !last) {
+        return;
+      }
+
+      const activeElement = document.activeElement;
+      if (event.shiftKey && (activeElement === first || !panel.contains(activeElement))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (activeElement === last || !panel.contains(activeElement))) {
+        event.preventDefault();
+        first.focus();
       }
     };
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [settings, isOpen]);
+  }, [closePopup, isOpen, settings?.closeOnEsc]);
 
-  const videoSource = useMemo(() => settings?.videoUrl?.trim() ?? "", [settings]);
+  useEffect(() => {
+    if (!isOpen || !videoSource) {
+      return;
+    }
+
+    const previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const frame = window.requestAnimationFrame(() => {
+      closeButtonRef.current?.focus();
+      void startPlayback();
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      videoRef.current?.pause();
+      document.body.style.overflow = previousOverflow;
+      previouslyFocused?.focus();
+    };
+  }, [isOpen, startPlayback, videoSource]);
+
+  useEffect(() => {
+    if (needsPlaybackStart) {
+      playPromptRef.current?.focus();
+    }
+  }, [needsPlaybackStart]);
 
   if (!settings || !isOpen || !videoSource) {
     return null;
-  }
-
-  function closePopup() {
-    const state = readState();
-    writeState({
-      ...state,
-      dismissedAt: new Date().toISOString(),
-      lastShownAt: new Date().toISOString()
-    });
-    setIsOpen(false);
   }
 
   return (
@@ -106,43 +185,73 @@ export function VideoPopup() {
       className="videoPopupOverlay"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="video-popup-title"
+      aria-label={settings.title || "ENTAŞBURADA açılış videosu"}
       onMouseDown={(event) => {
         if (settings.closeOnOutsideClick && event.target === event.currentTarget) {
           closePopup();
         }
       }}
     >
-      <div className="videoPopupPanel">
-        <button className="videoPopupClose" type="button" aria-label="Tanıtım videosunu kapat" onClick={closePopup}>
-          <X size={20} aria-hidden="true" />
-        </button>
+      <div ref={panelRef} className="videoPopupPanel">
+        <div className="videoPopupControls">
+          <button
+            className="videoPopupSound"
+            type="button"
+            aria-label={isMuted ? "Videonun sesini aç" : "Videonun sesini kapat"}
+            onClick={() => {
+              const video = videoRef.current;
+              if (!video) {
+                return;
+              }
+              video.muted = !video.muted;
+              setIsMuted(video.muted);
+            }}
+          >
+            {isMuted ? <VolumeX size={20} aria-hidden="true" /> : <Volume2 size={20} aria-hidden="true" />}
+          </button>
+          <button ref={closeButtonRef} className="videoPopupClose" type="button" aria-label="Açılış videosunu kapat" onClick={closePopup}>
+            <X size={20} aria-hidden="true" />
+          </button>
+        </div>
         <div className="videoPopupMedia">
           <video
+            ref={videoRef}
             src={videoSource}
             poster={settings.posterUrl || undefined}
-            controls
             autoPlay
-            muted
+            muted={isMuted}
             playsInline
-            preload="metadata"
+            preload="auto"
+            onPlaying={() => {
+              setNeedsPlaybackStart(false);
+              const state = readState();
+              const now = new Date().toISOString();
+              writeState({
+                ...state,
+                firstShownAt: state.firstShownAt ?? now,
+                lastShownAt: now
+              });
+            }}
             onEnded={() => {
               if (settings.autoCloseOnEnded) {
                 closePopup();
               }
             }}
           />
-        </div>
-        <div className="videoPopupContent">
-          <div>
-            <span>ENTAŞBURADA</span>
-            <h2 id="video-popup-title">{settings.title}</h2>
-            {settings.description ? <p>{settings.description}</p> : null}
-          </div>
-          {settings.ctaText && settings.ctaHref ? (
-            <a className="btn btnPrimary" href={settings.ctaHref} onClick={closePopup}>
-              {settings.ctaText}
-            </a>
+          {needsPlaybackStart ? (
+            <button
+              ref={playPromptRef}
+              className="videoPopupPlayPrompt"
+              type="button"
+              aria-live="polite"
+              onClick={() => void startPlayback()}
+            >
+              <Volume2 size={28} aria-hidden="true" />
+              <span>
+                <strong>Sesli videoyu başlat</strong>
+                <small>Tarayıcınız sesli otomatik oynatmayı engelledi.</small>
+              </span>
+            </button>
           ) : null}
         </div>
       </div>
