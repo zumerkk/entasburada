@@ -13,6 +13,7 @@
     "import:suppliers": "tsx scripts/import-supplier-data.ts",
     "import:pdf-directory": "node --env-file=apps/web/.env.local --import tsx scripts/import-pdf-directory.ts",
     "catalog:sync": "tsx scripts/sync-catalog-store.ts",
+    "catalog:reclassify": "tsx scripts/reclassify-catalog.ts",
     "db:validate": "pnpm --filter @entas/database db:validate",
     "db:generate": "pnpm --filter @entas/database db:generate",
     "db:push": "pnpm --filter @entas/database db:push",

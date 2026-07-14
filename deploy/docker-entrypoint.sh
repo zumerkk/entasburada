@@ -16,5 +16,11 @@ ln -sfn "$DATA_DIR/data" /app/data
 rm -rf /app/apps/web/public/uploads
 ln -sfn "$DATA_DIR/uploads" /app/apps/web/public/uploads
 
+if [ -f /app/data/catalog-store.json ]; then
+  echo "[entrypoint] katalog siniflandirmasi denetleniyor"
+  cd /app
+  pnpm catalog:reclassify -- --write
+fi
+
 cd /app/apps/web
 exec ./node_modules/.bin/next start --port "${PORT:-3000}"

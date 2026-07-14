@@ -2,6 +2,7 @@ import { Building2, FileText, Menu, PhoneCall, Search, ShieldCheck, ShoppingCart
 import { loadCustomerCart } from "../lib/cart-repository";
 import { getBrandSettings } from "../lib/brand-settings";
 import { getCatalogTree } from "../lib/catalog-repository";
+import { COMPANY_CONTACT } from "../lib/company-contact";
 import { getCurrentCustomer } from "../lib/customer-auth";
 import { MegaMenu } from "./MegaMenu";
 
@@ -50,11 +51,11 @@ export async function Header() {
             </button>
           </form>
           <div className="headerActions">
-            <a className="supportLink" href="tel:+902120000000">
+            <a className="supportLink" href={COMPANY_CONTACT.technicalSupportPhoneHref}>
               <PhoneCall size={18} aria-hidden="true" />
               <span>
                 Teknik destek
-                <strong>0212 000 00 00</strong>
+                <strong>{COMPANY_CONTACT.technicalSupportPhone}</strong>
               </span>
             </a>
             <a className="headerIcon" href={customer ? "/account" : "/login"} title="Bayi hesabım">

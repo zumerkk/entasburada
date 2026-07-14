@@ -1,4 +1,12 @@
 import { CATALOG_TREE, flattenCatalogTree } from "./catalog-tree";
+import {
+  CATALOG_CLASSIFICATION_VERSION,
+  canonicalizeCatalogGroupSlug,
+  catalogTextMatchesPhrase,
+  classifyCatalogProduct,
+  isCatalogIndexRecord,
+  type CatalogClassification
+} from "./catalog-classifier";
 
 export {
   CATALOG_TREE,
@@ -7,6 +15,17 @@ export {
   type CatalogTreeColumn,
   type CatalogTreeLeaf
 } from "./catalog-tree";
+export {
+  CATALOG_CLASSIFICATION_VERSION,
+  canonicalizeCatalogGroupSlug,
+  catalogTextMatchesPhrase,
+  classifyCatalogProduct,
+  isCatalogIndexRecord,
+  normalizeCatalogText,
+  type CatalogClassification,
+  type CatalogClassificationMethod,
+  type ClassifiableCatalogProduct
+} from "./catalog-classifier";
 
 export type ProductStatus = "DRAFT" | "ACTIVE" | "PASSIVE";
 export type PriceApprovalStatus = "APPROVED" | "NO_PRICE" | "NEEDS_REVIEW";
@@ -56,6 +75,7 @@ export interface CatalogProductRecord {
   brand: string;
   categoryPath: string[];
   category: string;
+  catalogClassification?: CatalogClassification;
   unitType: string;
   taxRate: string;
   currency: string;
@@ -126,6 +146,8 @@ export interface PublicCatalogProduct {
   manufacturerCode?: string;
   category: string;
   categoryPath: string[];
+  categoryGroupSlug: string;
+  categorySlug: string;
   description?: string;
   image: string;
   stockTone: StockStatus;
@@ -156,6 +178,9 @@ export interface AdminCatalogProduct extends PublicCatalogProduct {
   priceApprovalStatus: PriceApprovalStatus;
   importedAt: string;
   updatedAt: string;
+  sourceCategory: string;
+  sourceCategoryPath: string[];
+  catalogClassification: CatalogClassification;
   publishedAt?: string;
   publishedBy?: string;
 }
@@ -328,7 +353,7 @@ export function mergeImportedProducts(store: CatalogStore, importedProducts: Imp
 
   for (const product of store.products) {
     if (!seenKeys.has(recordImportKey(product))) {
-      nextProducts.push({ ...product, updatedAt: now });
+      nextProducts.push(withCatalogClassification({ ...product, updatedAt: now }));
     }
   }
 
@@ -345,6 +370,10 @@ export function publishProducts(store: CatalogStore, ids: string[], actor: strin
   let changed = 0;
 
   const products = store.products.map((product) => {
+    if (isCatalogIndexRecord(product)) {
+      return { ...product, status: "PASSIVE" as const, isVisible: false };
+    }
+
     if (!idSet.has(product.id)) {
       return product;
     }
@@ -395,7 +424,6 @@ export function searchCatalogRecords(store: CatalogStore, filters: CatalogSearch
   const term = normalizeSearch(filters.q ?? "");
   const category = normalizeSearch(filters.category ?? "");
   const categoryGroup = resolveCatalogGroup(filters.categoryGroup ?? filters.view ?? "");
-  const categoryAliasGroup = !categoryGroup && category ? resolveCatalogGroup(filters.category ?? "") : undefined;
   const brand = normalizeSearch(filters.brand ?? "");
   const sourceKey = normalizeSearch(filters.sourceKey ?? "");
 
@@ -430,44 +458,8 @@ export function searchCatalogRecords(store: CatalogStore, filters: CatalogSearch
   });
 
   const categoryFiltered = applyCategoryFilters(withoutCategory, category, categoryGroup);
-  let filtered = categoryFiltered.items;
-  let fallback = categoryFiltered.fallback;
-  const requestedCategory = filters.categoryGroup ?? filters.category ?? filters.view ?? "";
-
-  if (filtered.length === 0 && filters.allowCategoryFallback && requestedCategory) {
-    if (withoutCategory.length > 0 && term) {
-      filtered = withoutCategory;
-      fallback = {
-        requested: requestedCategory,
-        effective: "arama-sonuclari",
-        message: "Kategori filtresi arama sonucu ile eşleşmedi, arama ile bulunan ürünleri gösteriyoruz.",
-        reason: "category_conflict"
-      };
-    } else {
-      const fallbackGroup = categoryGroup ?? categoryAliasGroup;
-      const fallbackByKeyword = fallbackGroup
-        ? withoutCategory.filter((product) => productMatchesCatalogGroup(product, fallbackGroup, true))
-        : [];
-
-      if (fallbackByKeyword.length > 0) {
-        filtered = fallbackByKeyword;
-        fallback = {
-          requested: requestedCategory,
-          effective: fallbackGroup?.slug ?? requestedCategory,
-          message: "Bu kategoride doğrudan ürün bulunamadı, ilgili ürünleri gösteriyoruz.",
-          reason: "category_alias"
-        };
-      } else {
-        filtered = withoutCategory;
-        fallback = {
-          requested: requestedCategory,
-          effective: "tum-urunler",
-          message: "Bu kategoride doğrudan ürün bulunamadı, tüm aktif ürünleri gösteriyoruz.",
-          reason: "show_all"
-        };
-      }
-    }
-  }
+  const filtered = categoryFiltered.items;
+  const fallback = categoryFiltered.fallback;
 
   const offset = requestedOffset >= filtered.length && filtered.length > 0 ? 0 : requestedOffset;
 
@@ -482,10 +474,14 @@ export function searchCatalogRecords(store: CatalogStore, filters: CatalogSearch
 }
 
 export function toPublicProduct(product: CatalogProductRecord): PublicCatalogProduct {
+  const classification = classifyCatalogProduct(product);
+  const publicCategoryPath = classification.categoryLabel === classification.groupLabel
+    ? [classification.groupLabel]
+    : [classification.groupLabel, classification.categoryLabel];
   const specs = stripEmptySpecs([
     ...(product.technicalSpecs ?? []),
     { label: "Birim", value: product.unitType },
-    { label: "Kategori", value: product.category },
+    { label: "Kategori", value: classification.categoryLabel },
     { label: "Marka", value: product.brand },
     { label: "Barkod", value: product.barcode ?? "" },
     { label: "Üretici kodu", value: product.manufacturerCode ?? "" }
@@ -498,8 +494,10 @@ export function toPublicProduct(product: CatalogProductRecord): PublicCatalogPro
     sku: product.sku,
     barcode: product.barcode,
     manufacturerCode: product.manufacturerCode,
-    category: product.category,
-    categoryPath: product.categoryPath,
+    category: classification.categoryLabel,
+    categoryPath: publicCategoryPath,
+    categoryGroupSlug: classification.groupSlug,
+    categorySlug: classification.categorySlug,
     description: product.description,
     image: product.imageUrl ?? FALLBACK_IMAGE,
     stockTone: product.stockStatus,
@@ -519,6 +517,7 @@ export function toPublicProduct(product: CatalogProductRecord): PublicCatalogPro
 }
 
 export function toAdminProduct(product: CatalogProductRecord): AdminCatalogProduct {
+  const classification = classifyCatalogProduct(product);
   return stripUndefined({
     ...toPublicProduct(product),
     id: product.id,
@@ -533,13 +532,16 @@ export function toAdminProduct(product: CatalogProductRecord): AdminCatalogProdu
     priceApprovalStatus: product.priceApprovalStatus,
     importedAt: product.importedAt,
     updatedAt: product.updatedAt,
+    sourceCategory: product.category,
+    sourceCategoryPath: product.categoryPath,
+    catalogClassification: classification,
     publishedAt: product.publishedAt,
     publishedBy: product.publishedBy
   }) as AdminCatalogProduct;
 }
 
 export function categoriesFromStore(store: CatalogStore): string[] {
-  return uniqueSorted(store.products.map((product) => product.category).filter(Boolean));
+  return uniqueSorted(store.products.map((product) => classifyCatalogProduct(product).categoryLabel).filter(Boolean));
 }
 
 export function brandsFromStore(store: CatalogStore): string[] {
@@ -598,6 +600,16 @@ export function resolveCatalogGroup(value: string): CatalogGroupDefinition | und
 export function productMatchesCatalogGroup(product: CatalogProductRecord, group: CatalogGroupDefinition, includeFallback = false): boolean {
   if (group.keywords.includes("*")) {
     return true;
+  }
+
+  const classification = classifyCatalogProduct(product);
+  const requestedSlug = canonicalizeCatalogGroupSlug(group.slug);
+  if (CATALOG_TREE.some((category) => category.slug === requestedSlug)) {
+    return classification.groupSlug === requestedSlug;
+  }
+
+  if (CATALOG_TREE.some((category) => category.columns.some((column) => column.items.some((item) => item.slug === requestedSlug)))) {
+    return classification.categorySlug === requestedSlug;
   }
 
   const keywords = includeFallback ? [...group.keywords, ...(group.fallbackKeywords ?? [])] : group.keywords;
@@ -662,7 +674,7 @@ function toCatalogRecord(imported: ImportedSupplierProduct, now: string, slug: s
   const hasPrice = toNumber(imported.listPrice) > 0;
   const category = imported.categoryName ?? imported.categoryPath.at(-1) ?? "Genel";
 
-  return stripUndefined({
+  const record = stripUndefined({
     id: existing?.id ?? `supplier:${slugify(imported.sourceKey)}:${slugify(imported.externalId || imported.sku)}`,
     sourceKey: imported.sourceKey,
     sourceName: imported.sourceName,
@@ -691,8 +703,8 @@ function toCatalogRecord(imported: ImportedSupplierProduct, now: string, slug: s
     warrantyMonths: imported.warrantyMonths,
     imageUrl: imported.imageUrl,
     sourceUrl: imported.sourceUrl,
-    status: existing?.status ?? "DRAFT",
-    isVisible: existing?.isVisible ?? false,
+    status: isCatalogIndexRecord(imported) ? "PASSIVE" : existing?.status ?? "DRAFT",
+    isVisible: isCatalogIndexRecord(imported) ? false : existing?.isVisible ?? false,
     priceApprovalStatus: hasPrice ? "APPROVED" : "NO_PRICE",
     priceDisplayMode: hasPrice ? "HIDDEN_UNTIL_DEALER" : "CONTACT_REP",
     importedAt: now,
@@ -701,6 +713,22 @@ function toCatalogRecord(imported: ImportedSupplierProduct, now: string, slug: s
     publishedAt: existing?.publishedAt,
     publishedBy: existing?.publishedBy
   }) as CatalogProductRecord;
+
+  return withCatalogClassification(record, true);
+}
+
+function withCatalogClassification(product: CatalogProductRecord, force = false): CatalogProductRecord {
+  const { catalogClassification: _existingClassification, ...unclassifiedProduct } = product;
+  const input = force ? unclassifiedProduct : product;
+  return {
+    ...product,
+    ...(isCatalogIndexRecord(product) ? { status: "PASSIVE" as const, isVisible: false } : {}),
+    catalogClassification: classifyCatalogProduct(input)
+  };
+}
+
+export function summarizeCatalogProducts(products: CatalogProductRecord[]): CatalogSummary {
+  return createSummary(products);
 }
 
 function createSummary(products: CatalogProductRecord[]): CatalogSummary {
@@ -779,25 +807,7 @@ function applyCategoryFilters(
       return { items: products };
     }
 
-    const directMatches = products.filter((product) => productMatchesCatalogGroup(product, categoryGroup));
-    const fallbackMatches = products.filter((product) => productMatchesCatalogGroup(product, categoryGroup, true));
-    if (directMatches.length > 0) {
-      return { items: fallbackMatches };
-    }
-
-    if (fallbackMatches.length === 0) {
-      return { items: fallbackMatches };
-    }
-
-    return {
-      items: fallbackMatches,
-      fallback: {
-        requested: categoryGroup.label,
-        effective: categoryGroup.slug,
-        message: "Bu kategoride doğrudan ürün bulunamadı, ilgili ürünleri gösteriyoruz.",
-        reason: "category_alias"
-      }
-    };
+    return { items: products.filter((product) => productMatchesCatalogGroup(product, categoryGroup)) };
   }
 
   if (!category) {
@@ -814,7 +824,7 @@ function applyCategoryFilters(
     return { items: [] };
   }
 
-  const aliasMatches = products.filter((product) => productMatchesCatalogGroup(product, aliasGroup, true));
+  const aliasMatches = products.filter((product) => productMatchesCatalogGroup(product, aliasGroup));
   if (aliasMatches.length === 0) {
     return { items: aliasMatches };
   }
@@ -831,16 +841,21 @@ function applyCategoryFilters(
 }
 
 function productMatchesCategory(product: CatalogProductRecord, category: string): boolean {
-  const normalizedCategories = [product.category, ...product.categoryPath].map(normalizeSearch);
-  return normalizedCategories.some((entry) => entry === category || entry.includes(category) || category.includes(entry));
+  const classification = classifyCatalogProduct(product);
+  const normalizedCategories = [
+    classification.groupSlug,
+    classification.groupLabel,
+    classification.categorySlug,
+    classification.categoryLabel,
+    product.category,
+    ...product.categoryPath
+  ].map(normalizeSearch);
+  return normalizedCategories.some((entry) => entry === category);
 }
 
 function productMatchesKeywords(product: CatalogProductRecord, keywords: string[]): boolean {
-  const haystack = [product.category, ...product.categoryPath, product.name, product.brand, product.sku, product.manufacturerCode ?? ""]
-    .map(normalizeSearch)
-    .join(" ");
-
-  return keywords.map(normalizeSearch).filter(Boolean).some((keyword) => haystack.includes(keyword));
+  const fields = [product.category, ...product.categoryPath, product.name, product.brand, product.sku, product.manufacturerCode ?? ""];
+  return keywords.filter(Boolean).some((keyword) => fields.some((field) => catalogTextMatchesPhrase(field, keyword)));
 }
 
 function toNumber(value: string): number {

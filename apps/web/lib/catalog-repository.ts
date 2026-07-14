@@ -3,11 +3,11 @@ import { existsSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import {
-  CATALOG_GROUPS,
   CATALOG_TREE,
   brandsFromStore,
   categoriesFromStore,
   catalogGroupCount,
+  classifyCatalogProduct,
   createEmptyCatalogStore,
   createImportAudit,
   mergeImportedProducts,
@@ -22,6 +22,7 @@ import {
   type CatalogSearchFilters,
   type CatalogSearchResult,
   type CatalogStore,
+  type CatalogGroupDefinition,
   type ImportedSupplierProduct,
   type PublicCatalogProduct
 } from "@entas/catalog";
@@ -78,6 +79,20 @@ export interface PricedPublicCatalogProduct extends PublicCatalogProduct {
 
 const rootDir = findWorkspaceRoot(process.cwd());
 const dataDir = path.join(rootDir, "data");
+const catalogNavigationGroups: CatalogGroupDefinition[] = [
+  {
+    slug: "tum-urunler",
+    label: "Tüm Ürünler",
+    aliases: [],
+    keywords: ["*"]
+  },
+  ...CATALOG_TREE.map((category) => ({
+    slug: category.slug,
+    label: category.label,
+    aliases: [],
+    keywords: category.keywords
+  }))
+];
 const importProductsPath = path.join(dataDir, "import-results", "supplier-products.json");
 const importReportPath = path.join(dataDir, "import-results", "import-report.json");
 const catalogStorePath = path.join(dataDir, "catalog-store.json");
@@ -222,7 +237,7 @@ export async function getCatalogFacets(publicOnly = true): Promise<CatalogFacets
 
 export async function getCatalogNavigation(): Promise<CatalogNavigationItem[]> {
   const store = await loadCatalogStore();
-  return CATALOG_GROUPS.map((group) => ({
+  return catalogNavigationGroups.map((group) => ({
     label: group.label,
     slug: group.slug,
     href: group.slug === "tum-urunler" ? "/catalog" : `/catalog?group=${encodeURIComponent(group.slug)}`,
@@ -272,16 +287,24 @@ export async function getCatalogTree(): Promise<CatalogTreeNavCategory[]> {
 export async function getCategoryMappingMetrics() {
   const store = await loadCatalogStore();
   const navigation = await getCatalogNavigation();
-  const sourceCategories = categoriesFromStore(store).map((category) => ({
-    category,
-    count: store.products.filter((product) => product.category === category && product.status === "ACTIVE" && product.isVisible).length
-  }));
+  const categoryCounts = new Map<string, number>();
+  for (const product of store.products) {
+    if (product.status !== "ACTIVE" || !product.isVisible) {
+      continue;
+    }
+
+    const category = classifyCatalogProduct(product).categoryLabel;
+    categoryCounts.set(category, (categoryCounts.get(category) ?? 0) + 1);
+  }
+  const sourceCategories = [...categoryCounts.entries()]
+    .map(([category, count]) => ({ category, count }))
+    .sort((a, b) => a.category.localeCompare(b.category, "tr"));
 
   return {
     navigation,
     sourceCategories,
     uncategorizedCount: uncategorizedProductCount(store),
-    emptyNavigationCount: CATALOG_GROUPS.filter((group) => group.slug !== "tum-urunler" && catalogGroupCount(store, group, true) === 0).length
+    emptyNavigationCount: catalogNavigationGroups.filter((group) => group.slug !== "tum-urunler" && catalogGroupCount(store, group, true) === 0).length
   };
 }
 

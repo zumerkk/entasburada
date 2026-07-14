@@ -1,4 +1,5 @@
 import { getBrandSettings } from "../lib/brand-settings";
+import { COMPANY_CONTACT } from "../lib/company-contact";
 
 export async function Footer() {
   const brandSettings = await getBrandSettings();
@@ -20,6 +21,11 @@ export async function Footer() {
             Bayiler, yapı marketler, sanayi işletmeleri ve kurumsal satın alma ekipleri için güvenli katalog,
             teklif ve tedarik altyapısı.
           </p>
+          <div className="footerContact">
+            <a href={COMPANY_CONTACT.technicalSupportPhoneHref}>Teknik destek: {COMPANY_CONTACT.technicalSupportPhone}</a>
+            <a href={COMPANY_CONTACT.supportEmailHref}>{COMPANY_CONTACT.supportEmail}</a>
+            <address>{COMPANY_CONTACT.address}</address>
+          </div>
         </div>
         <div>
           <strong>Katalog</strong>

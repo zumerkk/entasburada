@@ -1,4 +1,5 @@
 import { InformationPage } from "../../components/InformationPage";
+import { COMPANY_CONTACT } from "../../lib/company-contact";
 
 export default function ContactPage() {
   return (
@@ -7,14 +8,14 @@ export default function ContactPage() {
       title="Satış ve teknik destek ekibine ulaşın"
       description="Ürün alternatifi, toplu alım, teklif, bayi hesabı ve sipariş operasyonları için ilgili ekibe doğrudan ulaşabilirsiniz."
       actions={[
-        { label: "0212 000 00 00", href: "tel:+902120000000", primary: true },
-        { label: "E-posta gönder", href: "mailto:destek@entasburada.com" }
+        { label: COMPANY_CONTACT.technicalSupportPhone, href: COMPANY_CONTACT.technicalSupportPhoneHref, primary: true },
+        { label: "E-posta gönder", href: COMPANY_CONTACT.supportEmailHref }
       ]}
       sections={[
         {
           title: "Satış ve teklif",
           description: "Proje listeleri, toplu satın alma ve müşteriye özel fiyat talepleri için teklif akışını kullanın.",
-          bullets: ["destek@entasburada.com", "Pazartesi-Cuma 09.00-18.00", "Teklif taleplerinde ürün kodu ve adet bilgisi"]
+          bullets: [COMPANY_CONTACT.supportEmail, "Pazartesi-Cuma 09.00-18.00", "Teklif taleplerinde ürün kodu ve adet bilgisi"]
         },
         {
           title: "Bayi operasyonu",
@@ -27,10 +28,14 @@ export default function ContactPage() {
         },
         {
           title: "Teknik ürün desteği",
-          description: "Uyumluluk, ölçü, alternatif ürün ve teknik doküman taleplerinde ürün SKU veya barkodunu belirtin."
+          description: "Uyumluluk, ölçü, alternatif ürün ve teknik doküman taleplerinde ürün SKU veya barkodunu belirtin.",
+          bullets: [COMPANY_CONTACT.technicalSupportPhone]
+        },
+        {
+          title: "Merkez adresi",
+          description: COMPANY_CONTACT.address
         }
       ]}
-      notice="Canlıya geçmeden önce telefon, e-posta ve çalışma saatleri işletmenin kesin iletişim bilgileriyle doğrulanmalıdır."
     />
   );
 }

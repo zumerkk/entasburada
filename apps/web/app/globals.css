@@ -1449,6 +1449,17 @@ button {
   line-height: 1.6;
 }
 
+.footerContact {
+  margin-top: 18px;
+}
+
+.footerContact address {
+  max-width: 430px;
+  margin-top: 8px;
+  font-style: normal;
+  line-height: 1.6;
+}
+
 .siteFooter strong,
 .siteFooter a {
   display: block;

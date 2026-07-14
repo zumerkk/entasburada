@@ -105,7 +105,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
           </form>
           <div className="filterGroup">
             <strong>Hızlı katalog</strong>
-            {navigation.slice(0, 12).map((item) => (
+            {navigation.map((item) => (
               <a href={item.href} key={item.slug}>
                 {item.label} · {item.count.toLocaleString("tr-TR")}
               </a>

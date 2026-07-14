@@ -242,11 +242,17 @@ export const CATALOG_TREE: CatalogTreeCategory[] = [
         ]
       },
       {
-        heading: "Bahçe Makineleri",
+        heading: "Bahçe Makineleri & El Aletleri",
         items: [
           { slug: "cim-bicme", label: "Çim Biçme Makineleri", keywords: ["cim bicme", "çim biçme"] },
           { slug: "misina", label: "Misinalar", keywords: ["misina"] },
-          { slug: "fidan-ekme", label: "Fidan Ekme & Bahçe Aletleri", keywords: ["fidan ekme", "koyun kirkma", "koyun kırkma", "kurek grubu", "kürek grubu"] }
+          { slug: "fidan-ekme", label: "Fidan Ekme & Bahçe Aletleri", keywords: ["fidan ekme", "koyun kirkma", "koyun kırkma"] },
+          {
+            slug: "bahce-el-aletleri",
+            label: "Çapa, Kürek & Tarım El Aletleri",
+            keywords: ["capa", "çapa", "kurek", "kürek", "faryap", "gelberi", "tirmik", "tırmık", "balta", "nacak", "orak", "tahra", "satir", "satır"]
+          },
+          { slug: "budama-kesim", label: "Budama & Bahçe Kesim", keywords: ["budama", "bahce makasi", "bahçe makası"] }
         ]
       }
     ]
@@ -336,6 +342,119 @@ export const CATALOG_TREE: CatalogTreeCategory[] = [
           { slug: "polisaj", label: "Polisaj Makineleri", keywords: ["polisaj"] },
           { slug: "kompresor", label: "Kompresörler", keywords: ["kompresor", "kompresör"] },
           { slug: "planya-diger", label: "Planya & Diğer", keywords: ["planya", "kanal acma", "kanal açma", "zimpara makine", "zımpara makine", "hava ufleme", "hava üfleme"] }
+        ]
+      }
+    ]
+  },
+  {
+    slug: "hirdavat-baglanti",
+    label: "Genel Hırdavat & Bağlantı",
+    icon: "hammer",
+    keywords: ["vida", "civata", "somun", "dubel", "dübel", "karabina", "zincir", "halat", "kilit", "mentese", "menteşe"],
+    columns: [
+      {
+        heading: "Bağlantı Elemanları",
+        items: [
+          { slug: "vida-civata", label: "Vida, Civata & Somun", keywords: ["vida", "civata", "somun", "pul"] },
+          { slug: "dubel-ankraj", label: "Dübel & Ankraj", keywords: ["dubel", "dübel", "ankraj"] },
+          { slug: "kelepce-bag", label: "Kelepçe & Kablo Bağı", keywords: ["cirtli kelepce", "cırtlı kelepçe", "kablo bagi", "kablo bağı"] }
+        ]
+      },
+      {
+        heading: "Genel Hırdavat",
+        items: [
+          { slug: "kilit-mentese", label: "Kilit & Menteşe", keywords: ["kilit", "mentese", "menteşe"] },
+          { slug: "zincir-halat", label: "Zincir, Halat & Karabina", keywords: ["zincir", "halat", "karabina"] },
+          { slug: "bant-ambalaj", label: "Bant & Ambalaj", keywords: ["koli bandi", "koli bandı", "maskeleme bandi", "maskeleme bandı"] }
+        ]
+      }
+    ]
+  },
+  {
+    slug: "kaynak-lehim",
+    label: "Kaynak & Lehim",
+    icon: "wrench",
+    keywords: ["kaynak", "elektrod", "lehim", "havya", "salumo", "şalümo", "pirmuz", "pürmüz"],
+    columns: [
+      {
+        heading: "Kaynak",
+        items: [
+          { slug: "kaynak-makineleri", label: "Kaynak Makineleri", keywords: ["kaynak makinesi"] },
+          { slug: "kaynak-sarf", label: "Elektrod & Kaynak Sarfı", keywords: ["elektrod", "kaynak teli"] }
+        ]
+      },
+      {
+        heading: "Lehim & Isıtma",
+        items: [
+          { slug: "havya-lehim", label: "Havya & Lehim", keywords: ["havya", "lehim"] },
+          { slug: "salumo-pirmuz", label: "Şalümo & Pürmüz", keywords: ["salumo", "şalümo", "pirmuz", "pürmüz"] }
+        ]
+      }
+    ]
+  },
+  {
+    slug: "oto-servis",
+    label: "Oto Servis & Garaj",
+    icon: "gauge",
+    keywords: ["kriko", "aku takviye", "akü takviye", "aku sarj", "akü şarj", "bijon", "lastik sisirme", "lastik şişirme"],
+    columns: [
+      {
+        heading: "Kaldırma",
+        items: [
+          { slug: "oto-kriko", label: "Kriko & Standlar", keywords: ["kriko"] },
+          { slug: "bijon-lastik", label: "Bijon & Lastik Ekipmanları", keywords: ["bijon", "lastik sisirme", "lastik şişirme"] }
+        ]
+      },
+      {
+        heading: "Akü & Bakım",
+        items: [
+          { slug: "aku-ekipman", label: "Akü Şarj & Takviye", keywords: ["aku takviye", "akü takviye", "aku sarj", "akü şarj"] },
+          { slug: "oto-bakim", label: "Oto Bakım Ekipmanları", keywords: ["gres pompasi", "gres pompası", "oto servis"] }
+        ]
+      }
+    ]
+  },
+  {
+    slug: "elektrik-aydinlatma",
+    label: "Elektrik & Aydınlatma",
+    icon: "cable",
+    keywords: ["elektrik", "kablo", "priz", "ampul", "led", "projektor", "projektör", "multimetre"],
+    columns: [
+      {
+        heading: "Elektrik Malzemeleri",
+        items: [
+          { slug: "kablo-uzatma", label: "Kablo & Uzatma", keywords: ["kablo", "uzatma kablosu", "kablo makarasi", "kablo makarası"] },
+          { slug: "priz-fis", label: "Priz & Fiş", keywords: ["priz", "fis", "fiş"] },
+          { slug: "elektrik-bandi", label: "Elektrik Bandı & Bağlantı", keywords: ["elektrik bandi", "elektrik bandı", "kablo pabucu"] }
+        ]
+      },
+      {
+        heading: "Aydınlatma & Ölçüm",
+        items: [
+          { slug: "aydinlatma", label: "LED & Aydınlatma", keywords: ["ampul", "led lamba", "projektor", "projektör", "seyyar lamba"] },
+          { slug: "elektrik-olcum", label: "Elektrik Ölçüm", keywords: ["multimetre", "voltmetre", "ampermetre"] }
+        ]
+      }
+    ]
+  },
+  {
+    slug: "temizlik-ekipmanlari",
+    label: "Temizlik Ekipmanları",
+    icon: "droplets",
+    keywords: ["basincli yikama", "basınçlı yıkama", "temizlik", "supurge", "süpürge", "paspas", "mop", "cop kovasi", "çöp kovası"],
+    columns: [
+      {
+        heading: "Temizlik Makineleri",
+        items: [
+          { slug: "basincli-yikama", label: "Basınçlı Yıkama Makineleri", keywords: ["basincli yikama", "basınçlı yıkama"] },
+          { slug: "supurge-makine", label: "Süpürge & Temizlik Makineleri", keywords: ["supurge", "süpürge", "temizlik makinesi"] }
+        ]
+      },
+      {
+        heading: "Temizlik Gereçleri",
+        items: [
+          { slug: "firca-paspas", label: "Fırça, Paspas & Mop", keywords: ["temizlik fircasi", "temizlik fırçası", "klozet fircasi", "klozet fırçası", "paspas", "mop"] },
+          { slug: "cop-kova", label: "Çöp Kovası & Torbası", keywords: ["cop kovasi", "çöp kovası", "cop torbasi", "çöp torbası"] }
         ]
       }
     ]
