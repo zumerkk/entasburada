@@ -13,6 +13,7 @@ import {
   type OrderStatus,
   type QuoteStatus
 } from "../../lib/commercial-repository";
+import { updateDealerApplicationStatus, type DealerApplicationStatus } from "../../lib/dealer-application-repository";
 
 export async function syncImportAction(): Promise<void> {
   await requireAdmin();
@@ -95,6 +96,26 @@ export async function updateOrderOperationAction(formData: FormData): Promise<vo
   );
 
   revalidateCommercialPaths(order.trackingCode);
+}
+
+export async function updateDealerApplicationStatusAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+  const applicationId = getString(formData, "applicationId");
+  const status = toDealerStatus(getString(formData, "status"));
+  const note = getString(formData, "reviewNote");
+  await updateDealerApplicationStatus(applicationId, status, getAdminEmail(), note);
+  revalidatePath("/admin/dealers");
+  revalidatePath("/admin");
+  revalidatePath("/admin/notifications");
+}
+
+function toDealerStatus(value: string): DealerApplicationStatus {
+  const statuses: DealerApplicationStatus[] = ["pending", "reviewing", "approved", "rejected"];
+  if (statuses.includes(value as DealerApplicationStatus)) {
+    return value as DealerApplicationStatus;
+  }
+
+  throw new Error("Gecersiz basvuru durumu.");
 }
 
 function revalidateCatalogPaths(): void {

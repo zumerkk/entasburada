@@ -1,8 +1,9 @@
-import { AlertTriangle, FileSpreadsheet, LockKeyhole, PackageSearch, ShieldCheck, Tags, Truck, UsersRound } from "lucide-react";
+import { AlertTriangle, FileSpreadsheet, LockKeyhole, PackageSearch, ShieldCheck, Tags, Truck } from "lucide-react";
 import { MetricCard, StatusPill } from "@entas/ui";
 import { requireAdmin } from "../../lib/admin-auth";
 import { getCatalogOverview } from "../../lib/catalog-repository";
 import { loadCommercialStats } from "../../lib/commercial-repository";
+import { countDealerApplicationsByStatus } from "../../lib/dealer-application-repository";
 import { AdminFrame } from "./AdminFrame";
 import { AdminHashRedirect } from "./AdminHashRedirect";
 
@@ -10,7 +11,11 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {
   await requireAdmin();
-  const [{ store, importReport, auditLogs }, commercialStats] = await Promise.all([getCatalogOverview(), loadCommercialStats()]);
+  const [{ store, importReport, auditLogs }, commercialStats, dealerCounts] = await Promise.all([
+    getCatalogOverview(),
+    loadCommercialStats(),
+    countDealerApplicationsByStatus()
+  ]);
   const summary = store.importSummary;
 
   return (
@@ -112,17 +117,19 @@ export default async function AdminDashboardPage() {
 
         <div className="panel" id="dealers">
           <div className="panelHeader compact">
-            <h2>Bayi modülü</h2>
-            <UsersRound size={20} aria-hidden="true" />
+            <h2>Bayi başvuruları</h2>
+            <a className="textLink" href="/admin/dealers">
+              Başvuru ekranı
+            </a>
           </div>
           <div className="behaviorList">
             <div>
-              <strong>Giriş</strong>
-              <span>Bayi girişi public tarafta ayrı akış olarak tutulur.</span>
+              <strong>{dealerCounts.pending.toLocaleString("tr-TR")} yeni başvuru</strong>
+              <span>İnceleme bekliyor. Toplam {dealerCounts.total.toLocaleString("tr-TR")} başvuru kayıtlı.</span>
             </div>
             <div>
-              <strong>Başvuru</strong>
-              <span>Bayi başvuru formu müşteri sitesinde hazırdır.</span>
+              <strong>{dealerCounts.approved.toLocaleString("tr-TR")} onaylı · {dealerCounts.rejected.toLocaleString("tr-TR")} reddedildi</strong>
+              <span>{dealerCounts.reviewing.toLocaleString("tr-TR")} başvuru incelemede.</span>
             </div>
           </div>
         </div>

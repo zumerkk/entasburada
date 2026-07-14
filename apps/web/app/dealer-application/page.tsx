@@ -1,6 +1,58 @@
-import { Building2, CheckCircle2, FileUp, ShieldCheck } from "lucide-react";
+import { Building2, CheckCircle2, FileText, ShieldCheck } from "lucide-react";
+import { submitDealerApplicationAction } from "./actions";
 
-export default function DealerApplicationPage() {
+type SearchParams = Record<string, string | string[] | undefined>;
+
+function getParam(params: SearchParams, key: string): string {
+  const value = params[key];
+  return Array.isArray(value) ? (value[0] ?? "") : (value ?? "");
+}
+
+export const dynamic = "force-dynamic";
+
+export default async function DealerApplicationPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const params = await searchParams;
+  const submittedReference = getParam(params, "submitted");
+  const errorMessage = getParam(params, "error");
+
+  if (submittedReference) {
+    return (
+      <main>
+        <section className="shell pageIntro">
+          <div>
+            <span className="eyebrow dark">Başvuru alındı</span>
+            <h1>Bayi başvurunuz bize ulaştı</h1>
+            <p>
+              Başvuru numaranız <strong>{submittedReference}</strong>. Ekibimiz firma bilgilerinizi inceledikten sonra
+              bayi kodu, fiyat grubu, iskonto grubu, vade ve satış temsilcisi ataması yaparak sizinle iletişime geçer.
+            </p>
+          </div>
+          <div className="introChecklist">
+            <span>
+              <CheckCircle2 size={18} aria-hidden="true" />
+              Başvuru kaydınız oluşturuldu
+            </span>
+            <span>
+              <ShieldCheck size={18} aria-hidden="true" />
+              İnceleme sonrası bilgilendirileceksiniz
+            </span>
+          </div>
+        </section>
+        <section className="shell formLayout">
+          <div className="formActions">
+            <a className="btn btnPrimary" href="/catalog">
+              <Building2 size={18} aria-hidden="true" />
+              Kataloğu İncele
+            </a>
+            <a className="btn btnGhost dark" href="/">
+              Ana sayfaya dön
+            </a>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main>
       <section className="shell pageIntro">
@@ -22,14 +74,19 @@ export default function DealerApplicationPage() {
             KVKK ve ticari ileti izinleri
           </span>
           <span>
-            <FileUp size={18} aria-hidden="true" />
-            Belge yükleme alanı hazır
+            <FileText size={18} aria-hidden="true" />
+            Belgeler ön onaydan sonra istenir
           </span>
         </div>
       </section>
 
       <section className="shell formLayout">
-        <form className="applicationForm">
+        {errorMessage ? (
+          <p className="formError" role="alert">
+            Lütfen zorunlu alanları tamamlayın: {errorMessage}
+          </p>
+        ) : null}
+        <form className="applicationForm" action={submitDealerApplicationAction}>
           <fieldset>
             <legend>Firma bilgileri</legend>
             <label>
@@ -108,7 +165,7 @@ export default function DealerApplicationPage() {
             <label>
               Yıllık tahmini satın alma hacmi
               <select name="annualPurchaseVolume">
-                <option>Seçiniz</option>
+                <option value="">Seçiniz</option>
                 <option>0-500.000 TL</option>
                 <option>500.000-2.000.000 TL</option>
                 <option>2.000.000 TL+</option>
@@ -130,19 +187,11 @@ export default function DealerApplicationPage() {
           </fieldset>
 
           <fieldset>
-            <legend>Belgeler ve onaylar</legend>
-            <label>
-              Vergi levhası
-              <input name="taxDocument" type="file" />
-            </label>
-            <label>
-              İmza sirküsü
-              <input name="signatureCircular" type="file" />
-            </label>
-            <label>
-              Ticaret odası belgesi
-              <input name="commerceDocument" type="file" />
-            </label>
+            <legend>Onaylar</legend>
+            <p className="fieldNote spanTwo">
+              Vergi levhası, imza sirküleri ve ticaret odası belgeleri, başvurunuz ön onaydan geçtikten sonra
+              satış temsilciniz tarafından e-posta veya WhatsApp üzerinden talep edilir.
+            </p>
             <label className="checkLabel">
               <input name="kvkkAccepted" type="checkbox" required />
               KVKK aydınlatma metnini okudum ve kabul ediyorum.

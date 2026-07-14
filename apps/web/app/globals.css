@@ -3454,3 +3454,132 @@ a.metricCard {
     min-height: 40px;
   }
 }
+
+/* Bayi başvuru formu notu ve buton */
+.fieldNote {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted, #5c6b66);
+  line-height: 1.5;
+}
+
+.btnDanger {
+  color: var(--white);
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+.btnDanger:hover {
+  background: #b91c1c;
+}
+
+/* Admin bayi başvuru listesi */
+.dealerApplicationList {
+  display: grid;
+  gap: 16px;
+}
+
+.dealerApplicationCard {
+  border: 1px solid var(--line, #e3e8e6);
+  border-radius: 12px;
+  padding: 18px;
+  background: var(--white, #fff);
+  display: grid;
+  gap: 14px;
+}
+
+.dealerApplicationCard.highlight {
+  border-color: var(--orange-600, #ea580c);
+  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.14);
+}
+
+.dealerApplicationHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dealerApplicationHead h3 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.dealerApplicationHead small {
+  color: var(--muted, #5c6b66);
+}
+
+.dealerApplicationGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 18px;
+}
+
+.dealerApplicationGrid span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  color: var(--green-900, #14342b);
+}
+
+.dealerApplicationDetail {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 18px;
+  padding: 12px 0;
+  border-top: 1px solid var(--line, #eef2f0);
+}
+
+.dealerApplicationDetail strong {
+  display: block;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted, #5c6b66);
+  margin-bottom: 4px;
+}
+
+.dealerApplicationDetail p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.dealerApplicationNote {
+  margin: 0;
+  padding: 10px 12px;
+  background: #fff7ed;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.dealerApplicationActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  border-top: 1px solid var(--line, #eef2f0);
+  padding-top: 14px;
+}
+
+.dealerApplicationActions input {
+  flex: 1 1 220px;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--line, #d7dedb);
+  border-radius: 8px;
+}
+
+.dealerApplicationButtons {
+  display: flex;
+  gap: 8px;
+}
+
+@media (max-width: 720px) {
+  .dealerApplicationGrid,
+  .dealerApplicationDetail {
+    grid-template-columns: 1fr;
+  }
+}
