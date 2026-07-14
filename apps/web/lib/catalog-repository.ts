@@ -4,6 +4,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import {
   CATALOG_GROUPS,
+  CATALOG_TREE,
   brandsFromStore,
   categoriesFromStore,
   catalogGroupCount,
@@ -227,6 +228,45 @@ export async function getCatalogNavigation(): Promise<CatalogNavigationItem[]> {
     href: group.slug === "tum-urunler" ? "/catalog" : `/catalog?group=${encodeURIComponent(group.slug)}`,
     count: catalogGroupCount(store, group, true)
   })).filter((item) => item.slug === "tum-urunler" || item.count > 0);
+}
+
+export interface CatalogTreeNavLeaf {
+  slug: string;
+  label: string;
+  href: string;
+}
+
+export interface CatalogTreeNavColumn {
+  heading: string;
+  items: CatalogTreeNavLeaf[];
+}
+
+export interface CatalogTreeNavCategory {
+  slug: string;
+  label: string;
+  icon: string;
+  count: number;
+  href: string;
+  columns: CatalogTreeNavColumn[];
+}
+
+export async function getCatalogTree(): Promise<CatalogTreeNavCategory[]> {
+  const store = await loadCatalogStore();
+  return CATALOG_TREE.map((category) => ({
+    slug: category.slug,
+    label: category.label,
+    icon: category.icon,
+    count: catalogGroupCount(store, { slug: category.slug, label: category.label, aliases: [], keywords: category.keywords }, true),
+    href: `/catalog?group=${encodeURIComponent(category.slug)}`,
+    columns: category.columns.map((column) => ({
+      heading: column.heading,
+      items: column.items.map((item) => ({
+        slug: item.slug,
+        label: item.label,
+        href: `/catalog?group=${encodeURIComponent(item.slug)}`
+      }))
+    }))
+  })).filter((category) => category.count > 0);
 }
 
 export async function getCategoryMappingMetrics() {

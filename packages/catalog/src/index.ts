@@ -1,3 +1,13 @@
+import { CATALOG_TREE, flattenCatalogTree } from "./catalog-tree";
+
+export {
+  CATALOG_TREE,
+  flattenCatalogTree,
+  type CatalogTreeCategory,
+  type CatalogTreeColumn,
+  type CatalogTreeLeaf
+} from "./catalog-tree";
+
 export type ProductStatus = "DRAFT" | "ACTIVE" | "PASSIVE";
 export type PriceApprovalStatus = "APPROVED" | "NO_PRICE" | "NEEDS_REVIEW";
 export type PriceDisplayMode = "HIDDEN_UNTIL_DEALER" | "CONTACT_REP";
@@ -551,13 +561,28 @@ export function sourcesFromStore(store: CatalogStore): Array<{ key: string; name
   return Array.from(byKey.values()).sort((a, b) => a.name.localeCompare(b.name, "tr"));
 }
 
+let treeGroupCache: CatalogGroupDefinition[] | undefined;
+
+export function catalogTreeGroups(): CatalogGroupDefinition[] {
+  if (!treeGroupCache) {
+    treeGroupCache = flattenCatalogTree().map((leaf) => ({
+      slug: leaf.slug,
+      label: leaf.label,
+      aliases: [],
+      keywords: leaf.keywords
+    }));
+  }
+  return treeGroupCache;
+}
+
 export function resolveCatalogGroup(value: string): CatalogGroupDefinition | undefined {
   const normalized = normalizeSearch(value);
   if (!normalized) {
     return undefined;
   }
 
-  const groupCandidates = CATALOG_GROUPS.map((group) => ({
+  // Ağaç düğümleri önce gelir: çakışan slug'larda (ör. musluk-batarya) ağaç kazanır.
+  const groupCandidates = [...catalogTreeGroups(), ...CATALOG_GROUPS].map((group) => ({
     group,
     candidates: [group.slug, group.label, ...group.aliases].map(normalizeSearch)
   }));

@@ -1,13 +1,13 @@
 import { Building2, FileText, Menu, PhoneCall, Search, ShieldCheck, ShoppingCart, UserRound } from "lucide-react";
 import { loadCustomerCart } from "../lib/cart-repository";
 import { getBrandSettings } from "../lib/brand-settings";
-import { getCatalogNavigation } from "../lib/catalog-repository";
+import { getCatalogTree } from "../lib/catalog-repository";
 import { getCurrentCustomer } from "../lib/customer-auth";
+import { MegaMenu } from "./MegaMenu";
 
 export async function Header() {
-  const [catalogNavigation, customer, brandSettings] = await Promise.all([getCatalogNavigation(), getCurrentCustomer(), getBrandSettings()]);
+  const [catalogTree, customer, brandSettings] = await Promise.all([getCatalogTree(), getCurrentCustomer(), getBrandSettings()]);
   const cart = customer ? await loadCustomerCart(customer) : null;
-  const megaItems = catalogNavigation.slice(0, 10);
 
   return (
     <header className="siteHeader">
@@ -69,16 +69,7 @@ export async function Header() {
           </div>
         </div>
       </div>
-      <nav className="megaNav" aria-label="Ana kategoriler">
-        <div className="shell megaNavInner">
-          {megaItems.map((category) => (
-            <a href={category.href} key={category.slug}>
-              {category.label}
-              <small>{category.count.toLocaleString("tr-TR")}</small>
-            </a>
-          ))}
-        </div>
-      </nav>
+      <MegaMenu tree={catalogTree} />
       <div className="mobileHeader">
         <a className="brand compact" href="/">
           <span className="brandLogoFrame">

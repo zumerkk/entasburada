@@ -3583,3 +3583,251 @@ a.metricCard {
     grid-template-columns: 1fr;
   }
 }
+
+/* ===== Koçtaş tarzı mega-menü ===== */
+.megaMenu {
+  position: relative;
+  background: var(--green-900);
+  z-index: 40;
+}
+
+.megaMenuInner {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  min-height: 48px;
+}
+
+.megaMenuTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 18px;
+  color: var(--white);
+  background: var(--orange-600);
+  border: none;
+  font-size: 14px;
+  font-weight: 850;
+  white-space: nowrap;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.megaMenuTrigger:hover,
+.megaMenuTrigger.open {
+  background: var(--orange-700, #ea580c);
+}
+
+.megaMenuQuick {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.32) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+
+.megaMenuQuick a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 12px;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 13px;
+  font-weight: 750;
+  white-space: nowrap;
+  border-radius: 6px;
+}
+
+.megaMenuQuick a:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.megaMenuQuick small {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 11px;
+}
+
+.megaMenuPanel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--white);
+  border-top: 3px solid var(--orange-600);
+  box-shadow: 0 24px 48px -16px rgba(13, 63, 53, 0.35);
+  animation: megaMenuIn 0.14s ease-out;
+}
+
+@keyframes megaMenuIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.megaMenuPanelInner {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  min-height: 420px;
+  max-height: 78vh;
+  padding: 0;
+}
+
+.megaMenuRail {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 0;
+  border-right: 1px solid var(--line);
+  overflow-y: auto;
+  background: #fafcfb;
+}
+
+.megaMenuRail button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 20px;
+  border: none;
+  background: transparent;
+  color: var(--green-900);
+  font-size: 14.5px;
+  font-weight: 750;
+  text-align: left;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+}
+
+.megaMenuRail button span {
+  flex: 1;
+}
+
+.megaMenuRail button small {
+  color: var(--muted, #6b7c76);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.megaMenuChevron {
+  opacity: 0;
+  color: var(--orange-600);
+}
+
+.megaMenuRail button.active,
+.megaMenuRail button:hover {
+  background: var(--white);
+  border-left-color: var(--orange-600);
+  color: var(--orange-600);
+}
+
+.megaMenuRail button.active .megaMenuChevron,
+.megaMenuRail button:hover .megaMenuChevron {
+  opacity: 1;
+}
+
+.megaMenuColumns {
+  padding: 22px 28px;
+  overflow-y: auto;
+}
+
+.megaMenuAllLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 18px;
+  padding: 8px 14px;
+  background: var(--teal-50);
+  border-radius: 999px;
+  color: var(--green-900);
+  font-size: 13.5px;
+  font-weight: 800;
+}
+
+.megaMenuAllLink:hover {
+  color: var(--orange-600);
+}
+
+.megaMenuColumnGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 22px 28px;
+}
+
+.megaMenuColHead {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--orange-600);
+  font-size: 13px;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.megaMenuColumn ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 7px;
+}
+
+.megaMenuColumn a {
+  color: var(--green-900);
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.megaMenuColumn a:hover {
+  color: var(--orange-600);
+  text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+  .megaMenuPanelInner {
+    grid-template-columns: 1fr;
+    min-height: 0;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  .megaMenuRail {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+    padding: 8px;
+    gap: 6px;
+  }
+  .megaMenuRail button {
+    flex-direction: column;
+    gap: 5px;
+    min-width: 96px;
+    padding: 10px 8px;
+    font-size: 12px;
+    text-align: center;
+    border-left: none;
+    border-bottom: 3px solid transparent;
+    border-radius: 8px;
+  }
+  .megaMenuRail button span {
+    flex: none;
+  }
+  .megaMenuRail button small,
+  .megaMenuChevron {
+    display: none;
+  }
+  .megaMenuRail button.active {
+    border-left-color: transparent;
+    border-bottom-color: var(--orange-600);
+    background: var(--teal-50);
+  }
+  .megaMenuColumnGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
