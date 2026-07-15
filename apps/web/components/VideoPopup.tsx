@@ -23,7 +23,7 @@ interface PublicVideoPopupResponse {
   autoCloseOnEnded: boolean;
 }
 
-const storageKey = "entasburada.videoPopup.v2";
+const storageKey = "entasburada.videoPopup.v3";
 
 export function VideoPopup() {
   const [settings, setSettings] = useState<PublicVideoPopupResponse | null>(null);
@@ -32,7 +32,6 @@ export function VideoPopup() {
   const [isMuted, setIsMuted] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
   const playPromptRef = useRef<HTMLButtonElement>(null);
   const videoSource = useMemo(() => settings?.videoUrl?.trim() ?? "", [settings]);
 
@@ -87,7 +86,7 @@ export function VideoPopup() {
         });
 
         if (shouldShow) {
-          setNeedsPlaybackStart(false);
+          setNeedsPlaybackStart(true);
           setIsMuted(false);
           setSettings(payload);
           setIsOpen(true);
@@ -158,8 +157,7 @@ export function VideoPopup() {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const frame = window.requestAnimationFrame(() => {
-      closeButtonRef.current?.focus();
-      void startPlayback();
+      playPromptRef.current?.focus();
     });
 
     return () => {
@@ -168,7 +166,7 @@ export function VideoPopup() {
       document.body.style.overflow = previousOverflow;
       previouslyFocused?.focus();
     };
-  }, [isOpen, startPlayback, videoSource]);
+  }, [isOpen, videoSource]);
 
   useEffect(() => {
     if (needsPlaybackStart) {
@@ -194,22 +192,24 @@ export function VideoPopup() {
     >
       <div ref={panelRef} className="videoPopupPanel">
         <div className="videoPopupControls">
-          <button
-            className="videoPopupSound"
-            type="button"
-            aria-label={isMuted ? "Videonun sesini aç" : "Videonun sesini kapat"}
-            onClick={() => {
-              const video = videoRef.current;
-              if (!video) {
-                return;
-              }
-              video.muted = !video.muted;
-              setIsMuted(video.muted);
-            }}
-          >
-            {isMuted ? <VolumeX size={20} aria-hidden="true" /> : <Volume2 size={20} aria-hidden="true" />}
-          </button>
-          <button ref={closeButtonRef} className="videoPopupClose" type="button" aria-label="Açılış videosunu kapat" onClick={closePopup}>
+          {!needsPlaybackStart ? (
+            <button
+              className="videoPopupSound"
+              type="button"
+              aria-label={isMuted ? "Videonun sesini aç" : "Videonun sesini kapat"}
+              onClick={() => {
+                const video = videoRef.current;
+                if (!video) {
+                  return;
+                }
+                video.muted = !video.muted;
+                setIsMuted(video.muted);
+              }}
+            >
+              {isMuted ? <VolumeX size={20} aria-hidden="true" /> : <Volume2 size={20} aria-hidden="true" />}
+            </button>
+          ) : null}
+          <button className="videoPopupClose" type="button" aria-label="Açılış videosunu kapat" onClick={closePopup}>
             <X size={20} aria-hidden="true" />
           </button>
         </div>
@@ -218,7 +218,6 @@ export function VideoPopup() {
             ref={videoRef}
             src={videoSource}
             poster={settings.posterUrl || undefined}
-            autoPlay
             muted={isMuted}
             playsInline
             preload="auto"
@@ -248,8 +247,8 @@ export function VideoPopup() {
             >
               <Volume2 size={28} aria-hidden="true" />
               <span>
-                <strong>Sesli videoyu başlat</strong>
-                <small>Tarayıcınız sesli otomatik oynatmayı engelledi.</small>
+                <strong>Giriş için tıkla</strong>
+                <small>Video sesli olarak başlayacak.</small>
               </span>
             </button>
           ) : null}
