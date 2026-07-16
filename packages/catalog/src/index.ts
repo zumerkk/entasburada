@@ -32,6 +32,8 @@ export type PriceApprovalStatus = "APPROVED" | "NO_PRICE" | "NEEDS_REVIEW";
 export type PriceDisplayMode = "HIDDEN_UNTIL_DEALER" | "CONTACT_REP";
 export type StockStatus = "in_stock" | "low_stock" | "incoming" | "out_of_stock";
 
+const PRODUCT_IMAGE_RENDER_VERSION = "square-v1";
+
 export interface ImportedSupplierProduct {
   sourceKey: string;
   sourceName: string;
@@ -499,7 +501,7 @@ export function toPublicProduct(product: CatalogProductRecord): PublicCatalogPro
     categoryGroupSlug: classification.groupSlug,
     categorySlug: classification.categorySlug,
     description: product.description,
-    image: product.imageUrl ?? FALLBACK_IMAGE,
+    image: versionProductImageUrl(product.imageUrl ?? FALLBACK_IMAGE),
     stockTone: product.stockStatus,
     stockLabel: stockLabel(product.stockStatus, product.stockQuantityKnown !== false),
     stockQuantityKnown: product.stockQuantityKnown !== false,
@@ -514,6 +516,12 @@ export function toPublicProduct(product: CatalogProductRecord): PublicCatalogPro
     priceDisplayMode: product.priceDisplayMode,
     specs
   }) as PublicCatalogProduct;
+}
+
+function versionProductImageUrl(imageUrl: string): string {
+  if (!imageUrl.startsWith("/uploads/catalog-imports/")) return imageUrl;
+  const separator = imageUrl.includes("?") ? "&" : "?";
+  return `${imageUrl}${separator}iv=${PRODUCT_IMAGE_RENDER_VERSION}`;
 }
 
 export function toAdminProduct(product: CatalogProductRecord): AdminCatalogProduct {

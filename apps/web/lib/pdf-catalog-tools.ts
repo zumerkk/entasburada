@@ -9,6 +9,7 @@ import { promisify } from "node:util";
 import sharp from "sharp";
 import type { CatalogImageRegion } from "./catalog-ai-extractor";
 import type { PdfWordBox } from "./pdf-grid-image-regions";
+import { normalizeProductImage } from "./product-image-normalizer";
 
 const execFile = promisify(execFileCallback);
 const rootDir = findWorkspaceRoot(process.cwd());
@@ -450,15 +451,9 @@ export async function cropCatalogProductImage(input: {
       sourceBuffer = await sharp(input.pageFilePath).extract({ left, top, width, height }).toBuffer();
     }
 
-    const output = await sharp(sourceBuffer)
-      .trim({ background: "#ffffff", threshold: 30 })
-      .extend({ top: 12, right: 12, bottom: 12, left: 12, background: "#ffffff" })
-      .resize({ width: 1200, height: 1200, fit: "inside", withoutEnlargement: true })
-      .webp({ quality: 90, effort: 4 })
-      .toBuffer();
+    const { buffer: output } = await normalizeProductImage(sourceBuffer);
     const stats = await sharp(output).stats();
-    // Higher entropy threshold to reject table/line crops more aggressively
-    if (stats.entropy < 0.20) return "";
+    if (stats.entropy < 0.03) return "";
     await writeFile(outputPath, output);
   } catch {
     return "";
