@@ -93,6 +93,7 @@ export interface AbandonedCartRow {
   accountManager: string;
   followUpStatus: string;
   whatsappDraft: string;
+  whatsappHref: string;
 }
 
 export interface SearchMissRow {
@@ -296,7 +297,11 @@ export async function getAbandonedCartsReport(): Promise<{ generatedAt: string; 
           ageLabel: formatAge(lastActivityAt),
           accountManager: customer.accountManager ?? "Satış Operasyon",
           followUpStatus: "Takip bekliyor",
-          whatsappDraft: `${customer.authorizedPerson} merhaba, sepetinizdeki ${highestValueProduct} ve diğer ürünler için bayi teklifinizi hazırlayabiliriz.`
+          whatsappDraft: `${customer.authorizedPerson} merhaba, sepetinizdeki ${highestValueProduct} ve diğer ürünler için bayi teklifinizi hazırlayabiliriz.`,
+          whatsappHref: buildWhatsappHref(
+            customer.phone,
+            `${customer.authorizedPerson} merhaba, sepetinizdeki ${highestValueProduct} ve diğer ürünler için bayi teklifinizi hazırlayabiliriz.`
+          )
         } satisfies AbandonedCartRow;
       })
   );
@@ -492,6 +497,20 @@ function withCustomer<T extends Omit<UserEvent, "id" | "occurredAt"> & { id?: st
 
 function mostRecent(events: UserEvent[]): UserEvent | undefined {
   return [...events].sort((a, b) => Date.parse(b.occurredAt) - Date.parse(a.occurredAt))[0];
+}
+
+function buildWhatsappHref(phone: string, message: string): string {
+  const digits = (phone ?? "").replace(/\D+/g, "");
+  let international = digits;
+  if (digits.startsWith("0")) {
+    international = `9${digits}`;
+  } else if (digits.startsWith("5")) {
+    international = `90${digits}`;
+  }
+
+  const text = `?text=${encodeURIComponent(message)}`;
+  // numara cikarilamazsa alicisiz paylasim linkine dusulur
+  return international.length >= 12 ? `https://wa.me/${international}${text}` : `https://wa.me/${text}`;
 }
 
 function topValue(values: string[]): string {

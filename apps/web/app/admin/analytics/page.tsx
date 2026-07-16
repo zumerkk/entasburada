@@ -109,7 +109,7 @@ export default async function AdminAnalyticsPage() {
                       <PhoneCall size={14} aria-hidden="true" />
                       Ara
                     </a>
-                    <a href={`https://wa.me/?text=${encodeURIComponent(row.whatsappDraft)}`}>
+                    <a href={row.whatsappHref} target="_blank" rel="noreferrer">
                       <MessageCircle size={14} aria-hidden="true" />
                       WhatsApp
                     </a>
