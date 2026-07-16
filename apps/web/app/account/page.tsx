@@ -6,10 +6,17 @@ import { formatMoney, parseMoney, segmentLabel } from "../../lib/customer-pricin
 import { searchAdminOrders, searchAdminQuotes } from "../../lib/commercial-repository";
 import { listCustomerNotifications } from "../../lib/notification-repository";
 import { customerLogoutAction } from "../login/actions";
+import { changePasswordAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
-export default async function AccountPage() {
+type SearchParams = Record<string, string | string[] | undefined>;
+
+export default async function AccountPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const params = await searchParams;
+  const passwordChanged = params.passwordChanged === "1";
+  const passwordErrorRaw = params.passwordError;
+  const passwordError = Array.isArray(passwordErrorRaw) ? passwordErrorRaw[0] : passwordErrorRaw;
   const customer = await requireCustomer();
   const [quotes, orders, cart, notifications] = await Promise.all([
     searchAdminQuotes({ q: customer.email, limit: 5 }),
@@ -254,6 +261,39 @@ export default async function AccountPage() {
                 </div>
               ) : null}
             </div>
+          </section>
+
+          <section className="accountPanel" id="security">
+            <div className="accountSectionHeader compact">
+              <div>
+                <span>Güvenlik</span>
+                <h2>Şifre değiştir</h2>
+              </div>
+              <ShieldCheck size={20} aria-hidden="true" />
+            </div>
+            {passwordChanged ? <p className="formSuccess">Şifreniz güncellendi.</p> : null}
+            {passwordError ? (
+              <p className="formError" role="alert">
+                {passwordError}
+              </p>
+            ) : null}
+            <form className="passwordChangeForm" action={changePasswordAction}>
+              <label>
+                Mevcut şifre
+                <input name="currentPassword" type="password" autoComplete="current-password" required />
+              </label>
+              <label>
+                Yeni şifre
+                <input name="newPassword" type="password" autoComplete="new-password" minLength={8} required />
+              </label>
+              <label>
+                Yeni şifre (tekrar)
+                <input name="newPasswordRepeat" type="password" autoComplete="new-password" minLength={8} required />
+              </label>
+              <button className="btn btnPrimary" type="submit">
+                Şifreyi Güncelle
+              </button>
+            </form>
           </section>
         </aside>
       </section>

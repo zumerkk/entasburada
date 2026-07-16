@@ -1,4 +1,4 @@
-import { Building2, Mail, MapPin, PhoneCall } from "lucide-react";
+import { Building2, KeyRound, Mail, MapPin, MessageCircle, PhoneCall } from "lucide-react";
 import { EmptyState, StatusPill } from "@entas/ui";
 import { requireAdmin } from "../../../lib/admin-auth";
 import {
@@ -6,6 +6,7 @@ import {
   listDealerApplications,
   type DealerApplicationStatus
 } from "../../../lib/dealer-application-repository";
+import { buildCredentialsWhatsappHref } from "../../../lib/dealer-provisioning";
 import { updateDealerApplicationStatusAction } from "../actions";
 import { AdminFrame } from "../AdminFrame";
 
@@ -137,6 +138,32 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
                 </div>
 
                 {application.reviewNote ? <p className="dealerApplicationNote">Not: {application.reviewNote}</p> : null}
+
+                {application.accountId && application.tempPassword ? (
+                  <div className="dealerCredentials">
+                    <div className="dealerCredentialsHead">
+                      <KeyRound size={15} aria-hidden="true" />
+                      Giriş bilgileri hazır — firmaya iletin
+                      {application.welcomeMailSent ? <StatusPill tone="success">E-posta gönderildi</StatusPill> : <StatusPill tone="warning">E-posta gönderilmedi</StatusPill>}
+                    </div>
+                    <code>
+                      Kullanıcı: {application.accountEmail}
+                      {"\n"}Geçici şifre: {application.tempPassword}
+                    </code>
+                    <a
+                      className="btn btnPrimary"
+                      href={buildCredentialsWhatsappHref(application, application.accountEmail ?? application.email, application.tempPassword)}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <MessageCircle size={16} aria-hidden="true" />
+                      WhatsApp ile Gönder
+                    </a>
+                  </div>
+                ) : null}
+                {application.accountId && !application.tempPassword ? (
+                  <p className="dealerApplicationNote">Bu e-postayla hesap zaten mevcuttu; yeni şifre üretilmedi.</p>
+                ) : null}
 
                 <form className="dealerApplicationActions" action={updateDealerApplicationStatusAction}>
                   <input type="hidden" name="applicationId" value={application.id} />

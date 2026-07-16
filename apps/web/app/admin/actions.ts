@@ -13,7 +13,13 @@ import {
   type OrderStatus,
   type QuoteStatus
 } from "../../lib/commercial-repository";
-import { updateDealerApplicationStatus, type DealerApplicationStatus } from "../../lib/dealer-application-repository";
+import {
+  getDealerApplication,
+  recordApplicationProvisioning,
+  updateDealerApplicationStatus,
+  type DealerApplicationStatus
+} from "../../lib/dealer-application-repository";
+import { provisionDealerAccount } from "../../lib/dealer-provisioning";
 
 export async function syncImportAction(): Promise<void> {
   await requireAdmin();
@@ -104,6 +110,25 @@ export async function updateDealerApplicationStatusAction(formData: FormData): P
   const status = toDealerStatus(getString(formData, "status"));
   const note = getString(formData, "reviewNote");
   await updateDealerApplicationStatus(applicationId, status, getAdminEmail(), note);
+
+  // Onay = bayi hesabini otomatik ac; giris bilgileri basvuru kartinda gosterilir
+  if (status === "approved") {
+    const application = await getDealerApplication(applicationId);
+    if (application && !application.accountId) {
+      const result = await provisionDealerAccount(application);
+      await recordApplicationProvisioning(applicationId, {
+        accountId: result.accountId,
+        accountEmail: result.email,
+        ...(result.tempPassword ? { tempPassword: result.tempPassword } : {}),
+        welcomeMailSent: result.mailSent,
+        note:
+          result.status === "created"
+            ? `Bayi hesabı açıldı (${result.email})${result.mailSent ? "; hoş geldin e-postası gönderildi." : "; e-posta altyapısı kapalı, bilgileri WhatsApp ile iletin."}`
+            : `${result.email} için hesap zaten vardı; yeni hesap açılmadı.`
+      });
+    }
+  }
+
   revalidatePath("/admin/dealers");
   revalidatePath("/admin");
   revalidatePath("/admin/notifications");

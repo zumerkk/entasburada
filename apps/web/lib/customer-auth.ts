@@ -90,6 +90,50 @@ export async function requireCustomer(): Promise<CustomerAccount> {
   return customer;
 }
 
+export async function findCustomerByEmail(email: string): Promise<CustomerAccount | null> {
+  const normalizedEmail = email.trim().toLocaleLowerCase("tr-TR");
+  const customers = await getCustomers();
+  return customers.find((entry) => entry.email.toLocaleLowerCase("tr-TR") === normalizedEmail) ?? null;
+}
+
+export async function createCustomerAccount(account: Omit<CustomerAccount, "password"> & { plainPassword: string }): Promise<CustomerAccount> {
+  const { plainPassword, ...rest } = account;
+  const existing = await findCustomerByEmail(rest.email);
+  if (existing) {
+    throw new Error(`${rest.email} adresiyle kayıtlı bir bayi hesabı zaten var.`);
+  }
+
+  const record: CustomerAccount = { ...rest, password: hashPassword(plainPassword) };
+  const customers = await getCustomers();
+  await saveCustomers([...customers, record]);
+  return record;
+}
+
+export async function changeCustomerPassword(customerId: string, currentPassword: string, newPassword: string): Promise<void> {
+  const customers = await getCustomers();
+  const index = customers.findIndex((customer) => customer.id === customerId);
+  if (index < 0) {
+    throw new Error("Hesap bulunamadı.");
+  }
+
+  if (!verifyPassword(currentPassword, customers[index]!.password)) {
+    throw new Error("Mevcut şifre hatalı.");
+  }
+
+  if (newPassword.length < 8) {
+    throw new Error("Yeni şifre en az 8 karakter olmalı.");
+  }
+
+  customers[index] = { ...customers[index]!, password: hashPassword(newPassword) };
+  await saveCustomers(customers);
+}
+
+async function saveCustomers(customers: CustomerAccount[]): Promise<void> {
+  const tmpPath = `${customersPath}.${process.pid}.${randomUUID()}.tmp`;
+  await writeFile(tmpPath, `${JSON.stringify(customers, null, 2)}\n`);
+  await rename(tmpPath, customersPath);
+}
+
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 14;
 
 function sessionSecret(): string {
@@ -111,9 +155,7 @@ async function upgradeLegacyPassword(customerId: string, password: string): Prom
   }
 
   customers[index] = { ...customers[index]!, password: hashPassword(password) };
-  const tmpPath = `${customersPath}.${process.pid}.${randomUUID()}.tmp`;
-  await writeFile(tmpPath, `${JSON.stringify(customers, null, 2)}\n`);
-  await rename(tmpPath, customersPath);
+  await saveCustomers(customers);
 }
 
 async function ensureCustomersFile(): Promise<void> {

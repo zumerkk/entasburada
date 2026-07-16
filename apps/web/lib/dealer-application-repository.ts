@@ -50,6 +50,12 @@ export interface DealerApplication {
   reviewNote?: string | undefined;
   reviewedBy?: string | undefined;
   reviewedAt?: string | undefined;
+  // Hesap açma (onay sonrası)
+  accountId?: string | undefined;
+  accountEmail?: string | undefined;
+  tempPassword?: string | undefined;
+  provisionedAt?: string | undefined;
+  welcomeMailSent?: boolean | undefined;
   history: DealerApplicationHistoryEntry[];
 }
 
@@ -186,6 +192,41 @@ export async function updateDealerApplicationStatus(
   rows[index] = next;
   await saveApplications(rows);
   return next;
+}
+
+export async function recordApplicationProvisioning(
+  id: string,
+  provisioning: { accountId: string; accountEmail: string; tempPassword?: string; welcomeMailSent: boolean; note: string }
+): Promise<DealerApplication> {
+  const rows = await loadApplications();
+  const index = rows.findIndex((row) => row.id === id);
+  if (index < 0) {
+    throw new Error("Başvuru bulunamadı.");
+  }
+
+  const current = rows[index]!;
+  const now = new Date().toISOString();
+  rows[index] = {
+    ...current,
+    accountId: provisioning.accountId,
+    accountEmail: provisioning.accountEmail,
+    tempPassword: provisioning.tempPassword ?? current.tempPassword,
+    provisionedAt: now,
+    welcomeMailSent: provisioning.welcomeMailSent,
+    updatedAt: now,
+    history: [
+      {
+        id: `hist-${randomUUID()}`,
+        at: now,
+        actor: "system",
+        message: provisioning.note
+      },
+      ...current.history
+    ].slice(0, 50)
+  };
+
+  await saveApplications(rows);
+  return rows[index]!;
 }
 
 const STATUS_LABELS: Record<DealerApplicationStatus, string> = {

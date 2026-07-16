@@ -4742,3 +4742,71 @@ a.metricCard {
     transition: none;
   }
 }
+
+/* Bayi giris bilgileri teslim blogu (admin) */
+.dealerCredentials {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px dashed var(--orange-600, #ea580c);
+  border-radius: 10px;
+  background: #fff7ed;
+}
+
+.dealerCredentialsHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  font-size: 13.5px;
+  color: var(--green-900, #14342b);
+}
+
+.dealerCredentials code {
+  display: block;
+  white-space: pre-wrap;
+  padding: 10px 12px;
+  background: var(--white, #fff);
+  border: 1px solid var(--line, #e3e8e6);
+  border-radius: 8px;
+  font-size: 14px;
+  user-select: all;
+}
+
+.dealerCredentials .btn {
+  justify-self: start;
+}
+
+/* Hesabim: sifre degistirme */
+.passwordChangeForm {
+  display: grid;
+  gap: 12px;
+}
+
+.passwordChangeForm label {
+  display: grid;
+  gap: 5px;
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.passwordChangeForm input {
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--line, #d7dedb);
+  border-radius: 8px;
+}
+
+.passwordChangeForm .btn {
+  justify-self: start;
+}
+
+.formSuccess {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #ecfdf5;
+  color: #065f46;
+  font-size: 14px;
+  font-weight: 700;
+}
