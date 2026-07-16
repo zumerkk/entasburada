@@ -1,12 +1,12 @@
 import "server-only";
 import { existsSync } from "node:fs";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
+import { mkdir, readFile, rename, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import {
   CATALOG_TREE,
   brandsFromStore,
   categoriesFromStore,
-  catalogGroupCount,
   classifyCatalogProduct,
   createEmptyCatalogStore,
   createImportAudit,
@@ -63,6 +63,7 @@ export interface CatalogNavigationItem {
   slug: string;
   href: string;
   count: number;
+  imageUrl: string;
 }
 
 export interface PublicProductFilters extends CatalogSearchFilters {
@@ -93,21 +94,51 @@ const catalogNavigationGroups: CatalogGroupDefinition[] = [
     keywords: category.keywords
   }))
 ];
+const categoryVisuals: Record<string, string> = {
+  "tum-urunler": "/images/hero-tools-v2.webp",
+  "su-tesisati": "/images/category-plumbing-v2.webp",
+  "hortum-flex": "/images/category-hose-v2.webp",
+  "musluk-batarya": "/images/category-faucet-v2.webp",
+  "banyo-vitrifiye": "/images/category-faucet-v2.webp",
+  "pompa-hidrofor": "/images/category-pump-v2.webp",
+  "sulama-bahce": "/images/category-irrigation-v2.webp",
+  "el-aletleri": "/images/category-tools-v2.webp",
+  "elektrikli-aletler": "/images/category-power-tools-v2.webp",
+  "hirdavat-baglanti": "/images/category-hardware-v2.webp"
+};
 const importProductsPath = path.join(dataDir, "import-results", "supplier-products.json");
 const importReportPath = path.join(dataDir, "import-results", "import-report.json");
 const catalogStorePath = path.join(dataDir, "catalog-store.json");
 const auditLogPath = path.join(dataDir, "audit-log.json");
+let catalogStoreCache: { mtimeMs: number; size: number; store: CatalogStore } | null = null;
+let catalogStoreLoadPromise: Promise<CatalogStore> | null = null;
 
 export async function loadCatalogStore(): Promise<CatalogStore> {
-  const now = new Date().toISOString();
-  const fallback = createEmptyCatalogStore(now);
-  const store = await readJson<CatalogStore>(catalogStorePath, fallback);
-
-  if (store.products.length > 0 || !existsSync(importProductsPath)) {
-    return store;
+  const fileStat = await stat(catalogStorePath).catch(() => null);
+  if (fileStat && catalogStoreCache?.mtimeMs === fileStat.mtimeMs && catalogStoreCache.size === fileStat.size) {
+    return catalogStoreCache.store;
   }
+  if (catalogStoreLoadPromise) return catalogStoreLoadPromise;
 
-  return syncImportedProducts({ publishNew: false, actor: "system-bootstrap" });
+  const loadPromise = (async () => {
+    const now = new Date().toISOString();
+    const fallback = createEmptyCatalogStore(now);
+    const store = await readJson<CatalogStore>(catalogStorePath, fallback);
+
+    if (store.products.length > 0 || !existsSync(importProductsPath)) {
+      if (fileStat) catalogStoreCache = { mtimeMs: fileStat.mtimeMs, size: fileStat.size, store };
+      return store;
+    }
+
+    return syncImportedProducts({ publishNew: false, actor: "system-bootstrap" });
+  })();
+
+  catalogStoreLoadPromise = loadPromise;
+  try {
+    return await loadPromise;
+  } finally {
+    if (catalogStoreLoadPromise === loadPromise) catalogStoreLoadPromise = null;
+  }
 }
 
 export async function syncImportedProducts({ publishNew = false, actor = "admin@entasburada.com" }: { publishNew?: boolean; actor?: string } = {}): Promise<CatalogStore> {
@@ -157,6 +188,38 @@ export async function getPublicProducts(filters: PublicProductFilters = {}): Pro
   const result = searchCatalogRecords(store, { ...filters, publicOnly: true, allowCategoryFallback: true });
   logCatalogQuery(filters, result.total, Date.now() - startedAt);
   return { ...result, items: result.items.map(toPublicProduct) };
+}
+
+export async function getFeaturedPublicProducts(limit = 8): Promise<CatalogSearchResult<PublicCatalogProduct>> {
+  const store = await loadCatalogStore();
+  const activeProducts = store.products.filter((product) => product.status === "ACTIVE" && product.isVisible && product.imageUrl);
+  const featured = [] as typeof activeProducts;
+  const selectedIds = new Set<string>();
+  const selectedGroups = new Set<string>();
+
+  for (const product of activeProducts) {
+    const groupSlug = product.catalogClassification?.groupSlug ?? classifyCatalogProduct(product).groupSlug;
+    if (selectedGroups.has(groupSlug)) continue;
+    featured.push(product);
+    selectedIds.add(product.id);
+    selectedGroups.add(groupSlug);
+    if (featured.length >= limit) break;
+  }
+
+  if (featured.length < limit) {
+    for (const product of activeProducts) {
+      if (selectedIds.has(product.id)) continue;
+      featured.push(product);
+      if (featured.length >= limit) break;
+    }
+  }
+
+  return {
+    total: activeProducts.length,
+    limit,
+    offset: 0,
+    items: featured.map(toPublicProduct)
+  };
 }
 
 export async function getPricedPublicProducts(
@@ -237,11 +300,16 @@ export async function getCatalogFacets(publicOnly = true): Promise<CatalogFacets
 
 export async function getCatalogNavigation(): Promise<CatalogNavigationItem[]> {
   const store = await loadCatalogStore();
+  return navigationItemsFromStats(buildCatalogNavigationStats(store));
+}
+
+function navigationItemsFromStats(stats: CatalogNavigationStats): CatalogNavigationItem[] {
   return catalogNavigationGroups.map((group) => ({
     label: group.label,
     slug: group.slug,
     href: group.slug === "tum-urunler" ? "/catalog" : `/catalog?group=${encodeURIComponent(group.slug)}`,
-    count: catalogGroupCount(store, group, true)
+    count: group.slug === "tum-urunler" ? stats.total : stats.groupCounts.get(group.slug) ?? 0,
+    imageUrl: categoryVisuals[group.slug] ?? stats.representativeImages.get(group.slug) ?? "/images/hero-tools-v2.webp"
   })).filter((item) => item.slug === "tum-urunler" || item.count > 0);
 }
 
@@ -262,17 +330,20 @@ export interface CatalogTreeNavCategory {
   icon: string;
   count: number;
   href: string;
+  imageUrl: string;
   columns: CatalogTreeNavColumn[];
 }
 
 export async function getCatalogTree(): Promise<CatalogTreeNavCategory[]> {
   const store = await loadCatalogStore();
+  const stats = buildCatalogNavigationStats(store);
   return CATALOG_TREE.map((category) => ({
     slug: category.slug,
     label: category.label,
     icon: category.icon,
-    count: catalogGroupCount(store, { slug: category.slug, label: category.label, aliases: [], keywords: category.keywords }, true),
+    count: stats.groupCounts.get(category.slug) ?? 0,
     href: `/catalog?group=${encodeURIComponent(category.slug)}`,
+    imageUrl: categoryVisuals[category.slug] ?? stats.representativeImages.get(category.slug) ?? "/images/hero-tools-v2.webp",
     columns: category.columns.map((column) => ({
       heading: column.heading,
       items: column.items.map((item) => ({
@@ -284,19 +355,45 @@ export async function getCatalogTree(): Promise<CatalogTreeNavCategory[]> {
   })).filter((category) => category.count > 0);
 }
 
+interface CatalogNavigationStats {
+  total: number;
+  groupCounts: Map<string, number>;
+  categoryCounts: Map<string, number>;
+  representativeImages: Map<string, string>;
+}
+const catalogNavigationStatsCache = new WeakMap<CatalogStore, CatalogNavigationStats>();
+
+function buildCatalogNavigationStats(store: CatalogStore): CatalogNavigationStats {
+  const cached = catalogNavigationStatsCache.get(store);
+  if (cached) return cached;
+
+  const stats: CatalogNavigationStats = {
+    total: 0,
+    groupCounts: new Map(),
+    categoryCounts: new Map(),
+    representativeImages: new Map()
+  };
+
+  for (const product of store.products) {
+    if (product.status !== "ACTIVE" || !product.isVisible) continue;
+    const classification = product.catalogClassification ?? classifyCatalogProduct(product);
+    stats.total += 1;
+    stats.groupCounts.set(classification.groupSlug, (stats.groupCounts.get(classification.groupSlug) ?? 0) + 1);
+    stats.categoryCounts.set(classification.categoryLabel, (stats.categoryCounts.get(classification.categoryLabel) ?? 0) + 1);
+    if (product.imageUrl && !stats.representativeImages.has(classification.groupSlug)) {
+      stats.representativeImages.set(classification.groupSlug, product.imageUrl);
+    }
+  }
+
+  catalogNavigationStatsCache.set(store, stats);
+  return stats;
+}
+
 export async function getCategoryMappingMetrics() {
   const store = await loadCatalogStore();
-  const navigation = await getCatalogNavigation();
-  const categoryCounts = new Map<string, number>();
-  for (const product of store.products) {
-    if (product.status !== "ACTIVE" || !product.isVisible) {
-      continue;
-    }
-
-    const category = classifyCatalogProduct(product).categoryLabel;
-    categoryCounts.set(category, (categoryCounts.get(category) ?? 0) + 1);
-  }
-  const sourceCategories = [...categoryCounts.entries()]
+  const stats = buildCatalogNavigationStats(store);
+  const navigation = navigationItemsFromStats(stats);
+  const sourceCategories = [...stats.categoryCounts.entries()]
     .map(([category, count]) => ({ category, count }))
     .sort((a, b) => a.category.localeCompare(b.category, "tr"));
 
@@ -304,7 +401,7 @@ export async function getCategoryMappingMetrics() {
     navigation,
     sourceCategories,
     uncategorizedCount: uncategorizedProductCount(store),
-    emptyNavigationCount: catalogNavigationGroups.filter((group) => group.slug !== "tum-urunler" && catalogGroupCount(store, group, true) === 0).length
+    emptyNavigationCount: catalogNavigationGroups.filter((group) => group.slug !== "tum-urunler" && (stats.groupCounts.get(group.slug) ?? 0) === 0).length
   };
 }
 
@@ -357,6 +454,8 @@ function logCatalogQuery(filters: PublicProductFilters, total: number, durationM
 
 export async function saveCatalogStore(store: CatalogStore): Promise<void> {
   await writeJson(catalogStorePath, store);
+  const fileStat = await stat(catalogStorePath);
+  catalogStoreCache = { mtimeMs: fileStat.mtimeMs, size: fileStat.size, store };
 }
 
 export async function appendAuditLogs(logs: AuditLogEntry[]): Promise<void> {
@@ -383,7 +482,10 @@ async function readJson<T>(filePath: string, fallback: T): Promise<T> {
 
 async function writeJson(filePath: string, value: unknown): Promise<void> {
   await mkdir(path.dirname(filePath), { recursive: true });
-  await writeFile(filePath, `${JSON.stringify(value, null, 2)}\n`);
+  // atomik yazim: okuyucular asla yarim dosya gormesin
+  const tmpPath = `${filePath}.${process.pid}.${randomUUID()}.tmp`;
+  await writeFile(tmpPath, `${JSON.stringify(value, null, 2)}\n`);
+  await rename(tmpPath, filePath);
 }
 
 function findWorkspaceRoot(startDir: string): string {

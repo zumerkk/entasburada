@@ -4,8 +4,11 @@ services:
     runtime: docker
     plan: standard
     region: frankfurt
+    dockerfilePath: ./Dockerfile
     healthCheckPath: /api/health
-    autoDeploy: true
+    autoDeployTrigger: commit
+    domains:
+      - entasburada.com
     disk:
       name: entas-data
       mountPath: /var/data

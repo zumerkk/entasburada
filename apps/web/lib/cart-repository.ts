@@ -163,7 +163,7 @@ async function loadCarts(): Promise<CustomerCart[]> {
 
 async function saveCarts(rows: CustomerCart[]): Promise<void> {
   await mkdir(dataDir, { recursive: true });
-  const tmpPath = `${cartsPath}.${process.pid}.tmp`;
+  const tmpPath = `${cartsPath}.${process.pid}.${randomUUID()}.tmp`;
   await writeFile(tmpPath, `${JSON.stringify(rows, null, 2)}\n`);
   await rename(tmpPath, cartsPath);
 }

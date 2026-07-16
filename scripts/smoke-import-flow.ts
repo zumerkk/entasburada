@@ -35,7 +35,12 @@ async function main(): Promise<void> {
       authenticated: true,
       body: { url: "http://127.0.0.1:3000/api/health", sourceName: "SSRF smoke" }
     });
-    assert(blockedInternalUrl.error.includes("ozel ag") || blockedInternalUrl.error.includes("Yerel"), "Yerel XML URL engellenmeli.");
+    assert(
+      blockedInternalUrl.error.includes("ozel ag") ||
+        blockedInternalUrl.error.includes("Yerel") ||
+        blockedInternalUrl.error.includes("izin listesinde degil"),
+      "Yerel XML URL engellenmeli."
+    );
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urunler>

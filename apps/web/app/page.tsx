@@ -1,6 +1,7 @@
-import { ArrowRight, Building2, FileText, Gauge, PackageSearch, ShieldCheck, Truck } from "lucide-react";
+import { ArrowRight, FileText, Gauge, PackageSearch, Truck } from "lucide-react";
 import { ProductCard, TrustStrip } from "@entas/ui";
-import { getCatalogNavigation, getCatalogOverview, getPublicProducts } from "../lib/catalog-repository";
+import { HomeHeroSlider } from "../components/HomeHeroSlider";
+import { getCatalogNavigation, getCatalogOverview, getFeaturedPublicProducts } from "../lib/catalog-repository";
 import { sectors, viewer } from "../data/catalog";
 
 const trustItems = [
@@ -13,56 +14,18 @@ const trustItems = [
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [featuredProducts, overview, categoryCards] = await Promise.all([getPublicProducts({ limit: 8 }), getCatalogOverview(), getCatalogNavigation()]);
+  const [featuredProducts, overview, categoryCards] = await Promise.all([getFeaturedPublicProducts(8), getCatalogOverview(), getCatalogNavigation()]);
   const quickCards = categoryCards.slice(0, 12);
 
   return (
     <main>
-      <section className="hero">
-        <div className="heroBackdrop" />
-        <div className="shell heroContent">
-          <div className="heroCopy">
-            <span className="eyebrow">B2B hırdavat ve endüstriyel tedarik</span>
-            <h1>Profesyonellerin Toptan Hırdavat Platformu</h1>
-            <p>
-              Bayiler, yapı marketler ve kurumsal satın alma ekipleri için teknik ürün kataloğu, teklif akışı,
-              stok görünürlüğü ve onaylı bayi fiyatlandırması.
-            </p>
-            <div className="heroActions">
-              <a className="btn btnPrimary" href="/catalog">
-                <PackageSearch size={18} aria-hidden="true" />
-                Ana Katalog
-              </a>
-              <a className="btn btnPrimary" href="/login">
-                <ShieldCheck size={18} aria-hidden="true" />
-                Bayi Girişi
-              </a>
-              <a className="btn btnSecondary" href="/dealer-application">
-                <Building2 size={18} aria-hidden="true" />
-                Bayi Başvurusu
-              </a>
-              <a className="btn btnGhost light" href="/quote">
-                <FileText size={18} aria-hidden="true" />
-                Teklif Talep Et
-              </a>
-            </div>
-          </div>
-          <div className="heroStats" aria-label="Platform göstergeleri">
-            <div>
-              <strong>{formatCount(overview.store.importSummary.active)}</strong>
-              <span>yayındaki gerçek ithal ürün</span>
-            </div>
-            <div>
-              <strong>{formatCount(overview.store.importSummary.priced)}</strong>
-              <span>bayi oturumuna kilitli fiyat satırı</span>
-            </div>
-            <div>
-              <strong>{formatCount(overview.store.importSummary.inStock + overview.store.importSummary.lowStock)}</strong>
-              <span>durum bazlı stok görünümü</span>
-            </div>
-          </div>
-        </div>
-      </section>
+      <HomeHeroSlider
+        metrics={{
+          activeProducts: formatCount(overview.store.importSummary.active),
+          pricedProducts: formatCount(overview.store.importSummary.priced),
+          stockedProducts: formatCount(overview.store.importSummary.inStock + overview.store.importSummary.lowStock)
+        }}
+      />
 
       <section className="shell quickCategories" aria-labelledby="quick-categories-title">
         <div className="sectionHeader">
@@ -78,9 +41,15 @@ export default async function HomePage() {
         <div className="categoryGrid">
           {quickCards.map((family) => (
             <a className="categoryCard" href={family.href} key={family.slug}>
-              <PackageSearch size={22} aria-hidden="true" />
-              <strong>{family.label}</strong>
-              <span>{formatCount(family.count)} ürün</span>
+              <span className="categoryCardMedia">
+                <img src={family.imageUrl || "/images/hero-tools-v2.webp"} alt="" loading="lazy" decoding="async" />
+                <span className="categoryCardIcon"><PackageSearch size={20} aria-hidden="true" /></span>
+              </span>
+              <span className="categoryCardBody">
+                <strong>{family.label}</strong>
+                <span>{formatCount(family.count)} ürün</span>
+              </span>
+              <ArrowRight className="categoryCardArrow" size={18} aria-hidden="true" />
             </a>
           ))}
         </div>

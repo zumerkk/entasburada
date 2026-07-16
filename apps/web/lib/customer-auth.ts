@@ -1,4 +1,5 @@
 import "server-only";
+import { randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -110,7 +111,7 @@ async function upgradeLegacyPassword(customerId: string, password: string): Prom
   }
 
   customers[index] = { ...customers[index]!, password: hashPassword(password) };
-  const tmpPath = `${customersPath}.tmp`;
+  const tmpPath = `${customersPath}.${process.pid}.${randomUUID()}.tmp`;
   await writeFile(tmpPath, `${JSON.stringify(customers, null, 2)}\n`);
   await rename(tmpPath, customersPath);
 }

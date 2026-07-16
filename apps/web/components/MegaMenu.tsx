@@ -59,12 +59,20 @@ export function MegaMenu({ tree }: { tree: CatalogTreeNavCategory[] }) {
         </button>
 
         <nav className="megaMenuQuick" aria-label="Öne çıkan kategoriler">
-          {tree.slice(0, 8).map((category) => (
-            <a href={category.href} key={category.slug}>
-              {category.label}
-              <small>{category.count.toLocaleString("tr-TR")}</small>
-            </a>
-          ))}
+          {tree.slice(0, 8).map((category) => {
+            const Icon = ICONS[category.icon] ?? LayoutGrid;
+            return (
+              <a href={category.href} key={category.slug}>
+                <span className="megaMenuQuickMedia">
+                  {category.imageUrl ? <img src={category.imageUrl} alt="" /> : <Icon size={17} aria-hidden="true" />}
+                </span>
+                <span className="megaMenuQuickText">
+                  {category.label}
+                  <small>{category.count.toLocaleString("tr-TR")}</small>
+                </span>
+              </a>
+            );
+          })}
         </nav>
       </div>
 
@@ -85,7 +93,9 @@ export function MegaMenu({ tree }: { tree: CatalogTreeNavCategory[] }) {
                     onMouseEnter={() => setActiveSlug(category.slug)}
                     onClick={() => setActiveSlug(category.slug)}
                   >
-                    <Icon size={18} aria-hidden="true" />
+                    <span className="megaMenuRailMedia">
+                      {category.imageUrl ? <img src={category.imageUrl} alt="" /> : <Icon size={19} aria-hidden="true" />}
+                    </span>
                     <span>{category.label}</span>
                     <small>{category.count.toLocaleString("tr-TR")}</small>
                     <ChevronRight size={16} aria-hidden="true" className="megaMenuChevron" />
@@ -96,10 +106,20 @@ export function MegaMenu({ tree }: { tree: CatalogTreeNavCategory[] }) {
 
             {active ? (
               <div className="megaMenuColumns">
-                <a className="megaMenuAllLink" href={active.href}>
-                  Tüm {active.label} ürünleri ({active.count.toLocaleString("tr-TR")})
-                  <ChevronRight size={15} aria-hidden="true" />
-                </a>
+                <div className="megaMenuPanelLead">
+                  <a className="megaMenuAllLink" href={active.href}>
+                    Tüm {active.label} ürünleri ({active.count.toLocaleString("tr-TR")})
+                    <ChevronRight size={15} aria-hidden="true" />
+                  </a>
+                  <a className="megaMenuFeature" href={active.href}>
+                    <img src={active.imageUrl || "/images/hero-tools-v2.webp"} alt="" />
+                    <span>
+                      <small>{active.count.toLocaleString("tr-TR")} ürün</small>
+                      <strong>{active.label}</strong>
+                      <em>Kataloğu aç <ChevronRight size={15} aria-hidden="true" /></em>
+                    </span>
+                  </a>
+                </div>
                 <div className="megaMenuColumnGrid">
                   {active.columns.map((column) => (
                     <div className="megaMenuColumn" key={column.heading}>

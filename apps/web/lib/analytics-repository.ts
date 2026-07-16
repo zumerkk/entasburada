@@ -208,7 +208,73 @@ export async function trackCartEvent(
 
 export async function loadUserEvents(): Promise<UserEvent[]> {
   await ensureEventFile();
-  return readJson<UserEvent[]>(eventsPath, []);
+  try {
+    return await readJson<UserEvent[]>(eventsPath, []);
+  } catch {
+    // bozuk event dosyasi analitik ekranlarini dusurmesin: gecerli on-eki kurtar,
+    // temiz halini geri yaz; kurtarilamiyorsa sifirdan basla
+    const salvaged = await salvageEventsFile();
+    return salvaged;
+  }
+}
+
+async function salvageEventsFile(): Promise<UserEvent[]> {
+  try {
+    const raw = await readFile(eventsPath, "utf8");
+    const recovered = salvageJsonArrayPrefix<UserEvent>(raw);
+    await writeJson(eventsPath, recovered);
+    console.warn(`[analytics] user-events.json bozuktu; ${recovered.length} kayit kurtarildi ve dosya onarildi.`);
+    return recovered;
+  } catch {
+    console.warn("[analytics] user-events.json kurtarilamadi; bos listeyle devam ediliyor.");
+    try {
+      await writeJson(eventsPath, []);
+    } catch {
+      // yazilamiyorsa da okuma akisini bozma
+    }
+    return [];
+  }
+}
+
+function salvageJsonArrayPrefix<T>(raw: string): T[] {
+  const trimmed = raw.trimStart();
+  if (!trimmed.startsWith("[")) {
+    return [];
+  }
+
+  // "Extra data" bozulmalarinda gecerli JSON dizisi bir noktada biter; o noktayi bul
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let index = 0; index < trimmed.length; index += 1) {
+    const char = trimmed[index];
+    if (inString) {
+      if (escaped) {
+        escaped = false;
+      } else if (char === "\\") {
+        escaped = true;
+      } else if (char === '"') {
+        inString = false;
+      }
+      continue;
+    }
+    if (char === '"') {
+      inString = true;
+    } else if (char === "[" || char === "{") {
+      depth += 1;
+    } else if (char === "]" || char === "}") {
+      depth -= 1;
+      if (depth === 0) {
+        try {
+          const parsed = JSON.parse(trimmed.slice(0, index + 1)) as T[];
+          return Array.isArray(parsed) ? parsed : [];
+        } catch {
+          return [];
+        }
+      }
+    }
+  }
+  return [];
 }
 
 export async function getCustomerBehaviorReport(): Promise<{ generatedAt: string; rows: CustomerBehaviorRow[]; totals: { eventCount: number; activeCustomerCount: number; hotOpportunityCount: number } }> {
@@ -568,7 +634,8 @@ async function readJson<T>(filePath: string, fallback: T): Promise<T> {
 
 async function writeJson(filePath: string, value: unknown): Promise<void> {
   await mkdir(path.dirname(filePath), { recursive: true });
-  const tmpPath = `${filePath}.${process.pid}.tmp`;
+  // tmp adi istek basina benzersiz olmali: ayni pid'de esazamanli yazmalar carpisiyordu
+  const tmpPath = `${filePath}.${process.pid}.${randomUUID()}.tmp`;
   await writeFile(tmpPath, `${JSON.stringify(value, null, 2)}\n`);
   await rename(tmpPath, filePath);
 }

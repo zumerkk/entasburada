@@ -220,7 +220,7 @@ async function loadApplications(): Promise<DealerApplication[]> {
 
 async function saveApplications(rows: DealerApplication[]): Promise<void> {
   await mkdir(dataDir, { recursive: true });
-  const tmpPath = `${applicationsPath}.tmp`;
+  const tmpPath = `${applicationsPath}.${process.pid}.${randomUUID()}.tmp`;
   await writeFile(tmpPath, `${JSON.stringify(rows, null, 2)}\n`);
   await rename(tmpPath, applicationsPath);
 }

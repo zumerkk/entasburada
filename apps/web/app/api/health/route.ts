@@ -9,6 +9,11 @@ export async function GET(): Promise<Response> {
     ok: true,
     app: "entasburada",
     timestamp: new Date().toISOString(),
+    release: {
+      provider: process.env.RENDER === "true" ? "render" : "local",
+      commit: process.env.RENDER_GIT_COMMIT?.slice(0, 12) ?? null,
+      branch: process.env.RENDER_GIT_BRANCH ?? null
+    },
     ports: {
       web: 3000,
       admin: "/admin"
