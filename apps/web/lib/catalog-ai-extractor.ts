@@ -87,7 +87,7 @@ const CATALOG_PAGE_SCHEMA = {
     warnings: { type: "array", items: { type: "string" }, maxItems: 30 },
     products: {
       type: "array",
-      maxItems: 80,
+      maxItems: 160,
       items: {
         type: "object",
         additionalProperties: false,
@@ -181,7 +181,7 @@ const IMAGE_LOCATION_SCHEMA = {
     warnings: { type: "array", items: { type: "string" }, maxItems: 30 },
     matches: {
       type: "array",
-      maxItems: 80,
+      maxItems: 160,
       items: {
         type: "object",
         additionalProperties: false,
@@ -706,7 +706,7 @@ async function extractWithGemini(input: {
 export function parseCatalogPagePayload(raw: string | Record<string, unknown>): Omit<CatalogPageExtraction, "provider" | "model"> {
   const parsed = typeof raw === "string" ? parseJson(raw) : raw;
   const products = Array.isArray(parsed.products)
-    ? parsed.products.map(normalizeProductCandidate).filter((product): product is CatalogAiProductCandidate => Boolean(product)).slice(0, 80)
+    ? parsed.products.map(normalizeProductCandidate).filter((product): product is CatalogAiProductCandidate => Boolean(product)).slice(0, 160)
     : [];
 
   return {
@@ -1703,7 +1703,7 @@ function geminiModelCandidates(): string[] {
 }
 
 function catalogMaxOutputTokens(): number {
-  return clamp(Math.round(Number(process.env.CATALOG_AI_MAX_OUTPUT_TOKENS) || 32_000), 16_000, 50_000);
+  return clamp(Math.round(Number(process.env.CATALOG_AI_MAX_OUTPUT_TOKENS) || 50_000), 16_000, 50_000);
 }
 
 function nullableStringSchema(): Record<string, unknown> {

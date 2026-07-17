@@ -18,6 +18,22 @@ export interface ProductImageMetadata {
   height: number;
 }
 
+export interface ProductImageCropRegion {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}
+
+export interface ProductImageContentBounds {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+  width: number;
+  height: number;
+}
+
 export async function readProductImageMetadata(input: Buffer | string): Promise<ProductImageMetadata> {
   const metadata = await sharp(input, { failOn: "none", limitInputPixels: 200_000_000 }).metadata();
   if (!metadata.width || !metadata.height) {
@@ -41,6 +57,48 @@ export async function normalizeProductImage(input: Buffer | string): Promise<Nor
     sourceHeight: sourceMetadata.height,
     width: PRODUCT_IMAGE_CANVAS_SIZE,
     height: PRODUCT_IMAGE_CANVAS_SIZE
+  };
+}
+
+export async function cropAndNormalizeProductImage(
+  input: Buffer | string,
+  region: ProductImageCropRegion
+): Promise<NormalizedProductImage> {
+  const cropped = await sharp(input, { failOn: "none", limitInputPixels: 200_000_000 })
+    .extract(region)
+    .png()
+    .toBuffer();
+  return normalizeProductImage(cropped);
+}
+
+export async function readProductImageContentBounds(input: Buffer | string, sampleSize = 240): Promise<ProductImageContentBounds> {
+  const { data, info } = await sharp(input, { failOn: "none", limitInputPixels: 200_000_000 })
+    .flatten({ background: PRODUCT_IMAGE_BACKGROUND })
+    .resize({ width: sampleSize, height: sampleSize, fit: "fill" })
+    .removeAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  let left = info.width;
+  let right = -1;
+  let top = info.height;
+  let bottom = -1;
+  for (let y = 0; y < info.height; y += 1) {
+    for (let x = 0; x < info.width; x += 1) {
+      const offset = (y * info.width + x) * info.channels;
+      if (data[offset]! > 245 && data[offset + 1]! > 245 && data[offset + 2]! > 245) continue;
+      left = Math.min(left, x);
+      right = Math.max(right, x);
+      top = Math.min(top, y);
+      bottom = Math.max(bottom, y);
+    }
+  }
+  return {
+    left,
+    right,
+    top,
+    bottom,
+    width: right >= left ? right - left + 1 : 0,
+    height: bottom >= top ? bottom - top + 1 : 0
   };
 }
 

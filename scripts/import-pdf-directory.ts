@@ -53,6 +53,8 @@ const batchSize = Math.max(1, Math.min(3, Number(args.get("batch-size")) || 3));
 const concurrency = Math.max(1, Math.min(3, Number(args.get("concurrency")) || 1));
 const enqueueOnly = args.get("enqueue-only") === "true";
 const only = normalize(args.get("only") || "");
+const requestedStartPage = optionalPositiveInteger(args.get("start-page"));
+const requestedEndPage = optionalPositiveInteger(args.get("end-page"));
 const sessionSecret = process.env.ADMIN_SESSION_SECRET?.trim();
 
 if (!sessionSecret) {
@@ -171,6 +173,8 @@ async function enqueuePdf(filePath: string, hints: CatalogHints): Promise<Import
   formData.set("defaultCurrency", hints.defaultCurrency);
   if (hints.brandHint) formData.set("brandHint", hints.brandHint);
   if (hints.categoryHint) formData.set("categoryHint", hints.categoryHint);
+  if (requestedStartPage !== undefined) formData.set("startPage", String(requestedStartPage));
+  if (requestedEndPage !== undefined) formData.set("endPage", String(requestedEndPage));
 
   const response = await fetch(`${baseUrl}/api/admin/import/pdf`, {
     method: "POST",
@@ -245,6 +249,7 @@ function catalogHints(fileName: string): CatalogHints {
   if (normalized.includes("tricraft")) return { sourceName, categoryHint: "Teknik hırdavat ve el aletleri", defaultCurrency: "USD" };
   if (normalized.includes("floorpan")) return { sourceName, brandHint: "FLOORPAN", categoryHint: "Laminat parke", defaultCurrency: "TRY" };
   if (normalized.includes("forzaitalia")) return { sourceName, brandHint: "FORZA", categoryHint: "Pompa ve hidrofor sistemleri", defaultCurrency: "TRY" };
+  if (normalized.includes("kaplin")) return { sourceName, brandHint: "PİMTAŞ", categoryHint: "Sulama sistemleri ve bağlantı elemanları", defaultCurrency: "TRY" };
   return { sourceName, defaultCurrency: "TRY" };
 }
 
@@ -273,6 +278,13 @@ function normalize(value: string): string {
     .replace(/[ö]/g, "o")
     .replace(/[ş]/g, "s")
     .replace(/[ü]/g, "u");
+}
+
+function optionalPositiveInteger(value: string | undefined): number | undefined {
+  if (!value) return undefined;
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed < 1) throw new Error(`Geçersiz PDF sayfa numarası: ${value}`);
+  return parsed;
 }
 
 void main().catch((error) => {

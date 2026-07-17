@@ -3,7 +3,9 @@ import sharp from "sharp";
 import {
   PRODUCT_IMAGE_CANVAS_SIZE,
   PRODUCT_IMAGE_CONTENT_SIZE,
-  normalizeProductImage
+  cropAndNormalizeProductImage,
+  normalizeProductImage,
+  readProductImageContentBounds
 } from "./product-image-normalizer";
 
 describe("product image normalizer", () => {
@@ -40,6 +42,44 @@ describe("product image normalizer", () => {
     expect(bounds.width).toBeLessThan(160);
     expect(bounds.top).toBeGreaterThanOrEqual(55);
     expect(bounds.bottom).toBeLessThanOrEqual(1145);
+  });
+
+  it("crops the requested product region before applying the square canvas", async () => {
+    const source = await sharp({
+      create: { width: 600, height: 300, channels: 3, background: "#ffffff" }
+    })
+      .composite([
+        { input: await sharp({ create: { width: 220, height: 180, channels: 3, background: "#0ea5e9" } }).png().toBuffer(), left: 30, top: 60 },
+        { input: await sharp({ create: { width: 220, height: 180, channels: 3, background: "#f97316" } }).png().toBuffer(), left: 350, top: 60 }
+      ])
+      .png()
+      .toBuffer();
+
+    const result = await cropAndNormalizeProductImage(source, { left: 0, top: 20, width: 300, height: 260 });
+    const stats = await sharp(result.buffer).removeAlpha().stats();
+
+    expect(result.width).toBe(PRODUCT_IMAGE_CANVAS_SIZE);
+    expect(result.height).toBe(PRODUCT_IMAGE_CANVAS_SIZE);
+    expect(stats.channels[2]!.mean).toBeGreaterThan(stats.channels[0]!.mean);
+  });
+
+  it("detects an implausibly thin content strip inside a normalized product image", async () => {
+    const source = await sharp({
+      create: { width: 1200, height: 1200, channels: 3, background: "#ffffff" }
+    })
+      .composite([
+        {
+          input: await sharp({ create: { width: 1080, height: 90, channels: 3, background: "#111827" } }).png().toBuffer(),
+          left: 60,
+          top: 555
+        }
+      ])
+      .webp()
+      .toBuffer();
+
+    const bounds = await readProductImageContentBounds(source);
+
+    expect(bounds.width / bounds.height).toBeGreaterThan(8);
   });
 });
 
