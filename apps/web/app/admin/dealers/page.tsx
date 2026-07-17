@@ -7,6 +7,7 @@ import {
   type DealerApplicationStatus
 } from "../../../lib/dealer-application-repository";
 import { buildCredentialsWhatsappHref } from "../../../lib/dealer-provisioning";
+import { getCustomers, type CustomerSegment } from "../../../lib/customer-auth";
 import { updateDealerApplicationStatusAction } from "../actions";
 import { AdminFrame } from "../AdminFrame";
 
@@ -29,14 +30,21 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
   const status = (getParam(params, "status") || "all") as DealerApplicationStatus | "all";
   const q = getParam(params, "q");
   const highlight = getParam(params, "highlight");
-  const applications = await listDealerApplications({ status, q });
+  const [applications, customers] = await Promise.all([listDealerApplications({ status, q }), getCustomers()]);
+  const accountTerm = q.trim().toLocaleLowerCase("tr-TR");
+  const visibleCustomers = customers.filter((customer) =>
+    accountTerm
+      ? [customer.companyName, customer.authorizedPerson, customer.email, customer.phone, customer.city]
+          .some((value) => value.toLocaleLowerCase("tr-TR").includes(accountTerm))
+      : true
+  );
 
   return (
     <AdminFrame active="dealers">
       <header className="adminTopbar">
         <div>
           <span>Bayiler</span>
-          <h1>Bayi başvuruları</h1>
+          <h1>Bayi yönetimi</h1>
         </div>
       </header>
 
@@ -60,6 +68,53 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
             Filtrele
           </button>
         </form>
+      </section>
+
+      <section className="panel">
+        <div className="panelHeader compact">
+          <div>
+            <h2>{visibleCustomers.length.toLocaleString("tr-TR")} bayi hesabı</h2>
+            <small>Onaylı hesaplar, fiyat segmentleri ve iletişim bilgileri</small>
+          </div>
+        </div>
+        {visibleCustomers.length === 0 ? (
+          <EmptyState title="Bayi hesabı bulunamadı" body="Aramanızla eşleşen kayıtlı bayi hesabı yok." />
+        ) : (
+          <div className="adminTable">
+            <div className="adminTableHead dealerAccountRows">
+              <span>Firma</span>
+              <span>İletişim</span>
+              <span>Konum</span>
+              <span>Segment</span>
+              <span>İskonto</span>
+              <span>Durum</span>
+            </div>
+            {visibleCustomers.map((customer) => (
+              <div className="adminTableRow dealerAccountRows" key={customer.id}>
+                <span>
+                  <strong>{customer.companyName}</strong>
+                  <small>{customer.authorizedPerson}</small>
+                </span>
+                <span>
+                  <strong>{customer.email}</strong>
+                  <small>{customer.phone}</small>
+                </span>
+                <span>
+                  <strong>{customer.city}</strong>
+                  <small>{customer.deliveryAddress}</small>
+                </span>
+                <span>
+                  <strong>{customer.tierName ?? segmentLabel(customer.segment)}</strong>
+                  <small>{customer.tierRank ?? segmentLabel(customer.segment)}</small>
+                </span>
+                <strong>%{customer.baseDiscountRate}</strong>
+                <StatusPill tone={customer.status === "approved" ? "success" : customer.status === "suspended" ? "danger" : "warning"}>
+                  {customer.status === "approved" ? "Aktif" : customer.status === "suspended" ? "Askıda" : "Beklemede"}
+                </StatusPill>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="panel">
@@ -192,4 +247,10 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
 function getParam(params: SearchParams, key: string): string {
   const value = params[key];
   return Array.isArray(value) ? (value[0] ?? "") : (value ?? "");
+}
+
+function segmentLabel(segment: CustomerSegment): string {
+  if (segment === "industrial") return "Sanayi";
+  if (segment === "project") return "Proje";
+  return "Standart bayi";
 }
