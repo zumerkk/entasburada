@@ -16,19 +16,21 @@ ln -sfn "$DATA_DIR/data" /app/data
 rm -rf /app/apps/web/public/uploads
 ln -sfn "$DATA_DIR/uploads" /app/apps/web/public/uploads
 
-CATALOG_RELEASE_VERSION="2026-07-17-kaplin-kangal-v1"
-CATALOG_RELEASE_DIR="/app/deploy/catalog-releases/$CATALOG_RELEASE_VERSION"
-CATALOG_RELEASE_MARKER="$DATA_DIR/.catalog-release-$CATALOG_RELEASE_VERSION"
-if [ -f "$CATALOG_RELEASE_DIR/products.json" ] && [ ! -f "$CATALOG_RELEASE_MARKER" ]; then
-  echo "[entrypoint] katalog surumu uygulanıyor: $CATALOG_RELEASE_VERSION"
-  cd /app
-  pnpm catalog:release:apply -- \
-    --release="$CATALOG_RELEASE_DIR" \
-    --catalog-store="$DATA_DIR/data/catalog-store.json" \
-    --uploads="$DATA_DIR/uploads" \
-    --actor="render-release-$CATALOG_RELEASE_VERSION"
-  date -u +%Y-%m-%dT%H:%M:%SZ > "$CATALOG_RELEASE_MARKER"
-fi
+for CATALOG_RELEASE_DIR in /app/deploy/catalog-releases/*; do
+  [ -d "$CATALOG_RELEASE_DIR" ] || continue
+  CATALOG_RELEASE_VERSION="$(basename "$CATALOG_RELEASE_DIR")"
+  CATALOG_RELEASE_MARKER="$DATA_DIR/.catalog-release-$CATALOG_RELEASE_VERSION"
+  if [ -f "$CATALOG_RELEASE_DIR/products.json" ] && [ ! -f "$CATALOG_RELEASE_MARKER" ]; then
+    echo "[entrypoint] katalog surumu uygulanıyor: $CATALOG_RELEASE_VERSION"
+    cd /app
+    pnpm catalog:release:apply -- \
+      --release="$CATALOG_RELEASE_DIR" \
+      --catalog-store="$DATA_DIR/data/catalog-store.json" \
+      --uploads="$DATA_DIR/uploads" \
+      --actor="render-release-$CATALOG_RELEASE_VERSION"
+    date -u +%Y-%m-%dT%H:%M:%SZ > "$CATALOG_RELEASE_MARKER"
+  fi
+done
 
 IMAGE_NORMALIZATION_VERSION="${PRODUCT_IMAGE_NORMALIZATION_VERSION:-square-v1}"
 IMAGE_NORMALIZATION_MARKER="$DATA_DIR/.product-images-$IMAGE_NORMALIZATION_VERSION"

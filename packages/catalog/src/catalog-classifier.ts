@@ -59,6 +59,7 @@ const GENERIC_SOURCE_CATEGORIES = new Set(
 // Bu katalogların kapsamı dosya bazında kesin. PDF'ye verilen eski geniş kategori
 // ipuçları yerine gerçek katalog alanını kullanırız.
 const PINNED_SOURCE_RULES: SourceRule[] = [
+  { source: "catalog-modamix-2026-04-02", groupSlug: "banyo-vitrifiye", categorySlug: "robot-dus" },
   { source: /entas-bk/, groupSlug: "sulama-bahce", categorySlug: "bahce-el-aletleri" },
   { source: /forzaitalia/, groupSlug: "pompa-hidrofor" },
   { source: "catalog-pdfler-fiyat-listesi-subat-2025", groupSlug: "banyo-vitrifiye", categorySlug: "banyo-mobilya" },

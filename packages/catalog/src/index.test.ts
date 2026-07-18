@@ -195,6 +195,19 @@ describe("@entas/catalog", () => {
     expect(bathProduct.groupSlug).toBe("banyo-vitrifiye");
   });
 
+  it("pins every Modamix catalog product to Robot Duşlar", () => {
+    const modamixProduct = classifyCatalogProduct({
+      sourceKey: "catalog-modamix-2026-04-02",
+      name: "70 CM Krom Duş Spirali",
+      category: "Robot Duşlar",
+      categoryPath: ["Banyo & Vitrifiye", "Duş Sistemleri", "Robot Duşlar"]
+    });
+
+    expect(modamixProduct.groupSlug).toBe("banyo-vitrifiye");
+    expect(modamixProduct.categorySlug).toBe("robot-dus");
+    expect(modamixProduct.categoryLabel).toBe("Robot Duşlar");
+  });
+
   it("distinguishes power-tool batteries from faucet batteries", () => {
     const powerBattery = classifyCatalogProduct({
       sourceKey: "catalog-pdfler-sgs-fiyat-listesi-ocak-2026",
