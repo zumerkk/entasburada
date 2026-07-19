@@ -1,6 +1,6 @@
 import { CATALOG_TREE } from "./catalog-tree";
 
-export const CATALOG_CLASSIFICATION_VERSION = 2;
+export const CATALOG_CLASSIFICATION_VERSION = 3;
 
 export type CatalogClassificationMethod = "pinned-source" | "name-rule" | "source-category" | "source-default" | "fallback";
 
@@ -60,6 +60,7 @@ const GENERIC_SOURCE_CATEGORIES = new Set(
 // ipuçları yerine gerçek katalog alanını kullanırız.
 const PINNED_SOURCE_RULES: SourceRule[] = [
   { source: "catalog-modamix-2026-04-02", groupSlug: "banyo-vitrifiye", categorySlug: "robot-dus" },
+  { source: "catalog-pdfler-sayim-2026-fiyat-listesi", groupSlug: "sulama-bahce" },
   { source: /entas-bk/, groupSlug: "sulama-bahce", categorySlug: "bahce-el-aletleri" },
   { source: /forzaitalia/, groupSlug: "pompa-hidrofor" },
   { source: "catalog-pdfler-fiyat-listesi-subat-2025", groupSlug: "banyo-vitrifiye", categorySlug: "banyo-mobilya" },
@@ -490,6 +491,13 @@ export function classifyCatalogProduct(product: ClassifiableCatalogProduct): Cat
 
   if (sourceMatches(sourceKey, /forzaitalia/) && matchesAnyPhrase(name, ["flex baglanti hortumu", "flex hortum"])) {
     return buildClassification("hortum-flex", undefined, "name-rule", 0.99, "source-exception:forza-flex", name, categoryText);
+  }
+
+  if (
+    sourceMatches(sourceKey, "catalog-pdfler-sayim-2026-fiyat-listesi") &&
+    matchesAnyPhrase(`${name} ${categoryText}`, ["damlama", "damla sulama"])
+  ) {
+    return buildClassification("sulama-bahce", "damlama", "pinned-source", 1, "source:sayim-damlama", name, categoryText);
   }
 
   const pinned = PINNED_SOURCE_RULES.find((rule) => sourceMatches(sourceKey, rule.source));

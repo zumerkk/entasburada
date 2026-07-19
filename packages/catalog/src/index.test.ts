@@ -208,6 +208,25 @@ describe("@entas/catalog", () => {
     expect(modamixProduct.categoryLabel).toBe("Robot Duşlar");
   });
 
+  it("keeps every Sayım catalog product under Sulama & Bahçe", () => {
+    const hoseMender = classifyCatalogProduct({
+      sourceKey: "catalog-pdfler-sayim-2026-fiyat-listesi",
+      name: "Normal Hortum Eki 1/2 inç",
+      category: "Hortum Ekleri",
+      categoryPath: ["Bahçe Sulama Sistemleri", "Hortum Ekleri"]
+    });
+    const dripMender = classifyCatalogProduct({
+      sourceKey: "catalog-pdfler-sayim-2026-fiyat-listesi",
+      name: "Kurtağzı Ekleme Nipeli",
+      category: "Damlama Ek Parçaları",
+      categoryPath: ["Damlama Sulama Sistemleri", "Damlama Ek Parçaları"]
+    });
+
+    expect(hoseMender.groupSlug).toBe("sulama-bahce");
+    expect(dripMender.groupSlug).toBe("sulama-bahce");
+    expect(dripMender.categorySlug).toBe("damlama");
+  });
+
   it("distinguishes power-tool batteries from faucet batteries", () => {
     const powerBattery = classifyCatalogProduct({
       sourceKey: "catalog-pdfler-sgs-fiyat-listesi-ocak-2026",

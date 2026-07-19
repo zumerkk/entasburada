@@ -43,6 +43,34 @@ def image_quality_score(width, height, color_space, bpc):
     return min(100, score)
 
 
+def extract_image_bytes(doc, xref, smask_xref):
+    """Return the source image with its PDF soft mask applied when available."""
+    if smask_xref and smask_xref > 0:
+        try:
+            base_pixmap = fitz.Pixmap(doc, xref)
+            mask_pixmap = fitz.Pixmap(doc, smask_xref)
+            if base_pixmap.width == mask_pixmap.width and base_pixmap.height == mask_pixmap.height:
+                if base_pixmap.n > 4:
+                    base_pixmap = fitz.Pixmap(fitz.csRGB, base_pixmap)
+                combined = fitz.Pixmap(base_pixmap, mask_pixmap)
+                return {
+                    "image": combined.tobytes("png"),
+                    "ext": "png",
+                    "width": combined.width,
+                    "height": combined.height,
+                    "colorspace": combined.colorspace.name if combined.colorspace else "",
+                    "bpc": 8,
+                    "softMaskApplied": True,
+                }
+        except Exception:
+            pass
+
+    base_image = doc.extract_image(xref)
+    if not base_image or not base_image.get("image"):
+        return None
+    return {**base_image, "softMaskApplied": False}
+
+
 def main():
     if len(sys.argv) < 3:
         raise SystemExit(
@@ -62,6 +90,7 @@ def main():
     page_height = page.rect.height
 
     images_info = page.get_image_info(xrefs=True)
+    soft_masks = {row[0]: row[1] for row in page.get_images(full=True)}
     results = []
     seen_xrefs = set()
 
@@ -109,7 +138,7 @@ def main():
             continue
 
         try:
-            base_image = doc.extract_image(xref)
+            base_image = extract_image_bytes(doc, xref, soft_masks.get(xref, 0))
         except Exception:
             continue
 
@@ -123,8 +152,9 @@ def main():
         color_space = base_image.get("colorspace", 0)
         bpc = base_image.get("bpc", 0)
 
-        # Skip very small original resolution images
-        if img_width < 30 or img_height < 30:
+        # Keep narrow product cutouts (for example stakes and nipples) while
+        # still rejecting tiny decorative fragments.
+        if img_width < 16 or img_height < 16:
             continue
 
         quality = image_quality_score(img_width, img_height, color_space, bpc)
@@ -149,6 +179,7 @@ def main():
             "bpc": bpc,
             "sizeBytes": len(image_bytes),
             "quality": quality,
+            "softMaskApplied": bool(base_image.get("softMaskApplied")),
         }
 
         if output_dir:

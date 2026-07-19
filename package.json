@@ -14,6 +14,7 @@
     "import:pdf-directory": "node --env-file=apps/web/.env.local --import tsx scripts/import-pdf-directory.ts",
     "import:kangal-boru": "node --import tsx scripts/import-kangal-boru-list.ts",
     "import:modamix": "node --import tsx scripts/import-modamix-robot-dus.ts",
+    "finalize:sayim-import": "node --conditions=react-server --env-file=apps/web/.env.local --import tsx scripts/finalize-sayim-import.ts",
     "finalize:kaplin-import": "node --import tsx scripts/finalize-kaplin-import.ts",
     "repair:kaplin-page36-images": "node --import tsx scripts/repair-kaplin-page36-images.ts",
     "repair:kaplin-page33-images": "node --import tsx scripts/repair-kaplin-page33-images.ts",

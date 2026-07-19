@@ -361,7 +361,7 @@ export async function extractEmbeddedPdfImages(jobId: string, sourcePath: string
         };
         return result;
       })
-      .filter((value): value is ExtractedEmbeddedImage => value !== null && !value.duplicate && value.quality >= 25);
+      .filter((value): value is ExtractedEmbeddedImage => value !== null && !value.duplicate && value.quality >= 10);
   } catch {
     return [];
   }
@@ -431,7 +431,7 @@ export async function cropCatalogProductImage(input: {
     let sourceBuffer: Buffer;
 
     // Prefer original embedded image (much higher quality than render crop)
-    if (input.embeddedImage?.filePath && existsSync(input.embeddedImage.filePath) && input.embeddedImage.quality >= 30) {
+    if (input.embeddedImage?.filePath && existsSync(input.embeddedImage.filePath) && input.embeddedImage.quality >= 10) {
       sourceBuffer = await readFile(input.embeddedImage.filePath);
     } else {
       // Fallback: crop from rendered page
@@ -516,12 +516,13 @@ async function resolvePythonBinary(): Promise<string> {
   for (const candidate of candidates) {
     try {
       await access(candidate, constants.X_OK);
+      await execFile(candidate, ["-c", "import fitz"], { timeout: 5_000 });
       return candidate;
     } catch {
-      // Try the next runtime path.
+      // Try the next Python installation with the PDF runtime available.
     }
   }
-  throw new Error("Python 3 bulunamadı.");
+  throw new Error("PyMuPDF destekli Python 3 bulunamadı.");
 }
 
 async function resolveTesseractBinary(): Promise<string | null> {
