@@ -1,4 +1,5 @@
 import { FileText, Upload } from "lucide-react";
+import { QuoteLines } from "../../components/QuoteLines";
 import { getCurrentCustomer } from "../../lib/customer-auth";
 import { submitQuoteAction } from "./actions";
 
@@ -15,12 +16,6 @@ export default async function QuotePage({ searchParams }: { searchParams: Promis
   const initialSku = getParam(params, "sku");
   const initialName = getParam(params, "name");
   const initialUnit = getParam(params, "unit") || "Adet";
-  const rows = Array.from({ length: 6 }, (_, index) => ({
-    sku: index === 0 ? initialSku : "",
-    name: index === 0 ? initialName : "",
-    quantity: index === 0 && initialSku ? "1" : "",
-    unit: index === 0 ? initialUnit : "Adet"
-  }));
 
   return (
     <main>
@@ -65,24 +60,7 @@ export default async function QuotePage({ searchParams }: { searchParams: Promis
 
           <fieldset>
             <legend>Ürün satırları</legend>
-            <div className="quoteLines">
-              {rows.map((line, index) => (
-                <div className="quoteLine liveQuoteLine" key={index}>
-                  <input name="itemSku" placeholder="SKU veya barkod" defaultValue={line.sku} />
-                  <input name="itemName" placeholder="Ürün adı" defaultValue={line.name} />
-                  <input name="itemQuantity" type="number" min="1" placeholder="Adet" defaultValue={line.quantity} />
-                  <select name="itemUnit" defaultValue={line.unit}>
-                    {units.map((unit) => (
-                      <option value={unit} key={unit}>
-                        {unit}
-                      </option>
-                    ))}
-                  </select>
-                  <input name="itemTargetPrice" inputMode="decimal" placeholder="Hedef fiyat" />
-                  <input name="itemTargetDeliveryDate" type="date" aria-label="Satır teslimat tarihi" />
-                </div>
-              ))}
-            </div>
+            <QuoteLines units={[...units]} initialSku={initialSku || undefined} initialName={initialName || undefined} initialUnit={initialUnit || undefined} />
           </fieldset>
 
           <fieldset>

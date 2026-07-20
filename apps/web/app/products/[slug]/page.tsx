@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { Box, FileText, Heart, PackageCheck, Scale, ShieldCheck, ShoppingCart, Truck } from "lucide-react";
 import { PriceGate, StockBadge, StatusPill } from "@entas/ui";
+import { AddToQuoteButton } from "../../../components/AddToQuoteButton";
 import { ProductViewTracker } from "../../../components/AnalyticsTracker";
 import { getPricedPublicProductBySlug, getPublicProductBySlug } from "../../../lib/catalog-repository";
 import { getCurrentCustomer } from "../../../lib/customer-auth";
@@ -117,13 +118,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           </div>
 
           <div className="detailActions">
-            <a
-              className="btn btnPrimary"
-              href={`/quote?sku=${encodeURIComponent(product.sku)}&name=${encodeURIComponent(product.name)}&unit=${encodeURIComponent(product.unitType)}`}
-            >
-              <FileText size={18} aria-hidden="true" />
-              Teklif İste
-            </a>
+            <AddToQuoteButton sku={product.sku} name={product.name} unit={product.unitType} />
             <button className="btn btnSecondary" type="button">
               <Heart size={18} aria-hidden="true" />
               Favoriye Al

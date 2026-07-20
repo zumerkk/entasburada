@@ -1,4 +1,5 @@
 import { CheckCircle2, FileText, Search } from "lucide-react";
+import { ClearQuoteBasket } from "../../../components/ClearQuoteBasket";
 import { getQuoteByTrackingCode } from "../../../lib/commercial-repository";
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -12,6 +13,7 @@ export default async function QuoteSuccessPage({ searchParams }: { searchParams:
 
   return (
     <main>
+      <ClearQuoteBasket />
       <section className="shell pageIntro successIntro">
         <div>
           <span className="eyebrow dark">Talep alındı</span>

@@ -5,6 +5,7 @@ import { getCatalogTree } from "../lib/catalog-repository";
 import { COMPANY_CONTACT } from "../lib/company-contact";
 import { getCurrentCustomer } from "../lib/customer-auth";
 import { MegaMenu } from "./MegaMenu";
+import { QuoteBadge } from "./QuoteBadge";
 
 export async function Header() {
   const [catalogTree, customer, brandSettings] = await Promise.all([getCatalogTree(), getCurrentCustomer(), getBrandSettings()]);
@@ -61,7 +62,8 @@ export async function Header() {
             <a className="headerIcon" href={customer ? "/account" : "/login"} title="Bayi hesabım">
               <UserRound size={20} aria-hidden="true" />
             </a>
-            <a className="headerIcon" href="/quote" title="Teklif listem">
+            <a className="headerIcon quoteIconWrap" href="/quote" title="Teklif listem">
+              <QuoteBadge />
               <FileText size={20} aria-hidden="true" />
             </a>
             <a className="headerIcon" href={customer ? "/cart" : "/login"} title={customer ? `${cart?.items.length ?? 0} sepet satırı` : "Sepet için bayi girişi gerekir"}>

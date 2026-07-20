@@ -1330,7 +1330,7 @@ button {
 }
 
 .quoteLine.liveQuoteLine {
-  grid-template-columns: minmax(120px, 0.9fr) minmax(180px, 1.4fr) 88px 110px 120px 150px;
+  grid-template-columns: minmax(120px, 0.9fr) minmax(180px, 1.4fr) 88px 110px 120px 150px 34px;
 }
 
 .quoteLine.quickOrderLine {
@@ -4813,4 +4813,88 @@ a.metricCard {
   color: #065f46;
   font-size: 14px;
   font-weight: 700;
+}
+
+/* ===== Teklif sepeti ===== */
+.quoteIconWrap {
+  position: relative;
+}
+
+.quoteBadge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--orange-600, #f97316);
+  color: var(--white, #fff);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 850;
+  line-height: 1;
+}
+
+.addToQuote {
+  display: grid;
+  gap: 8px;
+}
+
+.addToQuote .btn.added {
+  background: #16a34a;
+  border-color: #16a34a;
+}
+
+.addToQuoteLink {
+  font-size: 13.5px;
+  font-weight: 750;
+  color: var(--green-900, #14342b);
+  text-decoration: underline;
+}
+
+.addToQuoteLink:hover {
+  color: var(--orange-600, #f97316);
+}
+
+.quoteLinesSummary {
+  margin: 0 0 10px;
+  padding: 10px 14px;
+  background: var(--teal-50, #e8fbf9);
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.liveQuoteLine {
+  position: relative;
+}
+
+.liveQuoteLine.fromBasket input[name="itemName"] {
+  border-color: #9ed8c8;
+}
+
+.quoteLineRemove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  min-height: 42px;
+  border: 1px solid var(--line, #d7dedb);
+  border-radius: 8px;
+  background: var(--white, #fff);
+  color: #b91c1c;
+  cursor: pointer;
+}
+
+.quoteLineRemove:hover {
+  background: #fef2f2;
+  border-color: #fca5a5;
+}
+
+.quoteLineAdd {
+  justify-self: start;
+  margin-top: 4px;
 }
