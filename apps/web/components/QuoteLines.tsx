@@ -85,7 +85,7 @@ export function QuoteLines({ units, initialSku, initialName, initialUnit }: Quot
 
   return (
     <div className="quoteLines">
-      {filled > 1 ? <p className="quoteLinesSummary">Teklif listenizde {filled} ürün var. Kataloğa dönüp eklemeye devam edebilirsiniz; liste kaybolmaz.</p> : null}
+      {filled > 1 ? <p className="quoteLinesSummary">Sepetinizdeki {filled} ürün aşağıda listelendi. Kataloğa dönüp eklemeye devam edebilirsiniz; sepetiniz kaybolmaz.</p> : null}
       {lines.map((line) => (
         <div className={`quoteLine liveQuoteLine${line.fromBasket ? " fromBasket" : ""}`} key={line.key}>
           <input name="itemSku" placeholder="SKU veya barkod" value={line.sku} onChange={(e) => updateLine(line.key, { sku: e.target.value })} />

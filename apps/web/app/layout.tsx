@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
+import { QuoteBasketBar } from "../components/QuoteBasketBar";
 import { VideoPopup } from "../components/VideoPopup";
 import "./globals.css";
 
@@ -26,6 +27,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         <Header />
         {children}
+        <QuoteBasketBar />
         <VideoPopup />
         <Footer />
       </body>
