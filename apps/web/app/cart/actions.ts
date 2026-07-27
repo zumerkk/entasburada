@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { addCartItems, clearCart, removeCartItem, updateCartQuantities, type CartItemInput } from "../../lib/cart-repository";
 import { createOrderFromCustomerCart, createQuoteFromCustomerCart } from "../../lib/cart-checkout";
-import { getOrderByTrackingCode } from "../../lib/commercial-repository";
+import { getOrderByTrackingCode, updateOrderOperation } from "../../lib/commercial-repository";
+import { createPaymentSession } from "../../lib/payment/ziraatpay";
 import { trackCartEvent } from "../../lib/analytics-repository";
 import { requireCustomer } from "../../lib/customer-auth";
 
@@ -112,6 +113,49 @@ export async function reorderAction(formData: FormData): Promise<void> {
 
 function normalizeEmail(value: string): string {
   return (value || "").trim().toLocaleLowerCase("tr-TR");
+}
+
+/**
+ * Sepetten DİREKT kartla öde: siparişi oluştur → PAYMENT_PENDING'e al → ZiraatPay
+ * oturumu aç → ödeme sayfasına yönlendir. Admin onayı beklemeden bayi hemen öder.
+ * Oturum açılamazsa sipariş PAYMENT_PENDING kalır; sipariş sayfasından tekrar denenebilir.
+ */
+export async function payCartWithCardAction(): Promise<void> {
+  const customer = await requireCustomer();
+  const order = await createOrderFromCustomerCart(customer).catch((error) =>
+    redirect(`/cart?error=${encodeURIComponent(errorMessage(error, "Sipariş oluşturulamadı."))}`)
+  );
+
+  await updateOrderOperation(
+    {
+      orderId: order.id,
+      status: "PAYMENT_PENDING",
+      paymentStatus: "Kart ödemesi bekleniyor",
+      internalNote: "Bayi sepetten kartla ödeme başlattı."
+    },
+    "system"
+  );
+  await trackCartEvent(customer, "order_create", { cartTotal: order.totalAmount });
+  revalidateCartPaths();
+
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "");
+  // Oturum açma hatasında siparişi kaybetmeyelim: sipariş sayfasına düş, oradan tekrar denenir.
+  let target = `/orders/${encodeURIComponent(order.trackingCode)}?payment=failed`;
+  try {
+    const session = await createPaymentSession({
+      merchantPaymentId: order.trackingCode,
+      amount: order.totalAmount,
+      currency: "TRY",
+      returnUrl: `${siteUrl}/api/payments/ziraatpay/callback`,
+      customerId: order.email || order.dealerUser,
+      customerName: order.companyName,
+      customerEmail: order.email
+    });
+    target = session.redirectUrl;
+  } catch {
+    // sipariş PAYMENT_PENDING kaldı; kullanıcı /orders/{kod} sayfasından "Kartla Öde" ile tekrar dener
+  }
+  redirect(target);
 }
 
 function itemsFromForm(formData: FormData): CartItemInput[] {

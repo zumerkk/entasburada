@@ -1,9 +1,9 @@
-import { AlertTriangle, ArrowLeft, FileText, RotateCcw, ShoppingCart, Trash2 } from "lucide-react";
+import { AlertTriangle, ArrowLeft, CreditCard, FileText, RotateCcw, ShoppingCart, Trash2 } from "lucide-react";
 import { EmptyState, StatusPill } from "@entas/ui";
 import { CartQuantityField } from "../../components/CartQuantityField";
 import { loadPricedCart } from "../../lib/cart-repository";
 import { requireCustomer } from "../../lib/customer-auth";
-import { clearCartAction, createOrderFromCartAction, createQuoteFromCartAction, removeCartItemAction, updateCartAction } from "./actions";
+import { clearCartAction, createOrderFromCartAction, createQuoteFromCartAction, payCartWithCardAction, removeCartItemAction, updateCartAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -115,8 +115,14 @@ export default async function CartPage({ searchParams }: { searchParams: Promise
                     Teklif Oluştur
                   </button>
                 </form>
-                <form action={createOrderFromCartAction}>
+                <form action={payCartWithCardAction}>
                   <button className="btn btnPrimary" type="submit" disabled={!cart.canCreateOrder} title={cart.orderBlockReason}>
+                    <CreditCard size={17} aria-hidden="true" />
+                    Kartla Öde
+                  </button>
+                </form>
+                <form action={createOrderFromCartAction}>
+                  <button className="btn btnSecondary" type="submit" disabled={!cart.canCreateOrder} title={cart.orderBlockReason}>
                     <ShoppingCart size={17} aria-hidden="true" />
                     Sipariş Oluştur
                   </button>

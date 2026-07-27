@@ -42,5 +42,7 @@ services:
         sync: false
       - key: ZIRAATPAY_MERCHANT_USER
         sync: false
+      - key: ZIRAATPAY_MERCHANT_PASSWORD
+        sync: false
       - key: ZIRAATPAY_SECRET_KEY
         sync: false

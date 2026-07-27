@@ -1,5 +1,5 @@
 import "server-only";
-import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
+import { createHash, timingSafeEqual } from "node:crypto";
 
 /**
  * ZiraatPay (Payten API v2) ödeme sağlayıcısı — izole entegrasyon modülü.
@@ -22,7 +22,8 @@ export type ZiraatPayMode = "test" | "prod";
 export interface ZiraatPayConfig {
   merchant: string; // MERCHANT — üye iş yeri kodu
   merchantUser: string; // MERCHANTUSER — API kullanıcısı (panel girişinden AYRI)
-  secretKey: string; // Gizli Anahtar — hem istek HASH'i hem dönüş imzası için
+  merchantPassword: string; // MERCHANTPASSWORD — SESSIONTOKEN isteği için ZORUNLU
+  secretKey: string; // Gizli Anahtar — dönüş imzası (sdSha512) doğrulaması için
   mode: ZiraatPayMode;
   apiBaseUrl: string; // ACTION=SESSIONTOKEN POST edilecek taban URL
   paymentPageBaseUrl: string; // HPP tabanı; sessionToken sonuna eklenir
@@ -49,6 +50,7 @@ export function getZiraatPayConfig(): ZiraatPayConfig {
   cachedConfig = {
     merchant: requireEnv("ZIRAATPAY_MERCHANT"),
     merchantUser: requireEnv("ZIRAATPAY_MERCHANT_USER"),
+    merchantPassword: requireEnv("ZIRAATPAY_MERCHANT_PASSWORD"),
     secretKey: requireEnv("ZIRAATPAY_SECRET_KEY"),
     mode,
     apiBaseUrl: process.env.ZIRAATPAY_API_URL?.trim() || API_BASE[mode],
@@ -91,27 +93,17 @@ export interface CreateSessionResult {
  * ACTION=SESSIONTOKEN ile HPP oturumu açar. Başarılıysa sessionToken + yönlendirme
  * adresi döner; başarısızsa responseCode/errorMsg ile Error fırlatır.
  *
- * Kimlik doğrulama: şifre yerine RANDOM + HASH (panel: "API Hash doğrulama").
- *   HASH = SHA256hex(ACTION + MERCHANT + CUSTOMER + MERCHANTPAYMENTID + secretKey + RANDOM)
- * Böylece API şifresi hatta hiç gitmiyor.
+ * Kimlik doğrulama: MERCHANT + MERCHANTUSER + MERCHANTPASSWORD (Paratika/MSU standardı).
  */
 export async function createPaymentSession(input: CreateSessionInput): Promise<CreateSessionResult> {
   const config = getZiraatPayConfig();
 
-  const action = "SESSIONTOKEN";
-  const random = generateRandom();
-  const hash = buildRequestHash(
-    { action, customer: input.customerId, merchantPaymentId: input.merchantPaymentId, random },
-    config
-  );
-
   const body = new URLSearchParams();
-  body.set("ACTION", action);
+  body.set("ACTION", "SESSIONTOKEN");
+  body.set("SESSIONTYPE", "PAYMENTSESSION"); // HPP oturumu
   body.set("MERCHANT", config.merchant);
   body.set("MERCHANTUSER", config.merchantUser);
-  body.set("RANDOM", random);
-  body.set("HASH", hash);
-  body.set("SESSIONTYPE", "PAYMENTSESSION"); // HPP oturumu (⚠️ panelden teyit)
+  body.set("MERCHANTPASSWORD", config.merchantPassword);
   body.set("MERCHANTPAYMENTID", input.merchantPaymentId);
   body.set("AMOUNT", input.amount);
   body.set("CURRENCY", input.currency ?? "TRY");
@@ -150,25 +142,6 @@ export async function createPaymentSession(input: CreateSessionInput): Promise<C
     sessionToken: data.sessionToken,
     redirectUrl: `${config.paymentPageBaseUrl}/${data.sessionToken}`
   };
-}
-
-/** 8-64 karakter arası, sadece rakam+harf, tekil rastgele değer (panel şartı). */
-function generateRandom(): string {
-  return randomBytes(16).toString("hex"); // 32 hex karakter → alfanümerik, aralıkta
-}
-
-/**
- * İstek imzası (panel: "API Hash doğrulama kullanım bilgisi"):
- *   HASH = HEX( SHA-256( ACTION + MERCHANT + CUSTOMER + MERCHANTPAYMENTID + secretKey + RANDOM ) )
- * Ayraç yok, doğrudan birleştirme; secretKey parametre olarak GÖNDERİLMEZ, sadece hash'te kullanılır.
- */
-export function buildRequestHash(
-  parts: { action: string; customer: string; merchantPaymentId: string; random: string },
-  config: Pick<ZiraatPayConfig, "merchant" | "secretKey">
-): string {
-  const payload =
-    parts.action + config.merchant + parts.customer + parts.merchantPaymentId + config.secretKey + parts.random;
-  return createHash("sha256").update(payload, "utf8").digest("hex");
 }
 
 export interface ReturnParams {
