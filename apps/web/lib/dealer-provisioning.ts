@@ -164,7 +164,7 @@ function buildDirectWelcomeEmail(account: CustomerAccount, tempPassword: string)
   </div>`;
 }
 
-function dealerProfile(segment: CustomerAccount["segment"]): Pick<
+export function dealerProfile(segment: CustomerAccount["segment"]): Pick<
   CustomerAccount,
   | "tierName"
   | "tierRank"

@@ -8,7 +8,7 @@ import {
 } from "../../../lib/dealer-application-repository";
 import { buildCredentialsWhatsappHref } from "../../../lib/dealer-provisioning";
 import { getCustomers, type CustomerSegment } from "../../../lib/customer-auth";
-import { updateDealerApplicationStatusAction } from "../actions";
+import { updateDealerAccountAction, updateDealerApplicationStatusAction } from "../actions";
 import { AdminFrame } from "../AdminFrame";
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -90,27 +90,54 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
               <span>Durum</span>
             </div>
             {visibleCustomers.map((customer) => (
-              <div className="adminTableRow dealerAccountRows" key={customer.id}>
-                <span>
-                  <strong>{customer.companyName}</strong>
-                  <small>{customer.authorizedPerson}</small>
-                </span>
-                <span>
-                  <strong>{customer.email}</strong>
-                  <small>{customer.phone}</small>
-                </span>
-                <span>
-                  <strong>{customer.city}</strong>
-                  <small>{customer.deliveryAddress}</small>
-                </span>
-                <span>
-                  <strong>{customer.tierName ?? segmentLabel(customer.segment)}</strong>
-                  <small>{customer.tierRank ?? segmentLabel(customer.segment)}</small>
-                </span>
-                <strong>%{customer.baseDiscountRate}</strong>
-                <StatusPill tone={customer.status === "approved" ? "success" : customer.status === "suspended" ? "danger" : "warning"}>
-                  {customer.status === "approved" ? "Aktif" : customer.status === "suspended" ? "Askıda" : "Beklemede"}
-                </StatusPill>
+              <div key={customer.id}>
+                <div className="adminTableRow dealerAccountRows">
+                  <span>
+                    <strong>{customer.companyName}</strong>
+                    <small>{customer.authorizedPerson}</small>
+                  </span>
+                  <span>
+                    <strong>{customer.email}</strong>
+                    <small>{customer.phone}</small>
+                  </span>
+                  <span>
+                    <strong>{customer.city}</strong>
+                    <small>{customer.deliveryAddress}</small>
+                  </span>
+                  <span>
+                    <strong>{customer.tierName ?? segmentLabel(customer.segment)}</strong>
+                    <small>{customer.tierRank ?? segmentLabel(customer.segment)}</small>
+                  </span>
+                  <strong>%{customer.baseDiscountRate}</strong>
+                  <StatusPill tone={customer.status === "approved" ? "success" : customer.status === "suspended" ? "danger" : "warning"}>
+                    {customer.status === "approved" ? "Aktif" : customer.status === "suspended" ? "Askıda" : "Beklemede"}
+                  </StatusPill>
+                </div>
+                <details className="dealerEdit">
+                  <summary>Bayiyi düzenle</summary>
+                  <form action={updateDealerAccountAction} className="adminFilterForm inlineCommercialForm">
+                    <input type="hidden" name="customerId" value={customer.id} />
+                    <label>
+                      Firma adı
+                      <input name="companyName" defaultValue={customer.companyName} />
+                    </label>
+                    <label>
+                      Yetkili kişi
+                      <input name="authorizedPerson" defaultValue={customer.authorizedPerson} />
+                    </label>
+                    <label>
+                      Segment / kademe
+                      <select name="segment" defaultValue={customer.segment}>
+                        <option value="standard">Standart Bayi (Bronz)</option>
+                        <option value="industrial">Sanayi Pro (Gümüş)</option>
+                        <option value="project">Kurumsal Proje (Platin) — en üst</option>
+                      </select>
+                    </label>
+                    <button className="btn btnPrimary" type="submit">
+                      Kaydet
+                    </button>
+                  </form>
+                </details>
               </div>
             ))}
           </div>

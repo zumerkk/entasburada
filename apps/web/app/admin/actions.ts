@@ -19,7 +19,8 @@ import {
   updateDealerApplicationStatus,
   type DealerApplicationStatus
 } from "../../lib/dealer-application-repository";
-import { provisionDealerAccount } from "../../lib/dealer-provisioning";
+import { dealerProfile, provisionDealerAccount } from "../../lib/dealer-provisioning";
+import { updateCustomerAccount, type CustomerSegment } from "../../lib/customer-auth";
 
 export async function syncImportAction(): Promise<void> {
   await requireAdmin();
@@ -134,6 +135,37 @@ export async function updateDealerApplicationStatusAction(formData: FormData): P
   revalidatePath("/admin/dealers");
   revalidatePath("/admin");
   revalidatePath("/admin/notifications");
+}
+
+const DEALER_SEGMENTS: CustomerSegment[] = ["standard", "industrial", "project"];
+
+/**
+ * Mevcut bir bayinin firma adı / yetkili / segment (kademe) bilgisini günceller.
+ * Segment değişince tam tier profili (iskonto, kredi, perks...) otomatik uygulanır.
+ */
+export async function updateDealerAccountAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+  const customerId = getString(formData, "customerId");
+  const companyName = getString(formData, "companyName");
+  const authorizedPerson = getString(formData, "authorizedPerson");
+  const rawSegment = getString(formData, "segment");
+  const segment = DEALER_SEGMENTS.includes(rawSegment as CustomerSegment) ? (rawSegment as CustomerSegment) : "standard";
+
+  if (!customerId) {
+    redirect("/admin/dealers?error=" + encodeURIComponent("Bayi seçilmedi."));
+  }
+
+  await updateCustomerAccount(customerId, {
+    ...(companyName ? { companyName } : {}),
+    ...(authorizedPerson ? { authorizedPerson } : {}),
+    segment,
+    // Segmentin tam kademe profili (tierName/tierRank/iskonto/kredi/perks...) tutarlı uygulanır.
+    ...dealerProfile(segment)
+  });
+
+  revalidatePath("/admin/dealers");
+  revalidatePath("/account");
+  redirect("/admin/dealers?ok=" + encodeURIComponent("Bayi güncellendi."));
 }
 
 function toDealerStatus(value: string): DealerApplicationStatus {

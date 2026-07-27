@@ -5817,3 +5817,25 @@ a.metricCard {
   color: var(--orange-600);
   border-color: var(--orange-600);
 }
+
+/* --- Admin: bayi düzenle --- */
+.dealerEdit {
+  border: 1px solid var(--line);
+  border-top: none;
+  padding: 0 14px;
+  background: var(--surface);
+}
+.dealerEdit > summary {
+  cursor: pointer;
+  padding: 8px 0;
+  font-size: 0.82rem;
+  color: var(--green-900);
+  user-select: none;
+}
+.dealerEdit[open] > summary {
+  border-bottom: 1px dashed var(--line);
+  margin-bottom: 10px;
+}
+.dealerEdit form {
+  padding-bottom: 12px;
+}
