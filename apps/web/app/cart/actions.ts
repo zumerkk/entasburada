@@ -44,11 +44,11 @@ export async function clearCartAction(): Promise<void> {
   redirect("/cart");
 }
 
-export async function removeCartItemAction(formData: FormData): Promise<void> {
+export async function removeCartItemAction(itemId: string, _formData: FormData): Promise<void> {
   const customer = await requireCustomer();
-  const itemId = getString(formData, "removeItemId");
-  if (itemId) {
-    await removeCartItem(customer, itemId);
+  const cleanItemId = (itemId ?? "").trim();
+  if (cleanItemId) {
+    await removeCartItem(customer, cleanItemId);
     await trackCartEvent(customer, "cart_remove");
   }
   revalidateCartPaths();

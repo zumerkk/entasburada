@@ -73,7 +73,7 @@ export default async function CartPage({ searchParams }: { searchParams: Promise
                     <span>{item.discountRate ?? "-"}</span>
                     <span>{item.priceAvailable ? item.displayLineTotal : "-"}</span>
                     <span>
-                      <button className="cartRemoveButton" type="submit" formAction={removeCartItemAction} name="removeItemId" value={item.id}>
+                      <button className="cartRemoveButton" type="submit" formAction={removeCartItemAction.bind(null, item.id)}>
                         <Trash2 size={15} aria-hidden="true" />
                         Kaldır
                       </button>
