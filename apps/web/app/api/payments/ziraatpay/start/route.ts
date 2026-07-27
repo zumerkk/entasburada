@@ -38,6 +38,11 @@ export async function POST(request: Request): Promise<Response> {
     return NextResponse.json({ error: "NEXT_PUBLIC_SITE_URL tanımlı değil." }, { status: 500 });
   }
 
+  const customerIp =
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    request.headers.get("x-real-ip")?.trim() ||
+    "127.0.0.1";
+
   try {
     const session = await createPaymentSession({
       merchantPaymentId: order.trackingCode,
@@ -46,7 +51,15 @@ export async function POST(request: Request): Promise<Response> {
       returnUrl: `${siteUrl}/api/payments/ziraatpay/callback`,
       customerId: order.email || order.dealerUser,
       customerName: order.companyName,
-      customerEmail: order.email
+      customerEmail: order.email,
+      customerPhone: order.phone,
+      customerIp,
+      orderItems: order.items.map((item) => ({
+        productCode: item.sku,
+        name: item.productName,
+        quantity: Number(item.quantity) || 1,
+        amount: parseFloat(String(item.lineTotal).replace(",", ".")) || 0
+      }))
     });
     return NextResponse.json({ redirectUrl: session.redirectUrl });
   } catch (error) {

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { addCartItems, clearCart, removeCartItem, updateCartQuantities, type CartItemInput } from "../../lib/cart-repository";
 import { createOrderFromCustomerCart, createQuoteFromCustomerCart } from "../../lib/cart-checkout";
@@ -139,6 +140,11 @@ export async function payCartWithCardAction(): Promise<void> {
   revalidateCartPaths();
 
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "");
+  const headerList = await headers();
+  const customerIp =
+    headerList.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    headerList.get("x-real-ip")?.trim() ||
+    "127.0.0.1";
   // Oturum açma hatasında siparişi kaybetmeyelim: sipariş sayfasına düş, oradan tekrar denenir.
   let target = `/orders/${encodeURIComponent(order.trackingCode)}?payment=failed`;
   try {
@@ -149,7 +155,15 @@ export async function payCartWithCardAction(): Promise<void> {
       returnUrl: `${siteUrl}/api/payments/ziraatpay/callback`,
       customerId: order.email || order.dealerUser,
       customerName: order.companyName,
-      customerEmail: order.email
+      customerEmail: order.email,
+      customerPhone: order.phone,
+      customerIp,
+      orderItems: order.items.map((item) => ({
+        productCode: item.sku,
+        name: item.productName,
+        quantity: Number(item.quantity) || 1,
+        amount: parseFloat(String(item.lineTotal).replace(",", ".")) || 0
+      }))
     });
     target = session.redirectUrl;
   } catch {

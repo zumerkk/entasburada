@@ -67,6 +67,13 @@ function requireEnv(name: string): string {
   return value.trim();
 }
 
+export interface SessionOrderItem {
+  productCode: string;
+  name: string;
+  quantity: number;
+  amount: number;
+}
+
 export interface CreateSessionInput {
   /** Bizim benzersiz referansımız — siparişin orderNo/trackingCode'u. MERCHANTPAYMENTID olur. */
   merchantPaymentId: string;
@@ -81,6 +88,8 @@ export interface CreateSessionInput {
   customerEmail?: string;
   customerPhone?: string;
   customerIp?: string;
+  /** Sipariş satırları — Paratika PAYMENTSESSION için ORDERITEMS olarak gönderilir. */
+  orderItems?: SessionOrderItem[];
 }
 
 export interface CreateSessionResult {
@@ -113,6 +122,20 @@ export async function createPaymentSession(input: CreateSessionInput): Promise<C
   if (input.customerEmail) body.set("CUSTOMEREMAIL", input.customerEmail);
   if (input.customerPhone) body.set("CUSTOMERPHONE", input.customerPhone);
   if (input.customerIp) body.set("CUSTOMERIP", input.customerIp);
+  if (input.orderItems && input.orderItems.length > 0) {
+    body.set(
+      "ORDERITEMS",
+      JSON.stringify(
+        input.orderItems.map((item) => ({
+          productCode: item.productCode,
+          name: item.name,
+          description: item.name,
+          quantity: item.quantity,
+          amount: item.amount
+        }))
+      )
+    );
+  }
 
   const response = await fetch(config.apiBaseUrl, {
     method: "POST",
