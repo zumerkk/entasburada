@@ -1,10 +1,15 @@
 import { notFound } from "next/navigation";
-import { Box, FileText, Heart, PackageCheck, Scale, ShieldCheck, ShoppingCart, Truck } from "lucide-react";
+import { Box, FileText, PackageCheck, Scale, ShieldCheck, ShoppingCart, Truck } from "lucide-react";
 import { PriceGate, StockBadge, StatusPill } from "@entas/ui";
+import { AddToCartControl } from "../../../components/AddToCartControl";
 import { AddToQuoteButton } from "../../../components/AddToQuoteButton";
+import { FavoriteButton } from "../../../components/FavoriteButton";
+import { StockAlertButton } from "../../../components/StockAlertButton";
 import { ProductViewTracker } from "../../../components/AnalyticsTracker";
 import { getPricedPublicProductBySlug, getPublicProductBySlug } from "../../../lib/catalog-repository";
 import { getCurrentCustomer } from "../../../lib/customer-auth";
+import { isFavorite } from "../../../lib/favorites-repository";
+import { isSubscribedToStock } from "../../../lib/stock-notify-repository";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +31,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   if (!product) {
     notFound();
   }
+
+  const favorited = customer ? await isFavorite(customer.id, product.sku) : false;
+  const outOfStock = product.stockTone === "out_of_stock";
+  const stockSubscribed = outOfStock && customer ? await isSubscribedToStock(customer.id, product.sku) : false;
 
   return (
     <main className="productDetailPage">
@@ -118,17 +127,37 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           </div>
 
           <div className="detailActions">
+            <AddToCartControl
+              sku={product.sku}
+              name={product.name}
+              unit={product.unitType}
+              minOrder={product.minOrder}
+              isAuthenticated={Boolean(customer)}
+              variant="detail"
+            />
             <AddToQuoteButton sku={product.sku} name={product.name} unit={product.unitType} />
-            <button className="btn btnSecondary" type="button">
-              <Heart size={18} aria-hidden="true" />
-              Favoriye Al
-            </button>
+            <FavoriteButton
+              sku={product.sku}
+              name={product.name}
+              isFavorite={favorited}
+              isAuthenticated={Boolean(customer)}
+              redirectTo={`/products/${product.slug}`}
+            />
+            {outOfStock ? (
+              <StockAlertButton
+                sku={product.sku}
+                name={product.name}
+                slug={product.slug}
+                isSubscribed={stockSubscribed}
+                isAuthenticated={Boolean(customer)}
+              />
+            ) : null}
             <a
               className="btn btnSecondary"
               href={customer ? `/quick-order?sku=${encodeURIComponent(product.sku)}&name=${encodeURIComponent(product.name)}` : "/login?next=/quick-order"}
             >
               <ShoppingCart size={18} aria-hidden="true" />
-              Hızlı Sipariş
+              Toplu Sipariş Ekranı
             </a>
           </div>
         </article>

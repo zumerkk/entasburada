@@ -4,6 +4,7 @@ import { getBrandSettings } from "../lib/brand-settings";
 import { getCatalogTree } from "../lib/catalog-repository";
 import { COMPANY_CONTACT } from "../lib/company-contact";
 import { getCurrentCustomer } from "../lib/customer-auth";
+import { CartBadge } from "./CartBadge";
 import { MegaMenu } from "./MegaMenu";
 import { QuoteBadge } from "./QuoteBadge";
 
@@ -66,7 +67,13 @@ export async function Header() {
               <QuoteBadge />
               <FileText size={20} aria-hidden="true" />
             </a>
-            <a className="headerIcon" href={customer ? "/cart" : "/login"} title={customer ? `${cart?.items.length ?? 0} sepet satırı` : "Sepet için bayi girişi gerekir"}>
+            <a
+              className="headerIcon cartIconWrap"
+              href={customer ? "/cart" : "/login?next=/cart"}
+              aria-label={customer ? `Sepet, ${cart?.items.length ?? 0} ürün satırı` : "Sepet için bayi girişi"}
+              title={customer ? `${cart?.items.length ?? 0} sepet satırı` : "Sepet için bayi girişi gerekir"}
+            >
+              <CartBadge initialCount={cart?.items.length ?? 0} />
               <ShoppingCart size={20} aria-hidden="true" />
             </a>
           </div>
@@ -92,6 +99,15 @@ export async function Header() {
           </a>
           <a className="headerIcon" href={customer ? "/account" : "/login"} title="Bayi girişi">
             <ShieldCheck size={20} aria-hidden="true" />
+          </a>
+          <a
+            className="headerIcon cartIconWrap"
+            href={customer ? "/cart" : "/login?next=/cart"}
+            aria-label={customer ? `Sepet, ${cart?.items.length ?? 0} ürün satırı` : "Sepet için bayi girişi"}
+            title="Sepet"
+          >
+            <CartBadge initialCount={cart?.items.length ?? 0} />
+            <ShoppingCart size={20} aria-hidden="true" />
           </a>
         </div>
       </div>

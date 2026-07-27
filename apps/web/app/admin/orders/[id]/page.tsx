@@ -3,6 +3,7 @@ import { Save } from "lucide-react";
 import { StatusPill } from "@entas/ui";
 import { requireAdmin } from "../../../../lib/admin-auth";
 import { getAdminOrderById } from "../../../../lib/commercial-repository";
+import { SHIPPING_CARRIERS } from "../../../../lib/shipping-carriers";
 import { updateOrderOperationAction } from "../../actions";
 import { AdminFrame } from "../../AdminFrame";
 
@@ -146,6 +147,21 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
                 </option>
               ))}
             </select>
+          </label>
+          <label>
+            Kargo firması
+            <select name="carrier" defaultValue={order.carrier ?? ""}>
+              <option value="">— Seçiniz —</option>
+              {SHIPPING_CARRIERS.map((carrier) => (
+                <option value={carrier.key} key={carrier.key}>
+                  {carrier.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Kargo takip no
+            <input name="trackingNumber" defaultValue={order.trackingNumber ?? ""} placeholder="Takip numarası" />
           </label>
           <label>
             Depo

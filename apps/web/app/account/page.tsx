@@ -1,12 +1,15 @@
-import { ArrowRight, BadgePercent, Bell, Clock3, FileSpreadsheet, FileText, Gauge, PackageCheck, ShieldCheck, ShoppingCart, Truck, WalletCards } from "lucide-react";
+import { ArrowRight, BadgePercent, Bell, BellRing, Clock3, FileSpreadsheet, FileText, Gauge, Heart, PackageCheck, ShieldCheck, ShoppingCart, TrendingDown, TrendingUp, Truck, WalletCards } from "lucide-react";
 import { StatusPill } from "@entas/ui";
 import { loadPricedCart } from "../../lib/cart-repository";
 import { requireCustomer } from "../../lib/customer-auth";
 import { formatMoney, parseMoney, segmentLabel } from "../../lib/customer-pricing";
 import { searchAdminOrders, searchAdminQuotes } from "../../lib/commercial-repository";
+import { getCustomerBalance, getLedgerEntries } from "../../lib/customer-balance-repository";
 import { listCustomerNotifications } from "../../lib/notification-repository";
+import { listFavorites } from "../../lib/favorites-repository";
+import { listStockSubscriptions } from "../../lib/stock-notify-repository";
 import { customerLogoutAction } from "../login/actions";
-import { changePasswordAction } from "./actions";
+import { changePasswordAction, toggleFavoriteAction, unsubscribeStockAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -18,12 +21,17 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const passwordErrorRaw = params.passwordError;
   const passwordError = Array.isArray(passwordErrorRaw) ? passwordErrorRaw[0] : passwordErrorRaw;
   const customer = await requireCustomer();
-  const [quotes, orders, cart, notifications] = await Promise.all([
+  const [quotes, orders, cart, notifications, balance, ledger, favorites, stockSubscriptions] = await Promise.all([
     searchAdminQuotes({ q: customer.email, limit: 5 }),
     searchAdminOrders({ q: customer.email, limit: 5 }),
     loadPricedCart(customer),
-    listCustomerNotifications(customer.email, 8)
+    listCustomerNotifications(customer.email, 8),
+    getCustomerBalance(customer),
+    getLedgerEntries(customer.id),
+    listFavorites(customer.id),
+    listStockSubscriptions(customer.id)
   ]);
+  const recentLedger = ledger.slice(0, 6);
   const tierName = customer.tierName ?? segmentLabel(customer.segment);
   const tierRank = customer.tierRank ?? "Bayi";
   const openOrders = orders.items.filter((order) => !["DELIVERED", "COMPLETED", "CANCELLED"].includes(order.status)).length;
@@ -116,14 +124,18 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
           <strong>{openOrders.toLocaleString("tr-TR")}</strong>
           <small>{orders.total.toLocaleString("tr-TR")} toplam sipariş</small>
         </a>
-        <div className="accountStat">
+        <a className="accountStat" href="#cari-hesap">
           <span className="accountStatIcon">
             <WalletCards size={18} aria-hidden="true" />
           </span>
-          <span>Limit</span>
-          <strong>{creditLimit}</strong>
-          <small>Onay limiti {approvalLimit}</small>
-        </div>
+          <span>Cari bakiye</span>
+          <strong>{formatMoney(balance.balance, balance.currency)}</strong>
+          <small>
+            {balance.overLimit
+              ? `Limit aşımı ${formatMoney(balance.overLimitAmount, balance.currency)}`
+              : `Kullanılabilir ${formatMoney(Math.max(0, balance.availableCredit), balance.currency)}`}
+          </small>
+        </a>
       </section>
 
       <section className="shell accountWorkGrid">
@@ -194,6 +206,69 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
         </div>
 
         <aside className="accountSideRail">
+          <section className="accountPanel" id="cari-hesap">
+            <div className="accountSectionHeader compact">
+              <div>
+                <span>Cari hesap</span>
+                <h2>Bakiye durumu</h2>
+              </div>
+              <WalletCards size={20} aria-hidden="true" />
+            </div>
+            <div className="balanceOverview">
+              <div className="balanceHeadline">
+                <span>Güncel bakiye</span>
+                <strong className={balance.balance > 0 ? "isDebt" : "isClear"}>
+                  {formatMoney(balance.balance, balance.currency)}
+                </strong>
+                <small>{balance.balance > 0 ? "Ödenecek borç bakiyesi" : balance.balance < 0 ? "Lehinize alacak bakiyesi" : "Bakiye kapalı"}</small>
+              </div>
+              <div className="balanceMeta">
+                <div>
+                  <span>Kredi limiti</span>
+                  <strong>{creditLimit}</strong>
+                </div>
+                <div>
+                  <span>Kullanılabilir</span>
+                  <strong className={balance.overLimit ? "isDebt" : ""}>
+                    {formatMoney(balance.availableCredit, balance.currency)}
+                  </strong>
+                </div>
+                <div>
+                  <span>Onay limiti</span>
+                  <strong>{approvalLimit}</strong>
+                </div>
+              </div>
+              {balance.overLimit ? (
+                <p className="balanceAlert" role="alert">
+                  Kredi limitiniz {formatMoney(balance.overLimitAmount, balance.currency)} tutarında aşıldı. Yeni sipariş öncesi ödeme gerekebilir.
+                </p>
+              ) : null}
+            </div>
+            <div className="balanceLedger">
+              {recentLedger.map((item) => (
+                <div className={`balanceRow ${item.type}`} key={item.id}>
+                  <span className="balanceRowIcon" aria-hidden="true">
+                    {item.type === "debit" ? <TrendingUp size={15} /> : <TrendingDown size={15} />}
+                  </span>
+                  <span className="balanceRowInfo">
+                    <strong>{item.description}</strong>
+                    <small>{formatDate(item.date)}</small>
+                  </span>
+                  <span className={`balanceRowAmount ${item.type}`}>
+                    {item.type === "debit" ? "+" : "−"}
+                    {formatMoney(parseMoney(item.amount), balance.currency)}
+                  </span>
+                </div>
+              ))}
+              {recentLedger.length === 0 ? (
+                <div className="accountEmptyState slim">
+                  <WalletCards size={18} aria-hidden="true" />
+                  <strong>Cari hareket yok</strong>
+                </div>
+              ) : null}
+            </div>
+          </section>
+
           <section className="accountPanel">
             <div className="accountSectionHeader compact">
               <div>
@@ -258,6 +333,73 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
                 <div className="accountEmptyState slim">
                   <Clock3 size={18} aria-hidden="true" />
                   <strong>Yeni bildirim yok</strong>
+                </div>
+              ) : null}
+            </div>
+          </section>
+
+          <section className="accountPanel" id="favorites">
+            <div className="accountSectionHeader compact">
+              <div>
+                <span>Kayıtlı liste</span>
+                <h2>Favorilerim</h2>
+              </div>
+              <Heart size={20} aria-hidden="true" />
+            </div>
+            <div className="favoriteList">
+              {favorites.map((favorite) => (
+                <div className="favoriteRow" key={favorite.sku}>
+                  <div className="favoriteInfo">
+                    <strong>{favorite.productName}</strong>
+                    <small>{favorite.sku}</small>
+                  </div>
+                  <form action={toggleFavoriteAction}>
+                    <input type="hidden" name="sku" value={favorite.sku} />
+                    <input type="hidden" name="productName" value={favorite.productName} />
+                    <input type="hidden" name="redirectTo" value="/account#favorites" />
+                    <button type="submit" className="btn btnGhost btnSmall" aria-label="Favorilerden çıkar">
+                      Çıkar
+                    </button>
+                  </form>
+                </div>
+              ))}
+              {favorites.length === 0 ? (
+                <div className="accountEmptyState slim">
+                  <Heart size={18} aria-hidden="true" />
+                  <strong>Henüz favori ürün yok</strong>
+                </div>
+              ) : null}
+            </div>
+          </section>
+
+          <section className="accountPanel" id="stock-alerts">
+            <div className="accountSectionHeader compact">
+              <div>
+                <span>Stok bildirimleri</span>
+                <h2>Stok gelince haber ver</h2>
+              </div>
+              <BellRing size={20} aria-hidden="true" />
+            </div>
+            <div className="favoriteList">
+              {stockSubscriptions.map((sub) => (
+                <div className="favoriteRow" key={sub.id}>
+                  <div className="favoriteInfo">
+                    <strong>{sub.productSlug ? <a href={`/products/${sub.productSlug}`}>{sub.productName}</a> : sub.productName}</strong>
+                    <small>{sub.sku}</small>
+                  </div>
+                  <form action={unsubscribeStockAction}>
+                    <input type="hidden" name="sku" value={sub.sku} />
+                    <input type="hidden" name="redirectTo" value="/account#stock-alerts" />
+                    <button type="submit" className="btn btnGhost btnSmall">
+                      İptal
+                    </button>
+                  </form>
+                </div>
+              ))}
+              {stockSubscriptions.length === 0 ? (
+                <div className="accountEmptyState slim">
+                  <BellRing size={18} aria-hidden="true" />
+                  <strong>Stok bildirim aboneliğiniz yok</strong>
                 </div>
               ) : null}
             </div>

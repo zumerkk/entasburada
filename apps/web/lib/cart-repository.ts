@@ -3,16 +3,17 @@ import { randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
-import type { CatalogProductRecord } from "@entas/catalog";
+import { toPublicProduct, type CatalogProductRecord } from "@entas/catalog";
 import { loadCatalogStore } from "./catalog-repository";
+import { MAX_CART_LINES, normalizeCartQuantity, summarizeCartPricing, type CartCurrencyTotal } from "./cart-policy";
 import type { CustomerAccount } from "./customer-auth";
 import { formatMoney, money, parseMoney, priceProductForCustomer } from "./customer-pricing";
 
 export interface CartItemInput {
-  sku?: string;
-  productName?: string;
-  quantity?: number;
-  unit?: string;
+  sku?: string | undefined;
+  productName?: string | undefined;
+  quantity?: number | undefined;
+  unit?: string | undefined;
 }
 
 export interface CartItem {
@@ -31,13 +32,18 @@ export interface CustomerCart {
 }
 
 export interface PricedCartItem extends CartItem {
+  slug?: string;
+  image?: string;
   brand?: string;
   category?: string;
   stockStatus?: string;
+  stockLabel?: string;
+  minOrder: number;
   unitNetPrice: string;
   displayUnitPrice: string;
   lineTotal: string;
   displayLineTotal: string;
+  priceAvailable: boolean;
   discountRate?: string;
   priceRuleLabel?: string;
   currency: string;
@@ -50,93 +56,134 @@ export interface CartSummary {
   totalAmount: string;
   displayTotal: string;
   currency: string;
+  totals: CartCurrencyTotal[];
+  currencies: string[];
+  unpricedItemCount: number;
+  canCreateOrder: boolean;
+  orderBlockReason?: string;
 }
 
 const rootDir = findWorkspaceRoot(process.cwd());
-const dataDir = path.join(rootDir, "data");
+const dataDir = process.env.ENTAS_CART_DATA_DIR ? path.resolve(process.env.ENTAS_CART_DATA_DIR) : path.join(rootDir, "data");
 const cartsPath = path.join(dataDir, "carts.json");
+let cartMutationQueue: Promise<void> = Promise.resolve();
 
-export async function addCartItems(customer: CustomerAccount, inputs: CartItemInput[]): Promise<CustomerCart> {
-  const rows = await loadCarts();
-  const index = rows.findIndex((cart) => cart.customerId === customer.id);
-  const existing = index === -1 ? createEmptyCart(customer.id) : rows[index]!;
-  const products = (await loadCatalogStore()).products;
-  const now = new Date().toISOString();
-  const nextItems = [...existing.items];
+export class CartInputError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "CartInputError";
+  }
+}
 
-  for (const input of inputs) {
-    const sku = clean(input.sku);
-    const productName = clean(input.productName);
-    if (!sku && !productName) {
-      continue;
+export async function addCartItems(
+  customer: CustomerAccount,
+  inputs: CartItemInput[],
+  options: { catalogOnly?: boolean } = {}
+): Promise<CustomerCart> {
+  return mutateCart(async () => {
+    if (inputs.length > 50) throw new CartInputError("Tek seferde en fazla 50 ürün eklenebilir.");
+    const [rows, store] = await Promise.all([loadCarts(), loadCatalogStore()]);
+    const index = rows.findIndex((cart) => cart.customerId === customer.id);
+    const existing = index === -1 ? createEmptyCart(customer.id) : rows[index]!;
+    const now = new Date().toISOString();
+    const nextItems = existing.items.map((item) => ({ ...item }));
+
+    for (const input of inputs) {
+      const sku = clean(input.sku);
+      const productName = clean(input.productName);
+      if (!sku && !productName) continue;
+
+      const product = findCatalogProduct(store.products, sku, productName);
+      if (!product && options.catalogOnly) {
+        throw new CartInputError(`${sku || productName} aktif katalogda bulunamadı.`);
+      }
+
+      const normalizedSku = product?.sku || sku || customSku(productName);
+      const minimum = product?.minOrder ?? 1;
+      const quantity = normalizeCartQuantity(input.quantity, minimum);
+      const existingItem = nextItems.find((item) => normalize(item.sku) === normalize(normalizedSku));
+
+      if (existingItem) {
+        existingItem.quantity = normalizeCartQuantity(existingItem.quantity + quantity, minimum);
+        existingItem.productName = product?.name || productName || existingItem.productName;
+        existingItem.unit = product?.unitType || clean(input.unit) || existingItem.unit;
+        continue;
+      }
+
+      nextItems.push({
+        id: `cart-item-${randomUUID()}`,
+        sku: normalizedSku,
+        productName: product?.name || productName || normalizedSku,
+        quantity,
+        unit: product?.unitType || clean(input.unit) || "Adet",
+        addedAt: now
+      });
     }
 
-    const product = findCatalogProduct(products, sku, productName);
-    const normalizedSku = product?.sku || sku;
-    const quantity = Math.max(1, Math.trunc(Number(input.quantity) || 1));
-    const existingItem = nextItems.find((item) => normalize(item.sku) === normalize(normalizedSku));
+    if (nextItems.length > MAX_CART_LINES) throw new CartInputError(`Sepette en fazla ${MAX_CART_LINES} farklı ürün bulunabilir.`);
+    const nextCart: CustomerCart = { customerId: customer.id, updatedAt: now, items: nextItems };
+    if (index === -1) rows.unshift(nextCart);
+    else rows[index] = nextCart;
 
-    if (existingItem) {
-      existingItem.quantity += quantity;
-      continue;
-    }
-
-    nextItems.push({
-      id: `cart-item-${randomUUID()}`,
-      sku: normalizedSku || "OZEL-URUN",
-      productName: product?.name || productName || normalizedSku,
-      quantity,
-      unit: clean(input.unit) || product?.unitType || "Adet",
-      addedAt: now
-    });
-  }
-
-  const nextCart: CustomerCart = { customerId: customer.id, updatedAt: now, items: nextItems };
-  if (index === -1) {
-    rows.unshift(nextCart);
-  } else {
-    rows[index] = nextCart;
-  }
-
-  await saveCarts(rows);
-  return nextCart;
+    await saveCarts(rows);
+    return nextCart;
+  });
 }
 
 export async function updateCartQuantities(customer: CustomerAccount, quantities: Array<{ itemId: string; quantity: number }>): Promise<CustomerCart> {
-  const rows = await loadCarts();
-  const index = rows.findIndex((cart) => cart.customerId === customer.id);
-  const existing = index === -1 ? createEmptyCart(customer.id) : rows[index]!;
-  const quantityById = new Map(quantities.map((item) => [item.itemId, Math.max(0, Math.trunc(item.quantity || 0))]));
-  const nextCart: CustomerCart = {
-    customerId: customer.id,
-    updatedAt: new Date().toISOString(),
-    items: existing.items
-      .map((item) => ({ ...item, quantity: quantityById.get(item.id) ?? item.quantity }))
-      .filter((item) => item.quantity > 0)
-  };
+  return mutateCart(async () => {
+    const [rows, store] = await Promise.all([loadCarts(), loadCatalogStore()]);
+    const index = rows.findIndex((cart) => cart.customerId === customer.id);
+    const existing = index === -1 ? createEmptyCart(customer.id) : rows[index]!;
+    const quantityById = new Map(quantities.map((item) => [item.itemId, item.quantity]));
+    const nextCart: CustomerCart = {
+      customerId: customer.id,
+      updatedAt: new Date().toISOString(),
+      items: existing.items.flatMap((item) => {
+        const requested = quantityById.get(item.id);
+        if (requested == null) return [{ ...item }];
+        if (Number(requested) <= 0) return [];
+        const product = findCatalogProduct(store.products, item.sku, item.productName);
+        return [{ ...item, quantity: normalizeCartQuantity(requested, product?.minOrder ?? 1), unit: product?.unitType || item.unit }];
+      })
+    };
 
-  if (index === -1) {
-    rows.unshift(nextCart);
-  } else {
-    rows[index] = nextCart;
-  }
-
-  await saveCarts(rows);
-  return nextCart;
+    if (index === -1) rows.unshift(nextCart);
+    else rows[index] = nextCart;
+    await saveCarts(rows);
+    return nextCart;
+  });
 }
 
 export async function clearCart(customer: CustomerAccount): Promise<void> {
-  const rows = await loadCarts();
-  const index = rows.findIndex((cart) => cart.customerId === customer.id);
-  if (index === -1) {
-    return;
-  }
+  await mutateCart(async () => {
+    const rows = await loadCarts();
+    const index = rows.findIndex((cart) => cart.customerId === customer.id);
+    if (index === -1) return;
+    rows[index] = createEmptyCart(customer.id);
+    await saveCarts(rows);
+  });
+}
 
-  rows[index] = createEmptyCart(customer.id);
-  await saveCarts(rows);
+export async function removeCartItem(customer: CustomerAccount, itemId: string): Promise<CustomerCart> {
+  return mutateCart(async () => {
+    const rows = await loadCarts();
+    const index = rows.findIndex((cart) => cart.customerId === customer.id);
+    const existing = index === -1 ? createEmptyCart(customer.id) : rows[index]!;
+    const nextCart: CustomerCart = {
+      customerId: customer.id,
+      updatedAt: new Date().toISOString(),
+      items: existing.items.filter((item) => item.id !== itemId)
+    };
+    if (index === -1) rows.unshift(nextCart);
+    else rows[index] = nextCart;
+    await saveCarts(rows);
+    return nextCart;
+  });
 }
 
 export async function loadCustomerCart(customer: CustomerAccount): Promise<CustomerCart> {
+  await cartMutationQueue;
   const rows = await loadCarts();
   return rows.find((cart) => cart.customerId === customer.id) ?? createEmptyCart(customer.id);
 }
@@ -144,15 +191,16 @@ export async function loadCustomerCart(customer: CustomerAccount): Promise<Custo
 export async function loadPricedCart(customer: CustomerAccount): Promise<CartSummary> {
   const [cart, store] = await Promise.all([loadCustomerCart(customer), loadCatalogStore()]);
   const items = cart.items.map((item) => priceCartItem(item, customer, store.products));
-  const total = items.reduce((sum, item) => sum + parseMoney(item.lineTotal), 0);
-  const currency = items[0]?.currency ?? "TRY";
+  const policy = summarizeCartPricing(items);
+  const singleTotal = policy.totals.length === 1 ? policy.totals[0] : undefined;
   return {
     customerId: customer.id,
     updatedAt: cart.updatedAt,
     items,
-    totalAmount: money(total),
-    displayTotal: formatMoney(total, currency),
-    currency
+    totalAmount: singleTotal?.totalAmount ?? "0.00",
+    displayTotal: policy.totals.map((total) => total.displayTotal).join(" + ") || formatMoney(0, "TRY"),
+    currency: singleTotal?.currency ?? (policy.totals.length > 1 ? "MULTI" : "TRY"),
+    ...policy
   };
 }
 
@@ -179,6 +227,7 @@ async function ensureFile(): Promise<void> {
 
 function priceCartItem(item: CartItem, customer: CustomerAccount, products: CatalogProductRecord[]): PricedCartItem {
   const product = findCatalogProduct(products, item.sku, item.productName);
+  const publicProduct = product ? toPublicProduct(product) : null;
   const currency = product?.currency === "TL" ? "TRY" : product?.currency || "TRY";
   const price = product ? priceProductForCustomer(product, customer) : null;
   const unitPrice = price ? parseMoney(price.unitNetPrice) : 0;
@@ -187,13 +236,19 @@ function priceCartItem(item: CartItem, customer: CustomerAccount, products: Cata
   return stripUndefined({
     ...item,
     productName: product?.name || item.productName,
+    unit: product?.unitType || item.unit,
+    slug: publicProduct?.slug,
+    image: publicProduct?.image,
     brand: product?.brand,
-    category: product?.category,
+    category: publicProduct?.category,
     stockStatus: product?.stockStatus,
+    stockLabel: publicProduct?.stockLabel,
+    minOrder: publicProduct?.minOrder ?? 1,
     unitNetPrice: money(unitPrice),
     displayUnitPrice: price?.displayPrice ?? formatMoney(0, currency),
     lineTotal: money(lineTotal),
     displayLineTotal: formatMoney(lineTotal, currency),
+    priceAvailable: Boolean(price && unitPrice > 0),
     discountRate: price?.discountRate,
     priceRuleLabel: price?.ruleLabel,
     currency
@@ -205,25 +260,23 @@ function createEmptyCart(customerId: string): CustomerCart {
 }
 
 function findCatalogProduct(products: CatalogProductRecord[], sku: string, productName: string): CatalogProductRecord | undefined {
+  const eligibleProducts = products.filter((product) => product.status === "ACTIVE" && product.isVisible);
   const normalizedSku = normalize(sku);
   const normalizedName = normalize(productName);
 
   if (normalizedSku) {
-    const exact = products.find((product) =>
+    const exact = eligibleProducts.find((product) =>
       [product.sku, product.barcode ?? "", product.manufacturerCode ?? ""].some((value) => normalize(value) === normalizedSku)
     );
-    if (exact) {
-      return exact;
-    }
-
-    const loose = products.find((product) => normalize(product.name).includes(normalizedSku));
-    if (loose) {
-      return loose;
-    }
+    if (exact) return exact;
   }
 
   if (normalizedName) {
-    return products.find((product) => normalize(product.name).includes(normalizedName) || normalizedName.includes(normalize(product.name)));
+    const exact = eligibleProducts.find((product) => normalize(product.name) === normalizedName);
+    if (exact) return exact;
+    if (normalizedName.length >= 4) {
+      return eligibleProducts.find((product) => normalize(product.name).includes(normalizedName) || normalizedName.includes(normalize(product.name)));
+    }
   }
 
   return undefined;
@@ -255,6 +308,17 @@ function normalize(value: string): string {
     .replace(/[ö]/g, "o")
     .replace(/[ş]/g, "s")
     .replace(/[ü]/g, "u");
+}
+
+function customSku(productName: string): string {
+  const code = normalize(productName).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 48);
+  return `OZEL-${code || randomUUID().slice(0, 8)}`.toUpperCase();
+}
+
+function mutateCart<T>(operation: () => Promise<T>): Promise<T> {
+  const result = cartMutationQueue.then(operation, operation);
+  cartMutationQueue = result.then(() => undefined, () => undefined);
+  return result;
 }
 
 function stripUndefined<T>(value: T): T {

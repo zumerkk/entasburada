@@ -20,3 +20,4 @@ data/*.json
 
 # kaynak PDF katalogları repoya girmez
 Pdfler/
+.neon

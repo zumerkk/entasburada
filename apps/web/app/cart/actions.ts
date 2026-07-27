@@ -2,15 +2,20 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { addCartItems, clearCart, updateCartQuantities, type CartItemInput } from "../../lib/cart-repository";
+import { addCartItems, clearCart, removeCartItem, updateCartQuantities, type CartItemInput } from "../../lib/cart-repository";
 import { createOrderFromCustomerCart, createQuoteFromCustomerCart } from "../../lib/cart-checkout";
+import { getOrderByTrackingCode } from "../../lib/commercial-repository";
 import { trackCartEvent } from "../../lib/analytics-repository";
 import { requireCustomer } from "../../lib/customer-auth";
 
 export async function addQuickOrderItemsAction(formData: FormData): Promise<void> {
   const customer = await requireCustomer();
   const items = [...itemsFromForm(formData), ...(await itemsFromUpload(formData))];
-  await addCartItems(customer, items);
+  try {
+    await addCartItems(customer, items, { catalogOnly: true });
+  } catch (error) {
+    redirect(`/quick-order?error=${encodeURIComponent(errorMessage(error, "Ürünler sepete eklenemedi."))}`);
+  }
   await Promise.all(items.map((item) => trackCartEvent(customer, "cart_add", { productName: item.productName, sku: item.sku, quantity: item.quantity, unit: item.unit })));
   revalidateCartPaths();
   redirect("/cart");
@@ -39,6 +44,17 @@ export async function clearCartAction(): Promise<void> {
   redirect("/cart");
 }
 
+export async function removeCartItemAction(formData: FormData): Promise<void> {
+  const customer = await requireCustomer();
+  const itemId = getString(formData, "removeItemId");
+  if (itemId) {
+    await removeCartItem(customer, itemId);
+    await trackCartEvent(customer, "cart_remove");
+  }
+  revalidateCartPaths();
+  redirect("/cart");
+}
+
 export async function createQuoteFromCartAction(): Promise<void> {
   const customer = await requireCustomer();
   const quote = await createQuoteFromCustomerCart(customer);
@@ -49,10 +65,53 @@ export async function createQuoteFromCartAction(): Promise<void> {
 
 export async function createOrderFromCartAction(): Promise<void> {
   const customer = await requireCustomer();
-  const order = await createOrderFromCustomerCart(customer);
+  const order = await createOrderFromCustomerCart(customer).catch((error) =>
+    redirect(`/cart?error=${encodeURIComponent(errorMessage(error, "Sipariş oluşturulamadı."))}`)
+  );
   await trackCartEvent(customer, "order_create", { cartTotal: order.totalAmount });
   revalidateCartPaths();
   redirect(`/orders/${encodeURIComponent(order.trackingCode)}`);
+}
+
+export async function reorderAction(formData: FormData): Promise<void> {
+  const customer = await requireCustomer();
+  const trackingCode = getString(formData, "trackingCode");
+  if (!trackingCode) {
+    redirect("/account?error=" + encodeURIComponent("Sipariş kodu bulunamadı."));
+  }
+
+  const order = await getOrderByTrackingCode(trackingCode);
+  // Güvenlik: yalnızca kendi siparişini yeniden sipariş edebilir.
+  if (!order || normalizeEmail(order.email) !== normalizeEmail(customer.email)) {
+    redirect("/account?error=" + encodeURIComponent("Sipariş bulunamadı veya size ait değil."));
+  }
+
+  const items: CartItemInput[] = order.items
+    .map((item) => ({
+      sku: item.sku,
+      productName: item.productName,
+      quantity: Number(item.quantity) || 1,
+      unit: item.unit || "Adet"
+    }))
+    .filter((item) => getClean(item.sku) || getClean(item.productName));
+
+  if (items.length === 0) {
+    redirect(`/orders/${encodeURIComponent(trackingCode)}?reorder=empty`);
+  }
+
+  try {
+    await addCartItems(customer, items);
+  } catch (error) {
+    redirect(`/orders/${encodeURIComponent(trackingCode)}?reorder=error&msg=${encodeURIComponent(errorMessage(error, "Ürünler sepete eklenemedi."))}`);
+  }
+
+  await trackCartEvent(customer, "cart_add", { cartTotal: String(items.length), quantity: items.length });
+  revalidateCartPaths();
+  redirect("/cart?reorder=success");
+}
+
+function normalizeEmail(value: string): string {
+  return (value || "").trim().toLocaleLowerCase("tr-TR");
 }
 
 function itemsFromForm(formData: FormData): CartItemInput[] {
@@ -129,6 +188,10 @@ function getString(formData: FormData, key: string): string {
 
 function getClean(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
+}
+
+function errorMessage(error: unknown, fallback: string): string {
+  return error instanceof Error && error.message ? error.message : fallback;
 }
 
 function revalidateCartPaths(): void {

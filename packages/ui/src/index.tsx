@@ -9,7 +9,6 @@ import {
   PackageX,
   Search,
   ShieldCheck,
-  ShoppingCart,
   Sparkles,
   TriangleAlert
 } from "lucide-react";
@@ -96,6 +95,7 @@ export interface ProductCardProps {
   price?: string | undefined;
   listPrice?: string | undefined;
   discountRate?: string | undefined;
+  cartAction?: ReactNode | undefined;
 }
 
 export function ProductCard(props: ProductCardProps) {
@@ -131,20 +131,16 @@ export function ProductCard(props: ProductCardProps) {
           compact
         />
         <div className="productActions">
-          <a className="iconButton" href={props.href} title="Ürün detayı">
+          <a className="productActionLink" href={props.href}>
             <Search size={17} aria-hidden="true" />
+            İncele
           </a>
-          <a className="iconButton" href={`/quote?sku=${encodeURIComponent(props.sku)}&name=${encodeURIComponent(props.name)}`} title="Teklif listesine ekle">
+          <a className="productActionLink" href={`/quote?sku=${encodeURIComponent(props.sku)}&name=${encodeURIComponent(props.name)}`}>
             <FileText size={17} aria-hidden="true" />
-          </a>
-          <a
-            className={props.isApprovedDealer ? "iconButton" : "iconButton disabled"}
-            href={props.isApprovedDealer ? `/quick-order?sku=${encodeURIComponent(props.sku)}&name=${encodeURIComponent(props.name)}` : "/login?next=/quick-order"}
-            title={props.isApprovedDealer ? "Hızlı siparişe ekle" : "Sepet için bayi girişi gerekir"}
-          >
-            <ShoppingCart size={17} aria-hidden="true" />
+            Teklif
           </a>
         </div>
+        {props.cartAction ? <div className="productCartAction">{props.cartAction}</div> : null}
       </div>
     </article>
   );

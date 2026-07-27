@@ -1,4 +1,4 @@
-import { FileSpreadsheet, ShoppingCart } from "lucide-react";
+import { AlertTriangle, FileSpreadsheet, ShoppingCart } from "lucide-react";
 import { requireCustomer } from "../../lib/customer-auth";
 import { addQuickOrderItemsAction } from "../cart/actions";
 
@@ -11,6 +11,7 @@ export const dynamic = "force-dynamic";
 export default async function QuickOrderPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   await requireCustomer();
   const params = await searchParams;
+  const error = getParam(params, "error");
   const initialSku = getParam(params, "sku");
   const initialName = getParam(params, "name");
   const rows = Array.from({ length: 10 }, (_, index) => ({
@@ -31,6 +32,7 @@ export default async function QuickOrderPage({ searchParams }: { searchParams: P
 
       <section className="shell formLayout">
         <form className="applicationForm quoteForm" action={addQuickOrderItemsAction}>
+          {error ? <div className="cartAlert danger spanTwo"><AlertTriangle size={18} aria-hidden="true" /><span>{error}</span></div> : null}
           <fieldset>
             <legend>Ürün satırları</legend>
             <div className="quoteLines">

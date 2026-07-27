@@ -1,16 +1,44 @@
 import { notFound } from "next/navigation";
 import { StatusPill } from "@entas/ui";
 import { getOrderByTrackingCode } from "../../../lib/commercial-repository";
+import { PayWithCardButton } from "../../../components/PayWithCardButton";
+import { reorderAction } from "../../cart/actions";
+import { buildTrackingUrl, getCarrier } from "../../../lib/shipping-carriers";
 
 export const dynamic = "force-dynamic";
 
-export default async function OrderTrackingPage({ params }: { params: Promise<{ code: string }> }) {
+const PAYMENT_NOTICE: Record<string, { tone: string; text: string }> = {
+  success: { tone: "success", text: "Ödemeniz alındı. Teşekkürler." },
+  failed: { tone: "danger", text: "Ödeme tamamlanamadı. Lütfen tekrar deneyin." },
+  invalid: { tone: "danger", text: "Ödeme doğrulanamadı. Bir sorun oluştuysa bizimle iletişime geçin." },
+  notfound: { tone: "danger", text: "Sipariş bulunamadı." }
+};
+
+export default async function OrderTrackingPage({
+  params,
+  searchParams
+}: {
+  params: Promise<{ code: string }>;
+  searchParams: Promise<{ payment?: string; reorder?: string }>;
+}) {
   const { code } = await params;
+  const { payment, reorder } = await searchParams;
   const order = await getOrderByTrackingCode(code);
 
   if (!order) {
     notFound();
   }
+
+  const trackingUrl = buildTrackingUrl(order.carrier, order.trackingNumber);
+  const carrierLabel = getCarrier(order.carrier)?.label;
+
+  const notice = payment
+    ? PAYMENT_NOTICE[payment]
+    : reorder === "empty"
+      ? { tone: "danger", text: "Bu siparişte sepete eklenecek ürün bulunamadı." }
+      : reorder === "error"
+        ? { tone: "danger", text: "Ürünler sepete eklenemedi. Lütfen tekrar deneyin." }
+        : undefined;
 
   return (
     <main>
@@ -53,11 +81,42 @@ export default async function OrderTrackingPage({ params }: { params: Promise<{ 
                 {order.totalAmount} {order.currency}
               </strong>
             </div>
+            {order.trackingNumber ? (
+              <div className="spanTwo">
+                <span>Kargo takip</span>
+                <strong>
+                  {carrierLabel ? `${carrierLabel} · ` : ""}
+                  {trackingUrl ? (
+                    <a href={trackingUrl} target="_blank" rel="noopener noreferrer">
+                      {order.trackingNumber} ↗
+                    </a>
+                  ) : (
+                    order.trackingNumber
+                  )}
+                </strong>
+              </div>
+            ) : null}
             <div className="spanTwo">
               <span>Teslimat adresi</span>
               <strong>{order.deliveryAddress}</strong>
             </div>
           </div>
+
+          {notice ? (
+            <StatusPill tone={notice.tone === "success" ? "success" : "danger"}>{notice.text}</StatusPill>
+          ) : null}
+
+          {order.status === "PAYMENT_PENDING" ? (
+            <PayWithCardButton trackingCode={order.trackingCode} />
+          ) : null}
+
+          <form action={reorderAction} className="reorderForm">
+            <input type="hidden" name="trackingCode" value={order.trackingCode} />
+            <button type="submit" className="btn btnSecondary">
+              Yeniden Sipariş Ver
+            </button>
+            <span className="reorderHint">Bu siparişin tüm ürünlerini sepete ekler.</span>
+          </form>
 
           <div className="commercialTable">
             <div className="commercialTableHead orderItemRows">

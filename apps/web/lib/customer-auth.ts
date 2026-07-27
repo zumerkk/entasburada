@@ -109,6 +109,23 @@ export async function createCustomerAccount(account: Omit<CustomerAccount, "pass
   return record;
 }
 
+/** Mevcut bir hesabın alanlarını günceller; id ve şifre korunur. */
+export async function updateCustomerAccount(
+  customerId: string,
+  patch: Partial<Omit<CustomerAccount, "id" | "password">>
+): Promise<CustomerAccount> {
+  const customers = await getCustomers();
+  const index = customers.findIndex((customer) => customer.id === customerId);
+  if (index < 0) {
+    throw new Error("Hesap bulunamadı.");
+  }
+  const current = customers[index]!;
+  const updated: CustomerAccount = { ...current, ...patch, id: current.id, password: current.password };
+  customers[index] = updated;
+  await saveCustomers(customers);
+  return updated;
+}
+
 export async function changeCustomerPassword(customerId: string, currentPassword: string, newPassword: string): Promise<void> {
   const customers = await getCustomers();
   const index = customers.findIndex((customer) => customer.id === customerId);

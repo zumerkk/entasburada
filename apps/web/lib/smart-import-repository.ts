@@ -1056,7 +1056,14 @@ function toPdfExtractedProduct(
   const sku = clean(candidate.sku) || clean(candidate.manufacturerCode) || sourceRecordId;
   const brandName = clean(candidate.brand) || clean(extraction.pageBrand) || clean(job.pdfOptions?.brandHint) || "Marka Bekliyor";
   const categoryName = clean(candidate.category) || clean(extraction.pageCategory) || clean(job.pdfOptions?.categoryHint) || "PDF Katalog";
-  const currency = normalizeCurrency(candidate.currency || extraction.pageCurrency || job.pdfOptions?.defaultCurrency) || "TRY";
+  // Para birimi çözümü: fiyat listelerinde SAYFA başlığındaki para birimi ("Fiyat TL.")
+  // otoritedir. Per-satır AI tahmini sık yanılıyor (ör. TL sayfasında tek satır "EUR").
+  // Bu yüzden sayfa para birimi varsa o kazanır; yoksa satır tahmini, yoksa varsayılan.
+  const rowCurrency = normalizeCurrency(candidate.currency);
+  const pageCurrency = normalizeCurrency(extraction.pageCurrency);
+  const fallbackCurrency = normalizeCurrency(job.pdfOptions?.defaultCurrency);
+  const currency = pageCurrency || rowCurrency || fallbackCurrency || "TRY";
+  const currencyConflict = Boolean(rowCurrency && pageCurrency && rowCurrency !== pageCurrency);
   const stockQuantityKnown = candidate.stockQuantity !== null;
   const stockQuantity = stockQuantityKnown ? Math.max(0, candidate.stockQuantity ?? 0) : 0;
   const stockStatus = candidate.stockStatus === "unknown" ? toStockStatus(stockQuantityKnown ? String(stockQuantity) : undefined) : candidate.stockStatus;
@@ -1073,7 +1080,8 @@ function toPdfExtractedProduct(
   const extractionWarnings = uniqueStrings([
     ...candidate.warnings,
     ...extraction.warnings,
-    ...(!stockQuantityKnown ? ["Katalogda gerçek stok adedi bulunamadı; stok teyidi gerekli olarak işaretlendi."] : [])
+    ...(!stockQuantityKnown ? ["Katalogda gerçek stok adedi bulunamadı; stok teyidi gerekli olarak işaretlendi."] : []),
+    ...(currencyConflict ? [`Para birimi çakışması: satır "${rowCurrency}" tahmin etti, sayfa "${pageCurrency}" olduğu için sayfa değeri kullanıldı. Teyit edin.`] : [])
   ]);
   const confidenceScore = Math.round(clampNumber(candidate.confidence - (imageUrl ? 0 : 4) - (duplicateRisk === "high" ? 12 : duplicateRisk === "possible" ? 5 : 0), 0, 100));
 

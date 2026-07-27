@@ -604,6 +604,7 @@ button {
 
 .productCard {
   display: grid;
+  grid-template-rows: auto 1fr;
   min-width: 0;
   overflow: hidden;
   background: var(--white);
@@ -661,7 +662,9 @@ button {
 
 .productCardBody {
   display: grid;
+  align-content: start;
   gap: 10px;
+  min-height: 0;
   padding: 14px;
 }
 
@@ -777,9 +780,167 @@ button {
 }
 
 .productActions {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
+  margin-top: auto;
   padding-top: 4px;
+}
+
+.productActionLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 0 10px;
+  color: var(--green-900);
+  background: #f8fafb;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.productActionLink:hover {
+  color: var(--orange-600);
+  border-color: #fdba74;
+  background: #fff7ed;
+}
+
+.productCartAction {
+  min-width: 0;
+}
+
+.addToCartControl {
+  display: grid;
+  min-width: 0;
+  gap: 8px;
+}
+
+.addToCartControl.card {
+  grid-template-columns: minmax(104px, 0.85fr) minmax(126px, 1.15fr);
+}
+
+.addToCartControl.detail {
+  width: 100%;
+  grid-template-columns: minmax(150px, 0.55fr) minmax(190px, 1fr);
+}
+
+.cartQuantityControl {
+  display: grid;
+  grid-template-columns: 32px minmax(42px, 1fr) 32px;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--white);
+}
+
+.cartQuantityControl button {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  padding: 0;
+  color: var(--green-900);
+  background: #f8fafb;
+  border: 0;
+  cursor: pointer;
+}
+
+.cartQuantityControl button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.cartQuantityControl input {
+  width: 100%;
+  min-width: 0;
+  min-height: 36px;
+  padding: 0 3px;
+  color: var(--anthracite);
+  background: var(--white);
+  border: 0;
+  border-inline: 1px solid var(--line);
+  font-weight: 850;
+  text-align: center;
+  appearance: textfield;
+}
+
+.cartQuantityControl input::-webkit-outer-spin-button,
+.cartQuantityControl input::-webkit-inner-spin-button,
+.cartQuantityField input::-webkit-outer-spin-button,
+.cartQuantityField input::-webkit-inner-spin-button {
+  margin: 0;
+  appearance: none;
+}
+
+.cartQuantityControl > span {
+  grid-column: 1 / -1;
+  padding: 3px 5px;
+  overflow: hidden;
+  color: var(--muted);
+  background: #f8fafb;
+  border-top: 1px solid var(--line);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.addToCartButton {
+  width: 100%;
+  min-height: 58px;
+  padding-inline: 10px;
+  white-space: normal;
+}
+
+.addToCartButton.added {
+  background: #15803d;
+  border-color: #15803d;
+}
+
+.cartAddFeedback {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.cartAddFeedback:empty {
+  display: none;
+}
+
+.cartAddFeedback.added {
+  color: #166534;
+}
+
+.cartAddFeedback.error {
+  color: #b91c1c;
+}
+
+.cartAddFeedback a {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 3px;
+  color: var(--green-900);
+  font-weight: 900;
+}
+
+.spin {
+  animation: controlSpin 0.8s linear infinite;
+}
+
+@keyframes controlSpin {
+  to { transform: rotate(360deg); }
 }
 
 .iconButton {
@@ -2681,7 +2842,137 @@ a.metricCard {
 }
 
 .cartItemRows {
-  grid-template-columns: minmax(260px, 1.5fr) minmax(100px, 0.45fr) minmax(130px, 0.6fr) minmax(100px, 0.45fr) minmax(130px, 0.6fr);
+  grid-template-columns: minmax(300px, 1.55fr) minmax(150px, 0.7fr) minmax(125px, 0.55fr) minmax(90px, 0.4fr) minmax(125px, 0.55fr) minmax(90px, 0.4fr);
+}
+
+.cartWorkspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 330px;
+  gap: 18px;
+  align-items: start;
+}
+
+.cartItemsPanel {
+  padding: 18px;
+}
+
+.cartItemsPanel .commercialTableHead,
+.cartItemsPanel .commercialTableRow {
+  min-width: 1040px;
+}
+
+.cartProductCell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.cartProductCell > span:last-child {
+  min-width: 0;
+}
+
+.cartProductCell a {
+  color: var(--anthracite);
+}
+
+.cartProductCell a:hover {
+  color: var(--orange-600);
+}
+
+.cartProductImage {
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  flex: 0 0 62px;
+  overflow: hidden;
+  color: var(--muted);
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.cartProductImage img {
+  width: 100%;
+  height: 100%;
+  padding: 4px;
+  object-fit: contain;
+}
+
+.cartQuantityField {
+  display: grid;
+  grid-template-columns: 32px minmax(52px, 1fr) 32px;
+  min-width: 132px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.cartQuantityField button {
+  display: grid;
+  place-items: center;
+  min-height: 38px;
+  padding: 0;
+  color: var(--green-900);
+  background: #f8fafb;
+  border: 0;
+  cursor: pointer;
+}
+
+.cartQuantityField button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.cartQuantityField input {
+  min-width: 0;
+  padding: 0 4px;
+  border: 0;
+  border-inline: 1px solid var(--line);
+  border-radius: 0;
+  text-align: center;
+  appearance: textfield;
+}
+
+.cartQuantityField small {
+  grid-column: 1 / -1;
+  padding: 3px 6px;
+  overflow: hidden;
+  color: var(--muted);
+  background: #f8fafb;
+  border-top: 1px solid var(--line);
+  font-size: 10px;
+  font-weight: 800;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cartRemoveButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 34px;
+  padding: 0 8px;
+  color: #b91c1c;
+  background: #fff;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.cartRemoveButton:hover {
+  background: #fef2f2;
+  border-color: #f87171;
+}
+
+.pricePending {
+  color: #92400e;
+  font-size: 12px;
 }
 
 .adminQuoteItemRows {
@@ -2723,10 +3014,11 @@ a.metricCard {
 }
 
 .cartCheckoutPanel {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  position: sticky;
+  top: 18px;
+  display: grid;
   gap: 16px;
+  padding: 20px;
 }
 
 .cartCheckoutPanel span,
@@ -2739,7 +3031,87 @@ a.metricCard {
 .cartCheckoutPanel strong {
   display: block;
   color: var(--green-900);
-  font-size: 28px;
+  font-size: 24px;
+}
+
+.cartSummaryHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 13px;
+  border-bottom: 1px solid var(--line);
+}
+
+.cartSummaryHeading strong {
+  font-size: 15px;
+}
+
+.cartCurrencyTotals {
+  display: grid;
+  gap: 10px;
+}
+
+.cartCurrencyTotals > div {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.cartCurrencyTotals strong {
+  font-size: 22px;
+  text-align: right;
+}
+
+.cartCheckoutPanel .commercialActionRow {
+  display: grid;
+  gap: 8px;
+}
+
+.cartCheckoutPanel .commercialActionRow form,
+.cartCheckoutPanel .commercialActionRow .btn {
+  width: 100%;
+}
+
+.cartCheckoutPanel .commercialActionRow .btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.cartAlert {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 11px 12px;
+  border: 1px solid;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.cartAlert svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+
+.cartAlert.warning {
+  color: #854d0e;
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+.cartAlert.danger {
+  color: #991b1b;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.pageIntroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
 }
 
 .accountGrid {
@@ -3110,6 +3482,337 @@ a.metricCard {
   width: max-content;
   color: var(--orange-600);
   font-weight: 950;
+}
+
+/* Cari hesap / bakiye paneli */
+.balanceOverview {
+  display: grid;
+  gap: 12px;
+}
+
+.balanceHeadline {
+  display: grid;
+  gap: 2px;
+  padding: 12px 14px;
+  background: #f4f8f9;
+  border: 1px solid #dbe5e8;
+  border-radius: 8px;
+}
+
+.balanceHeadline > span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.balanceHeadline strong {
+  font-size: 24px;
+  color: var(--green-900);
+  line-height: 1.1;
+}
+
+.balanceHeadline strong.isDebt {
+  color: #c0392b;
+}
+
+.balanceHeadline strong.isClear {
+  color: #1f8a5b;
+}
+
+.balanceHeadline small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.balanceMeta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.balanceMeta > div {
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.balanceMeta span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.balanceMeta strong {
+  color: var(--green-900);
+  font-size: 14px;
+}
+
+.balanceMeta strong.isDebt {
+  color: #c0392b;
+}
+
+.balanceAlert {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fdecea;
+  border: 1px solid #f5b7b1;
+  color: #922b21;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.balanceLedger {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.balanceRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.balanceRowIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: #eef5f4;
+  color: var(--teal-500);
+}
+
+.balanceRow.debit .balanceRowIcon {
+  background: #fdecea;
+  color: #c0392b;
+}
+
+.balanceRow.credit .balanceRowIcon {
+  background: #e8f6ef;
+  color: #1f8a5b;
+}
+
+.balanceRowInfo {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.balanceRowInfo strong {
+  color: var(--green-900);
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.balanceRowInfo small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.balanceRowAmount {
+  font-weight: 950;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.balanceRowAmount.debit {
+  color: #c0392b;
+}
+
+.balanceRowAmount.credit {
+  color: #1f8a5b;
+}
+
+/* Admin cari hesaplar ekranı */
+.balanceHeaderStats {
+  display: flex;
+  gap: 12px;
+}
+
+.balanceHeaderStats > div {
+  display: grid;
+  gap: 2px;
+  padding: 8px 14px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  min-width: 140px;
+}
+
+.balanceHeaderStats span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.balanceHeaderStats strong {
+  color: var(--green-900);
+  font-size: 18px;
+}
+
+.balanceAdminGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.balanceTable {
+  display: grid;
+  gap: 8px;
+}
+
+.balanceTableRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.balanceTableRow:hover {
+  border-color: #8cc7c2;
+  transform: translateY(-1px);
+}
+
+.balanceTableRow.active {
+  border-color: var(--teal-500);
+  box-shadow: 0 0 0 1px var(--teal-500);
+}
+
+.balanceTableName {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.balanceTableName strong {
+  color: var(--green-900);
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.balanceTableName small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.balanceTableFig {
+  display: grid;
+  gap: 2px;
+  text-align: right;
+}
+
+.balanceTableFig strong {
+  font-size: 14px;
+}
+
+.balanceTableFig strong.isDebt {
+  color: #c0392b;
+}
+
+.balanceTableFig strong.isClear {
+  color: #1f8a5b;
+}
+
+.balanceTableFig small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.balanceMetaWide {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 16px;
+}
+
+.balanceForm {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  background: #f8fafb;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.balanceForm label {
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--green-900);
+}
+
+.balanceForm input,
+.balanceForm select {
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.balanceFormRow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.balanceForm .btn {
+  justify-self: start;
+}
+
+.balanceLedgerAdmin {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.balanceLedgerAdmin h3 {
+  margin: 0 0 4px;
+  color: var(--green-900);
+  font-size: 15px;
+}
+
+.balanceEmpty {
+  margin: 0;
+  padding: 12px;
+  color: var(--muted);
+  font-size: 13px;
+  background: #f8fafb;
+  border: 1px dashed #b8c8cc;
+  border-radius: 8px;
+}
+
+@media (max-width: 900px) {
+  .balanceAdminGrid {
+    grid-template-columns: 1fr;
+  }
+  .balanceFormRow,
+  .balanceMetaWide {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 .privilegeGrid {
@@ -4950,4 +5653,167 @@ a.metricCard {
   .quoteBasketBarInfo {
     font-size: 13px;
   }
+}
+
+/* --- Admin: Veri Kalitesi paneli --- */
+.dqStatGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.dqStat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--white);
+}
+.dqStat.dqStatWarn {
+  border-color: var(--orange-600);
+  box-shadow: inset 0 0 0 1px var(--orange-600);
+}
+.dqStatIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--green-900);
+}
+.dqStat strong {
+  display: block;
+  font-size: 1.5rem;
+  line-height: 1.1;
+  color: var(--anthracite);
+}
+.dqStat span:not(.dqStatIcon) {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.dqPanel {
+  margin-bottom: 20px;
+}
+.dqPanel h2 {
+  margin: 0 0 4px;
+}
+.dqHint {
+  color: var(--muted);
+  font-size: 0.88rem;
+  margin: 0 0 14px;
+}
+.dqRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+.dqBadges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.dqIssueTable {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.dqIssueHead,
+.dqIssueRow {
+  display: grid;
+  grid-template-columns: 3fr 1.2fr 1fr 2fr;
+  gap: 12px;
+  padding: 10px 14px;
+  align-items: center;
+}
+.dqIssueHead {
+  background: var(--surface);
+  font-weight: 600;
+  color: var(--green-900);
+  font-size: 0.82rem;
+}
+.dqIssueRow {
+  border-top: 1px solid var(--line);
+  font-size: 0.88rem;
+}
+.dqIssueRow span:first-child {
+  color: var(--anthracite);
+}
+
+/* --- Sipariş: Kartla Öde + Yeniden Sipariş --- */
+.payWithCard {
+  margin-top: 18px;
+}
+.payWithCard .formError {
+  margin-top: 8px;
+}
+.reorderForm {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.reorderHint {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* --- Favoriler --- */
+.favoriteBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.favoriteBtnActive {
+  color: var(--orange-600);
+  border-color: var(--orange-600);
+}
+.btnSmall {
+  padding: 6px 12px;
+  font-size: 0.82rem;
+}
+.favoriteList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.favoriteRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+.favoriteRow:last-child {
+  border-bottom: none;
+}
+.favoriteInfo strong {
+  display: block;
+  font-size: 0.92rem;
+  color: var(--anthracite);
+}
+.favoriteInfo small {
+  color: var(--muted);
+}
+
+/* --- Stok gelince haber ver --- */
+.stockAlertBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.stockAlertActive {
+  color: var(--orange-600);
+  border-color: var(--orange-600);
 }

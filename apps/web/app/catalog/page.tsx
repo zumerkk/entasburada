@@ -1,5 +1,6 @@
 import { Filter, Search, SlidersHorizontal } from "lucide-react";
 import { EmptyState, ProductCard, StatusPill } from "@entas/ui";
+import { AddToCartControl } from "../../components/AddToCartControl";
 import { CatalogSearchTracker } from "../../components/AnalyticsTracker";
 import { getCatalogFacets, getCatalogNavigation, getPricedPublicProducts } from "../../lib/catalog-repository";
 import { getCurrentCustomer } from "../../lib/customer-auth";
@@ -158,6 +159,15 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
                   price={product.price}
                   listPrice={product.listPrice}
                   discountRate={product.discountRate}
+                  cartAction={
+                    <AddToCartControl
+                      sku={product.sku}
+                      name={product.name}
+                      unit={product.unitType}
+                      minOrder={product.minOrder}
+                      isAuthenticated={Boolean(customer)}
+                    />
+                  }
                 />
               ))}
             </div>

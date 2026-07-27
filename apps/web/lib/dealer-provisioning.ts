@@ -1,6 +1,6 @@
 import "server-only";
 import { randomBytes, randomUUID } from "node:crypto";
-import { createCustomerAccount, findCustomerByEmail, type CustomerAccount } from "./customer-auth";
+import { createCustomerAccount, findCustomerByEmail, updateCustomerAccount, type CustomerAccount } from "./customer-auth";
 import type { DealerApplication } from "./dealer-application-repository";
 import { sendMail } from "./mailer";
 

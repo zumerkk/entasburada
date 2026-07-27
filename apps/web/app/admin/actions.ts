@@ -95,6 +95,8 @@ export async function updateOrderOperationAction(formData: FormData): Promise<vo
       financeApproval: getString(formData, "financeApproval"),
       stockStatus: getString(formData, "stockStatus"),
       shipmentStatus: getString(formData, "shipmentStatus"),
+      carrier: getString(formData, "carrier"),
+      trackingNumber: getString(formData, "trackingNumber"),
       warehouse: getString(formData, "warehouse"),
       internalNote: getString(formData, "internalNote")
     },

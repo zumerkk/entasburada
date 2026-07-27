@@ -1,8 +1,10 @@
 import { ArrowRight, FileText, Gauge, PackageSearch, Truck } from "lucide-react";
 import { ProductCard, TrustStrip } from "@entas/ui";
+import { AddToCartControl } from "../components/AddToCartControl";
 import { HomeHeroSlider } from "../components/HomeHeroSlider";
 import { getCatalogNavigation, getCatalogOverview, getFeaturedPublicProducts } from "../lib/catalog-repository";
-import { sectors, viewer } from "../data/catalog";
+import { getCurrentCustomer } from "../lib/customer-auth";
+import { sectors } from "../data/catalog";
 
 const trustItems = [
   { title: "Bayiye özel fiyat", body: "Fiyatlar yalnızca onaylı hesaplarda açılır." },
@@ -14,7 +16,12 @@ const trustItems = [
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [featuredProducts, overview, categoryCards] = await Promise.all([getFeaturedPublicProducts(8), getCatalogOverview(), getCatalogNavigation()]);
+  const customer = await getCurrentCustomer();
+  const [featuredProducts, overview, categoryCards] = await Promise.all([
+    getFeaturedPublicProducts(8, customer),
+    getCatalogOverview(),
+    getCatalogNavigation()
+  ]);
   const quickCards = categoryCards.slice(0, 12);
 
   return (
@@ -94,7 +101,19 @@ export default async function HomePage() {
               stockTone={product.stockTone}
               stockLabel={product.stockLabel}
               badges={product.badges}
-              isApprovedDealer={viewer.isApprovedDealer}
+              isApprovedDealer={Boolean(customer)}
+              price={product.price}
+              listPrice={product.listPrice}
+              discountRate={product.discountRate}
+              cartAction={
+                <AddToCartControl
+                  sku={product.sku}
+                  name={product.name}
+                  unit={product.unitType}
+                  minOrder={product.minOrder}
+                  isAuthenticated={Boolean(customer)}
+                />
+              }
             />
           ))}
         </div>

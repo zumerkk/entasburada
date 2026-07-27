@@ -113,6 +113,8 @@ export interface AdminOrder {
   financeApproval: string;
   stockStatus: string;
   shipmentStatus: string;
+  carrier?: string;
+  trackingNumber?: string;
   totalAmount: string;
   currency: string;
   salesRepresentative: string;
@@ -163,6 +165,8 @@ export interface OrderOperationInput {
   financeApproval?: string | undefined;
   stockStatus?: string | undefined;
   shipmentStatus?: string | undefined;
+  carrier?: string | undefined;
+  trackingNumber?: string | undefined;
   warehouse?: string | undefined;
   internalNote?: string | undefined;
 }
@@ -554,6 +558,8 @@ export async function updateOrderOperation(input: OrderOperationInput, actorName
     financeApproval: clean(input.financeApproval) || order.financeApproval,
     stockStatus: clean(input.stockStatus) || order.stockStatus,
     shipmentStatus: clean(input.shipmentStatus) || order.shipmentStatus,
+    carrier: input.carrier !== undefined ? clean(input.carrier) : order.carrier ?? "",
+    trackingNumber: input.trackingNumber !== undefined ? clean(input.trackingNumber) : order.trackingNumber ?? "",
     warehouse: clean(input.warehouse) || order.warehouse,
     internalNote: clean(input.internalNote) || order.internalNote,
     history: [

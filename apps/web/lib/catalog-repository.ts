@@ -28,6 +28,7 @@ import {
 } from "@entas/catalog";
 import type { CustomerAccount } from "./customer-auth";
 import { priceProductForCustomer } from "./customer-pricing";
+import { notifyRestockedSkus } from "./stock-notify-repository";
 
 interface ImportReport {
   generatedAt: string;
@@ -160,6 +161,16 @@ export async function syncImportedProducts({ publishNew = false, actor = "admin@
 
   await saveCatalogStore(nextStore);
   await appendAuditLogs(auditLogs);
+
+  // Stok geri gelen ürünlerin abonelerine bildirim gönder (out_of_stock → in_stock).
+  const previousStock = new Map(existingStore.products.map((product) => [product.sku, product.stockStatus]));
+  const restockedSkus = nextStore.products
+    .filter((product) => product.stockStatus === "in_stock" && previousStock.get(product.sku) === "out_of_stock")
+    .map((product) => product.sku);
+  if (restockedSkus.length > 0) {
+    await notifyRestockedSkus(restockedSkus).catch(() => undefined);
+  }
+
   return nextStore;
 }
 
@@ -190,7 +201,10 @@ export async function getPublicProducts(filters: PublicProductFilters = {}): Pro
   return { ...result, items: result.items.map(toPublicProduct) };
 }
 
-export async function getFeaturedPublicProducts(limit = 8): Promise<CatalogSearchResult<PublicCatalogProduct>> {
+export async function getFeaturedPublicProducts(
+  limit = 8,
+  customer: CustomerAccount | null = null
+): Promise<CatalogSearchResult<PricedPublicCatalogProduct>> {
   const store = await loadCatalogStore();
   const activeProducts = store.products.filter((product) => product.status === "ACTIVE" && product.isVisible && product.imageUrl);
   const featured = [] as typeof activeProducts;
@@ -218,7 +232,19 @@ export async function getFeaturedPublicProducts(limit = 8): Promise<CatalogSearc
     total: activeProducts.length,
     limit,
     offset: 0,
-    items: featured.map(toPublicProduct)
+    items: featured.map((product) => {
+      const publicProduct: PricedPublicCatalogProduct = toPublicProduct(product);
+      const price = customer ? priceProductForCustomer(product, customer) : null;
+      return price
+        ? {
+            ...publicProduct,
+            price: price.displayPrice,
+            listPrice: price.listPrice,
+            discountRate: price.discountRate,
+            priceRuleLabel: price.ruleLabel
+          }
+        : publicProduct;
+    })
   };
 }
 

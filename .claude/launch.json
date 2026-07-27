@@ -6,6 +6,12 @@
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "@entas/web", "dev"],
       "port": 3000
+    },
+    {
+      "name": "web-verify",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@entas/web", "exec", "next", "dev", "--port", "3210"],
+      "port": 3210
     }
   ]
 }
