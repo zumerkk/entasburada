@@ -35,3 +35,12 @@ services:
         sync: false
       - key: GEMINI_API_KEY
         sync: false
+      # ZiraatPay (Payten HPP 3D) — degerler Render panelinden elle girilir:
+      - key: ZIRAATPAY_MODE
+        sync: false
+      - key: ZIRAATPAY_MERCHANT
+        sync: false
+      - key: ZIRAATPAY_MERCHANT_USER
+        sync: false
+      - key: ZIRAATPAY_SECRET_KEY
+        sync: false
