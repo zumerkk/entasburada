@@ -29,12 +29,13 @@ export interface ZiraatPayConfig {
   paymentPageBaseUrl: string; // HPP tabanı; sessionToken sonuna eklenir
 }
 
+// Prod API host'u vpos.ziraatpay.com.tr'dir (canlı test ile doğrulandı: responseCode 00).
+// entegrasyon.ziraatpay.com.tr aynı kimlikleri ERR10020 ile reddediyor — oraya GÖNDERME.
 const API_BASE: Record<ZiraatPayMode, string> = {
   test: "https://test.ziraatpay.com.tr/ziraatpay/api/v2",
-  prod: "https://entegrasyon.ziraatpay.com.tr/ziraatpay/api/v2"
+  prod: "https://vpos.ziraatpay.com.tr/ziraatpay/api/v2"
 };
 
-// HPP, API host'undan farklı bir host'ta sunulabiliyor. Panelden teyit edilecek (⚠️).
 const PAYMENT_PAGE_BASE: Record<ZiraatPayMode, string> = {
   test: "https://test.ziraatpay.com.tr/payment",
   prod: "https://vpos.ziraatpay.com.tr/payment"
