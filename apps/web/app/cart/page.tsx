@@ -134,21 +134,9 @@ export default async function CartPage({ searchParams }: { searchParams: Promise
                       <strong>{formatTryValue(plan.converted)}</strong> olarak tahsil edilir.
                     </p>
                   ) : null}
-                  <details className="installmentTable">
-                    <summary>Taksit seçenekleri ve komisyonlar</summary>
-                    <div className="installmentRows">
-                      {plan.options.map((option) => (
-                        <div key={option.count}>
-                          <span>{option.count === 1 ? "Tek çekim" : `${option.count} taksit`}</span>
-                          <span>{option.count > 1 ? `${formatTryValue(option.monthly)} x ${option.count}` : "—"}</span>
-                          <strong>{formatTryValue(option.total)}</strong>
-                          <small>
-                            {option.effectiveRate > 0 ? `+%${option.effectiveRate.toLocaleString("tr-TR")} komisyon` : "komisyon yok"}
-                          </small>
-                        </div>
-                      ))}
-                    </div>
-                  </details>
+                  <p className="installmentNote">
+                    Taksit seçenekleri ve vade farkları ödeme adımında listelenir.
+                  </p>
                 </div>
               ) : null}
               {planError ? <p className="formError">Kart ödemesi şu an kullanılamıyor: {planError}</p> : null}
@@ -161,18 +149,6 @@ export default async function CartPage({ searchParams }: { searchParams: Promise
                   </button>
                 </form>
                 <form action={payCartWithCardAction} className="cartPayForm">
-                  <label className="installmentPicker">
-                    Taksit
-                    <select name="installments" defaultValue={1}>
-                      {(plan?.options ?? []).map((option) => (
-                        <option value={option.count} key={option.count}>
-                          {option.count === 1
-                            ? `Tek çekim — ${formatTryValue(option.total)}`
-                            : `${option.count} x ${formatTryValue(option.monthly)} = ${formatTryValue(option.total)}`}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
                   <button className="btn btnPrimary" type="submit" disabled={!cart.canCreateOrder || !plan} title={cart.orderBlockReason}>
                     <CreditCard size={17} aria-hidden="true" />
                     Kartla Öde

@@ -1,14 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { addCartItems, clearCart, removeCartItem, updateCartQuantities, type CartItemInput } from "../../lib/cart-repository";
 import { createOrderFromCustomerCart, createQuoteFromCustomerCart } from "../../lib/cart-checkout";
 import { getOrderByTrackingCode, updateOrderOperation } from "../../lib/commercial-repository";
-import { convertToTry } from "../../lib/fx";
-import { isValidInstallmentCount, priceForInstallment } from "../../lib/installments";
-import { buildMerchantPaymentId, createPaymentSession } from "../../lib/payment/ziraatpay";
 import { trackCartEvent } from "../../lib/analytics-repository";
 import { requireCustomer } from "../../lib/customer-auth";
 
@@ -114,24 +110,20 @@ export async function reorderAction(formData: FormData): Promise<void> {
   redirect("/cart?reorder=success");
 }
 
-function parseAmountValue(value: string): number {
-  const parsed = parseFloat(String(value ?? "").replace(/\s/g, "").replace(",", "."));
-  return Number.isFinite(parsed) ? parsed : 0;
-}
 
 function normalizeEmail(value: string): string {
   return (value || "").trim().toLocaleLowerCase("tr-TR");
 }
 
 /**
- * Sepetten DİREKT kartla öde: siparişi oluştur → PAYMENT_PENDING'e al → ZiraatPay
- * oturumu aç → ödeme sayfasına yönlendir. Admin onayı beklemeden bayi hemen öder.
- * Oturum açılamazsa sipariş PAYMENT_PENDING kalır; sipariş sayfasından tekrar denenebilir.
+ * Sepetten kartla öde: siparişi oluştur → PAYMENT_PENDING → KENDİ ödeme ekranımıza git.
+ *
+ * Taksit seçimi burada YAPILMAZ; /checkout/{takipKodu} sayfasında komisyona göre
+ * hesaplanmış tutarlarla seçilir. (ZiraatPay'in kendi sayfası taksite göre tutarı
+ * değiştirmediği için seçimi kendi arayüzümüzde yapıyoruz.)
  */
-export async function payCartWithCardAction(formData: FormData): Promise<void> {
+export async function payCartWithCardAction(): Promise<void> {
   const customer = await requireCustomer();
-  const rawInstallments = getString(formData, "installments");
-  const installments = isValidInstallmentCount(rawInstallments) ? Math.trunc(Number(rawInstallments)) : 1;
   const order = await createOrderFromCustomerCart(customer).catch((error) =>
     redirect(`/cart?error=${encodeURIComponent(errorMessage(error, "Sipariş oluşturulamadı."))}`)
   );
@@ -147,44 +139,7 @@ export async function payCartWithCardAction(formData: FormData): Promise<void> {
   );
   await trackCartEvent(customer, "order_create", { cartTotal: order.totalAmount });
   revalidateCartPaths();
-
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "");
-  const headerList = await headers();
-  const customerIp =
-    headerList.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    headerList.get("x-real-ip")?.trim() ||
-    "127.0.0.1";
-  // Oturum açma hatasında siparişi kaybetmeyelim: sipariş sayfasına düş, oradan tekrar denenir.
-  let target = `/orders/${encodeURIComponent(order.trackingCode)}?payment=failed`;
-  try {
-    // Tahsilat TRY; USD/EUR sipariş TCMB kuruyla çevrilir (kur yoksa hata → yanlış tahsilat yok).
-    const charge = await convertToTry(parseAmountValue(order.totalAmount), order.currency);
-    const plan = priceForInstallment(charge.amount, installments);
-    const rate = charge.rate * (charge.amount > 0 ? plan.total / charge.amount : 1);
-
-    const session = await createPaymentSession({
-      merchantPaymentId: buildMerchantPaymentId(order.trackingCode),
-      amount: plan.total.toFixed(2),
-      installments,
-      currency: "TRY",
-      returnUrl: `${siteUrl}/api/payments/ziraatpay/callback`,
-      customerId: order.email || order.dealerUser,
-      customerName: order.companyName,
-      customerEmail: order.email,
-      customerPhone: order.phone,
-      customerIp,
-      orderItems: order.items.map((item) => ({
-        productCode: item.sku,
-        name: item.productName,
-        quantity: Number(item.quantity) || 1,
-        amount: Math.round(parseAmountValue(item.lineTotal) * rate * 100) / 100
-      }))
-    });
-    target = session.redirectUrl;
-  } catch {
-    // sipariş PAYMENT_PENDING kaldı; kullanıcı /orders/{kod} sayfasından "Kartla Öde" ile tekrar dener
-  }
-  redirect(target);
+  redirect(`/checkout/${encodeURIComponent(order.trackingCode)}`);
 }
 
 function itemsFromForm(formData: FormData): CartItemInput[] {

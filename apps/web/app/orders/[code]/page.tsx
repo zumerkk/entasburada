@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { StatusPill } from "@entas/ui";
 import { getOrderByTrackingCode } from "../../../lib/commercial-repository";
-import { PayWithCardButton } from "../../../components/PayWithCardButton";
 import { reorderAction } from "../../cart/actions";
 import { buildTrackingUrl, getCarrier } from "../../../lib/shipping-carriers";
 import { convertToTry, normalizeCurrencyCode } from "../../../lib/fx";
@@ -129,12 +128,14 @@ export default async function OrderTrackingPage({
             <StatusPill tone={notice.tone === "success" ? "success" : "danger"}>{notice.text}</StatusPill>
           ) : null}
 
-          {order.status === "PAYMENT_PENDING" && paymentPlan ? (
-            <PayWithCardButton
-              trackingCode={order.trackingCode}
-              options={paymentPlan.options}
-              {...(paymentPlan.note ? { note: paymentPlan.note } : {})}
-            />
+          {order.status === "PAYMENT_PENDING" ? (
+            <div className="payWithCard">
+              {paymentPlan?.note ? <p className="installmentNote">{paymentPlan.note}</p> : null}
+              <a className="btn btnPrimary" href={`/checkout/${encodeURIComponent(order.trackingCode)}`}>
+                Kartla Öde
+              </a>
+              <span className="reorderHint">Taksit seçenekleri ve vade farkları sonraki adımda listelenir.</span>
+            </div>
           ) : null}
           {paymentError ? (
             <p className="formError">Kart ödemesi şu an başlatılamıyor: {paymentError}</p>
