@@ -141,18 +141,24 @@ export async function createPaymentSession(input: CreateSessionInput): Promise<C
     body.set("INSTALLMENTS", String(Math.trunc(input.installments)));
   }
   if (input.orderItems && input.orderItems.length > 0) {
-    body.set(
-      "ORDERITEMS",
-      JSON.stringify(
-        input.orderItems.map((item) => ({
-          productCode: item.productCode,
-          name: item.name,
-          description: item.name,
-          quantity: item.quantity,
-          amount: item.amount
-        }))
-      )
-    );
+    // ZiraatPay ORDERITEMS toplamının AMOUNT'a birebir eşit olmasını şart koşar (ERR10022).
+    // Satırlar ayrı ayrı yuvarlandığında kuruş farkı oluşabilir; farkı son satıra yazarak
+    // eşitliği burada GARANTİ ediyoruz — çağıranların bunu ayrıca düzeltmesi gerekmez.
+    const items = input.orderItems.map((item) => ({
+      productCode: item.productCode,
+      name: item.name,
+      description: item.name,
+      quantity: item.quantity,
+      amount: round2(item.amount)
+    }));
+    const target = round2(parseFloat(input.amount));
+    const sum = round2(items.reduce((total, item) => total + item.amount, 0));
+    const diff = round2(target - sum);
+    const last = items[items.length - 1]!;
+    if (diff !== 0 && round2(last.amount + diff) > 0) {
+      last.amount = round2(last.amount + diff);
+    }
+    body.set("ORDERITEMS", JSON.stringify(items));
   }
 
   const response = await fetch(config.apiBaseUrl, {
@@ -258,4 +264,8 @@ function safeEqualHex(a: string, b: string): boolean {
   const bufB = Buffer.from(b ?? "", "hex");
   if (bufA.length === 0 || bufA.length !== bufB.length) return false;
   return timingSafeEqual(bufA, bufB);
+}
+
+function round2(value: number): number {
+  return Math.round((Number.isFinite(value) ? value : 0) * 100) / 100;
 }
