@@ -92,7 +92,9 @@ function requireEnv(name: string): string {
  * tarafında ilk tireye kadarki kısım alınarak sipariş bulunur.
  */
 export function buildMerchantPaymentId(trackingCode: string): string {
-  const token = `${Date.now().toString(36).slice(-5)}${Math.random().toString(36).slice(2, 5)}`;
+  // Zaman + 8 hex rastgele: çakışma pratikte imkânsız. (Çakışırsa ERR10118 alınır,
+  // müşteri sebepsiz hata görür — bu yüzden Math.random yerine crypto kullanılıyor.)
+  const token = `${Date.now().toString(36).slice(-5)}${randomBytes(4).toString("hex")}`;
   return `${trackingCode}-${token}`;
 }
 
@@ -181,16 +183,22 @@ export async function createPaymentSession(input: CreateSessionInput): Promise<C
     body.set("INSTALLMENTS", String(Math.trunc(input.installments)));
   }
   if (input.orderItems && input.orderItems.length > 0) {
-    // ZiraatPay ORDERITEMS toplamının AMOUNT'a birebir eşit olmasını şart koşar (ERR10022).
-    // Satırlar ayrı ayrı yuvarlandığında kuruş farkı oluşabilir; farkı son satıra yazarak
-    // eşitliği burada GARANTİ ediyoruz — çağıranların bunu ayrıca düzeltmesi gerekmez.
-    const items = input.orderItems.map((item) => ({
-      productCode: item.productCode,
-      name: item.name,
-      description: item.name,
-      quantity: item.quantity,
-      amount: round2(item.amount)
-    }));
+    // ZiraatPay satır tutarını quantity × amount olarak hesaplar ve toplamın AMOUNT'a
+    // birebir eşit olmasını şart koşar (ERR10022 — canlı API ile doğrulandı).
+    //
+    // Bizim `amount` alanımız SATIR TOPLAMI olduğu için quantity=1 gönderiyoruz;
+    // aksi halde 2 koli × satır toplamı = 2 kat tutar çıkıyor ve ERR10022 alınıyor.
+    // Gerçek adet, müşteri ZiraatPay ekranında görebilsin diye ürün adına yazılır.
+    const items = input.orderItems.map((item) => {
+      const label = item.quantity > 1 ? `${item.name} (${item.quantity} adet)` : item.name;
+      return {
+        productCode: item.productCode,
+        name: label,
+        description: label,
+        quantity: 1,
+        amount: round2(item.amount)
+      };
+    });
     const target = round2(parseFloat(input.amount));
     const sum = round2(items.reduce((total, item) => total + item.amount, 0));
     const diff = round2(target - sum);
