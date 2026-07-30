@@ -46,3 +46,6 @@ services:
         sync: false
       - key: ZIRAATPAY_SECRET_KEY
         sync: false
+      # DirectPost (kendi kart formumuz, taksit kilidi). ZiraatPay etkinlestirince 1 yapin.
+      - key: ZIRAATPAY_DIRECTPOST
+        sync: false

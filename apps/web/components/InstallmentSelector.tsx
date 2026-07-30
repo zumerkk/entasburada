@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { CreditCard, ShieldCheck } from "lucide-react";
+import { ArrowLeft, CreditCard, ShieldCheck } from "lucide-react";
+import { CardPaymentForm } from "./CardPaymentForm";
 
 export interface InstallmentChoice {
   count: number;
@@ -27,9 +28,11 @@ export function InstallmentSelector({
   const [selected, setSelected] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [session, setSession] = useState<{ directPostUrl: string; installments: number } | null>(null);
 
   const current = options.find((option) => option.count === selected) ?? options[0];
 
+  /** Taksit seçildikten sonra oturum açar; ardından kart formu gösterilir. */
   async function pay() {
     setLoading(true);
     setError(null);
@@ -39,15 +42,56 @@ export function InstallmentSelector({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ trackingCode, installments: selected })
       });
-      const data = (await response.json()) as { redirectUrl?: string; error?: string };
-      if (!response.ok || !data.redirectUrl) {
+      const data = (await response.json()) as {
+        directPostUrl?: string;
+        redirectUrl?: string;
+        installments?: number;
+        error?: string;
+      };
+      if (!response.ok) {
         throw new Error(data.error || "Ödeme başlatılamadı.");
       }
-      window.location.href = data.redirectUrl;
+      if (data.directPostUrl) {
+        // DirectPost açık: kart formunu burada göster, taksit kilitli.
+        setSession({ directPostUrl: data.directPostUrl, installments: data.installments ?? selected });
+        return;
+      }
+      if (data.redirectUrl) {
+        // DirectPost kapalı: ZiraatPay'in kendi sayfasına yönlendir.
+        window.location.href = data.redirectUrl;
+        return;
+      }
+      throw new Error(data.error || "Ödeme başlatılamadı.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ödeme başlatılamadı.");
+    } finally {
       setLoading(false);
     }
+  }
+
+  // 2. adım: kart bilgileri. Taksit ve tutar bu noktada kilitlidir.
+  if (session && current) {
+    return (
+      <div className="checkoutSelector">
+        <button type="button" className="btn btnGhost btnSmall checkoutBackButton" onClick={() => setSession(null)}>
+          <ArrowLeft size={15} aria-hidden="true" />
+          Taksit seçimine dön
+        </button>
+        <div className="checkoutChosenPlan">
+          <span>Seçilen plan</span>
+          <strong>
+            {session.installments === 1 ? "Tek çekim" : `${session.installments} taksit`} ·{" "}
+            {formatTry(current.total)}
+          </strong>
+        </div>
+        <CardPaymentForm
+          directPostUrl={session.directPostUrl}
+          installments={session.installments}
+          amountLabel={formatTry(current.total)}
+          {...(current.count > 1 ? { monthlyLabel: formatTry(current.monthly) } : {})}
+        />
+      </div>
+    );
   }
 
   return (
@@ -98,7 +142,7 @@ export function InstallmentSelector({
           </div>
           <button type="button" className="btn btnPrimary checkoutPayButton" onClick={pay} disabled={loading}>
             <CreditCard size={18} aria-hidden="true" />
-            {loading ? "Yönlendiriliyor…" : "Güvenli Ödemeye Geç"}
+            {loading ? "Hazırlanıyor…" : "Kart Bilgilerine Geç"}
           </button>
         </div>
       ) : null}

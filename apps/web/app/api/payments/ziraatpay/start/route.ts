@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getOrderByTrackingCode } from "../../../../../lib/commercial-repository";
 import { convertToTry } from "../../../../../lib/fx";
 import { isValidInstallmentCount, priceForInstallment } from "../../../../../lib/installments";
-import { buildMerchantPaymentId, createPaymentSession } from "../../../../../lib/payment/ziraatpay";
+import { buildMerchantPaymentId, createPaymentSession, isDirectPostEnabled } from "../../../../../lib/payment/ziraatpay";
 
 export const dynamic = "force-dynamic";
 
@@ -78,7 +78,14 @@ export async function POST(request: Request): Promise<Response> {
         amount: Math.round(parseAmount(item.lineTotal) * rate * 100) / 100
       }))
     });
-    return NextResponse.json({ redirectUrl: session.redirectUrl });
+    // DirectPost açıksa kart formu bizde açılır ve taksit KİLİTLİ olur.
+    // Kapalıysa (ZiraatPay etkinleştirmemişse) HPP'ye yönlendirilir — ödeme durmaz.
+    return NextResponse.json({
+      ...(isDirectPostEnabled() ? { directPostUrl: session.directPostUrl } : {}),
+      redirectUrl: session.redirectUrl,
+      installments,
+      amount: plan.total.toFixed(2)
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Ödeme başlatılamadı.";
     return NextResponse.json({ error: message }, { status: 502 });

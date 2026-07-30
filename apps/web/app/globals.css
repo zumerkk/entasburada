@@ -6070,3 +6070,92 @@ a.metricCard {
 .checkoutItemList small {
   color: var(--muted);
 }
+
+/* --- DirectPost kart formu --- */
+.checkoutBackButton {
+  margin-bottom: 12px;
+}
+.checkoutChosenPlan {
+  padding: 11px 14px;
+  border: 1px solid var(--orange-600);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--orange-600) 6%, var(--white));
+  margin-bottom: 16px;
+}
+.checkoutChosenPlan span {
+  display: block;
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+.checkoutChosenPlan strong {
+  display: block;
+  font-size: 1.05rem;
+  color: var(--anthracite);
+}
+.cardFormGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.cardFieldWide {
+  grid-column: 1 / -1;
+}
+.cardFormGrid label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.cardFormGrid input,
+.cardFormGrid select {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--white);
+  color: var(--anthracite);
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+}
+.cardFormGrid input:focus,
+.cardFormGrid select:focus {
+  outline: none;
+  border-color: var(--green-800);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--green-800) 15%, transparent);
+}
+.cardFormFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+  padding: 15px 17px;
+  border-radius: 12px;
+  background: var(--green-950);
+  color: var(--white);
+}
+.cardFormFooter span {
+  display: block;
+  font-size: 0.78rem;
+  opacity: 0.75;
+}
+.cardFormFooter strong {
+  display: block;
+  font-size: 1.45rem;
+  line-height: 1.2;
+}
+.cardFormFooter small {
+  display: block;
+  font-size: 0.78rem;
+  opacity: 0.8;
+}
+.cardPayButton {
+  min-width: 200px;
+  justify-content: center;
+}
+@media (max-width: 560px) {
+  .cardFormGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}

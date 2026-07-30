@@ -43,6 +43,20 @@ const PAYMENT_PAGE_BASE: Record<ZiraatPayMode, string> = {
 
 let cachedConfig: ZiraatPayConfig | null = null;
 
+/**
+ * DirectPost (kendi kart formumuz) açık mı?
+ *
+ * DirectPost, taksidi bizim gönderdiğimiz değere KİLİTLER — HPP kilitlemiyor.
+ * Ancak ZiraatPay bu entegrasyon modelini üye iş yeri bazında etkinleştirmeli;
+ * kapalıyken DirectPost isteği ERR10026 "Geçersiz entegrasyon modeli" döner.
+ * Bu yüzden varsayılan KAPALI: açılana kadar HPP akışı kullanılır.
+ * ZiraatPay etkinleştirince Render'da ZIRAATPAY_DIRECTPOST=1 yapmak yeterli.
+ */
+export function isDirectPostEnabled(): boolean {
+  const value = (process.env.ZIRAATPAY_DIRECTPOST ?? "").trim().toLowerCase();
+  return value === "1" || value === "true" || value === "on";
+}
+
 export function getZiraatPayConfig(): ZiraatPayConfig {
   if (cachedConfig) return cachedConfig;
 
@@ -118,8 +132,14 @@ export interface CreateSessionInput {
 
 export interface CreateSessionResult {
   sessionToken: string;
-  /** Tarayıcıyı yönlendireceğimiz HPP adresi. */
+  /** ZiraatPay'in kendi ödeme sayfası (HPP). Taksidi KİLİTLEMEZ; müşteri değiştirebilir. */
   redirectUrl: string;
+  /**
+   * DirectPost 3D adresi: kart formu bizde durur, tarayıcı DOĞRUDAN buraya POST eder
+   * (kart verisi sunucumuza gelmez). Gönderdiğimiz installmentCount aynen işlenir,
+   * ZiraatPay ikinci bir taksit ekranı göstermez — taksit ve tutar böylece kilitlenir.
+   */
+  directPostUrl: string;
 }
 
 /**
@@ -209,7 +229,8 @@ export async function createPaymentSession(input: CreateSessionInput): Promise<C
 
   return {
     sessionToken: data.sessionToken,
-    redirectUrl: `${config.paymentPageBaseUrl}/${data.sessionToken}`
+    redirectUrl: `${config.paymentPageBaseUrl}/${data.sessionToken}`,
+    directPostUrl: `${config.apiBaseUrl}/post/sale3d/${data.sessionToken}`
   };
 }
 

@@ -20,6 +20,12 @@ export async function POST(request: Request): Promise<Response> {
     sdSha512: str(form.get("sdSha512"))
   };
 
+  // Gerçekte kullanılan taksit ve tutar — HPP akışında müşteri taksidi değiştirebiliyor.
+  // Kaydediyoruz ki komisyon farkı sessiz kalmasın; admin sipariş notunda görebilsin.
+  const actualInstallment =
+    str(form.get("installmentCount")) || str(form.get("INSTALLMENTCOUNT")) || str(form.get("installment"));
+  const actualAmount = str(form.get("amount")) || str(form.get("AMOUNT"));
+
   const result = verifyReturn(params);
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "");
   // MERCHANTPAYMENTID "{takipKodu}-{deneme}" biçimindedir; siparişi takip kodundan bul.
@@ -49,7 +55,10 @@ export async function POST(request: Request): Promise<Response> {
         paymentStatus: "Kartla ödendi (ZiraatPay)",
         // İŞ KURALI (teyit): kartla ödeme sonrası sipariş hangi adıma geçsin?
         status: order.status === "PAYMENT_PENDING" ? "APPROVAL_PENDING" : order.status,
-        internalNote: `ZiraatPay 3D ödemesi onaylandı. İşlem ref: ${params.sessionToken}`
+        internalNote:
+          `ZiraatPay 3D ödemesi onaylandı. İşlem ref: ${params.sessionToken}` +
+          (actualInstallment ? ` · Taksit: ${actualInstallment}` : "") +
+          (actualAmount ? ` · Tahsil edilen: ${actualAmount}` : "")
       },
       "ZiraatPay"
     );
