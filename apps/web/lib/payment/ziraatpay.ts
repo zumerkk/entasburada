@@ -92,6 +92,8 @@ export interface CreateSessionInput {
   customerIp?: string;
   /** Sipariş satırları — Paratika PAYMENTSESSION için ORDERITEMS olarak gönderilir. */
   orderItems?: SessionOrderItem[];
+  /** Taksit sayısı (1 = tek çekim). 1'den büyükse INSTALLMENTS olarak gönderilir. */
+  installments?: number;
 }
 
 export interface CreateSessionResult {
@@ -135,6 +137,9 @@ export async function createPaymentSession(input: CreateSessionInput): Promise<C
   if (input.customerEmail) body.set("CUSTOMEREMAIL", input.customerEmail);
   if (input.customerPhone) body.set("CUSTOMERPHONE", input.customerPhone);
   if (input.customerIp) body.set("CUSTOMERIP", input.customerIp);
+  if (input.installments && input.installments > 1) {
+    body.set("INSTALLMENTS", String(Math.trunc(input.installments)));
+  }
   if (input.orderItems && input.orderItems.length > 0) {
     body.set(
       "ORDERITEMS",

@@ -3,6 +3,9 @@ import { EmptyState, StatusPill } from "@entas/ui";
 import { CartQuantityField } from "../../components/CartQuantityField";
 import { loadPricedCart } from "../../lib/cart-repository";
 import { requireCustomer } from "../../lib/customer-auth";
+import { convertToTry, normalizeCurrencyCode } from "../../lib/fx";
+import { installmentOptions } from "../../lib/installments";
+import { parseMoney } from "../../lib/customer-pricing";
 import { clearCartAction, createOrderFromCartAction, createQuoteFromCartAction, payCartWithCardAction, removeCartItemAction, updateCartAction } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -14,6 +17,20 @@ export default async function CartPage({ searchParams }: { searchParams: Promise
   const params = await searchParams;
   const error = getParam(params, "error");
   const cart = await loadPricedCart(customer);
+
+  // Tahsilat TRY yapılır. Sepet USD/EUR ise TCMB kuruyla çevrilen tutar ve taksit
+  // seçenekleri burada gösterilir; müşteri ödemeden önce ne ödeyeceğini görür.
+  let plan: { options: ReturnType<typeof installmentOptions>; converted: number; rate: number } | null = null;
+  let planError: string | null = null;
+  if (cart.canCreateOrder && cart.items.length > 0) {
+    try {
+      const charge = await convertToTry(parseMoney(cart.totalAmount), cart.currency);
+      plan = { options: installmentOptions(charge.amount), converted: charge.amount, rate: charge.rate };
+    } catch (fxError) {
+      planError = fxError instanceof Error ? fxError.message : "Kur bilgisi alınamadı.";
+    }
+  }
+  const cartCurrency = normalizeCurrencyCode(cart.currency);
 
   return (
     <main>
@@ -108,6 +125,34 @@ export default async function CartPage({ searchParams }: { searchParams: Promise
                   <span>{cart.orderBlockReason} Teklif oluşturarak satış temsilcinize iletebilirsiniz.</span>
                 </div>
               ) : null}
+              {plan ? (
+                <div className="cartPaymentPlan">
+                  {cartCurrency !== "TRY" ? (
+                    <p className="installmentNote">
+                      Sepet {cart.displayTotal} ({cartCurrency}) · TCMB kuru{" "}
+                      {plan.rate.toLocaleString("tr-TR", { maximumFractionDigits: 4 })} ile{" "}
+                      <strong>{formatTryValue(plan.converted)}</strong> olarak tahsil edilir.
+                    </p>
+                  ) : null}
+                  <details className="installmentTable">
+                    <summary>Taksit seçenekleri ve komisyonlar</summary>
+                    <div className="installmentRows">
+                      {plan.options.map((option) => (
+                        <div key={option.count}>
+                          <span>{option.count === 1 ? "Tek çekim" : `${option.count} taksit`}</span>
+                          <span>{option.count > 1 ? `${formatTryValue(option.monthly)} x ${option.count}` : "—"}</span>
+                          <strong>{formatTryValue(option.total)}</strong>
+                          <small>
+                            {option.effectiveRate > 0 ? `+%${option.effectiveRate.toLocaleString("tr-TR")} komisyon` : "komisyon yok"}
+                          </small>
+                        </div>
+                      ))}
+                    </div>
+                  </details>
+                </div>
+              ) : null}
+              {planError ? <p className="formError">Kart ödemesi şu an kullanılamıyor: {planError}</p> : null}
+
               <div className="commercialActionRow">
                 <form action={createQuoteFromCartAction}>
                   <button className="btn btnSecondary" type="submit">
@@ -115,8 +160,20 @@ export default async function CartPage({ searchParams }: { searchParams: Promise
                     Teklif Oluştur
                   </button>
                 </form>
-                <form action={payCartWithCardAction}>
-                  <button className="btn btnPrimary" type="submit" disabled={!cart.canCreateOrder} title={cart.orderBlockReason}>
+                <form action={payCartWithCardAction} className="cartPayForm">
+                  <label className="installmentPicker">
+                    Taksit
+                    <select name="installments" defaultValue={1}>
+                      {(plan?.options ?? []).map((option) => (
+                        <option value={option.count} key={option.count}>
+                          {option.count === 1
+                            ? `Tek çekim — ${formatTryValue(option.total)}`
+                            : `${option.count} x ${formatTryValue(option.monthly)} = ${formatTryValue(option.total)}`}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <button className="btn btnPrimary" type="submit" disabled={!cart.canCreateOrder || !plan} title={cart.orderBlockReason}>
                     <CreditCard size={17} aria-hidden="true" />
                     Kartla Öde
                   </button>
@@ -154,4 +211,8 @@ export default async function CartPage({ searchParams }: { searchParams: Promise
 function getParam(params: SearchParams, key: string): string {
   const value = params[key];
   return Array.isArray(value) ? value[0] ?? "" : value ?? "";
+}
+
+function formatTryValue(value: number): string {
+  return new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY" }).format(value);
 }

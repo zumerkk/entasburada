@@ -5839,3 +5839,75 @@ a.metricCard {
 .dealerEdit form {
   padding-bottom: 12px;
 }
+
+/* --- Taksit / kur çevrimi --- */
+.installmentNote {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin: 0 0 10px;
+  line-height: 1.5;
+}
+.installmentNote strong {
+  color: var(--anthracite);
+}
+.cartPaymentPlan {
+  margin: 14px 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+}
+.installmentTable > summary {
+  cursor: pointer;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--green-900);
+  user-select: none;
+}
+.installmentRows {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+}
+.installmentRows > div {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr auto auto;
+  gap: 10px;
+  align-items: center;
+  padding: 7px 0;
+  border-top: 1px solid var(--line);
+  font-size: 0.84rem;
+}
+.installmentRows > div:first-child {
+  border-top: none;
+}
+.installmentRows small {
+  color: var(--muted);
+  white-space: nowrap;
+}
+.installmentPicker {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.installmentPicker select {
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--white);
+  color: var(--anthracite);
+  max-width: 100%;
+}
+.installmentSummary {
+  font-size: 0.9rem;
+  margin: 8px 0;
+  color: var(--anthracite);
+}
+.cartPayForm {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}

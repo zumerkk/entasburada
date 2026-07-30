@@ -6,6 +6,8 @@ import { redirect } from "next/navigation";
 import { addCartItems, clearCart, removeCartItem, updateCartQuantities, type CartItemInput } from "../../lib/cart-repository";
 import { createOrderFromCustomerCart, createQuoteFromCustomerCart } from "../../lib/cart-checkout";
 import { getOrderByTrackingCode, updateOrderOperation } from "../../lib/commercial-repository";
+import { convertToTry } from "../../lib/fx";
+import { isValidInstallmentCount, priceForInstallment } from "../../lib/installments";
 import { createPaymentSession } from "../../lib/payment/ziraatpay";
 import { trackCartEvent } from "../../lib/analytics-repository";
 import { requireCustomer } from "../../lib/customer-auth";
@@ -112,6 +114,11 @@ export async function reorderAction(formData: FormData): Promise<void> {
   redirect("/cart?reorder=success");
 }
 
+function parseAmountValue(value: string): number {
+  const parsed = parseFloat(String(value ?? "").replace(/\s/g, "").replace(",", "."));
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
 function normalizeEmail(value: string): string {
   return (value || "").trim().toLocaleLowerCase("tr-TR");
 }
@@ -121,8 +128,10 @@ function normalizeEmail(value: string): string {
  * oturumu aç → ödeme sayfasına yönlendir. Admin onayı beklemeden bayi hemen öder.
  * Oturum açılamazsa sipariş PAYMENT_PENDING kalır; sipariş sayfasından tekrar denenebilir.
  */
-export async function payCartWithCardAction(): Promise<void> {
+export async function payCartWithCardAction(formData: FormData): Promise<void> {
   const customer = await requireCustomer();
+  const rawInstallments = getString(formData, "installments");
+  const installments = isValidInstallmentCount(rawInstallments) ? Math.trunc(Number(rawInstallments)) : 1;
   const order = await createOrderFromCustomerCart(customer).catch((error) =>
     redirect(`/cart?error=${encodeURIComponent(errorMessage(error, "Sipariş oluşturulamadı."))}`)
   );
@@ -148,9 +157,15 @@ export async function payCartWithCardAction(): Promise<void> {
   // Oturum açma hatasında siparişi kaybetmeyelim: sipariş sayfasına düş, oradan tekrar denenir.
   let target = `/orders/${encodeURIComponent(order.trackingCode)}?payment=failed`;
   try {
+    // Tahsilat TRY; USD/EUR sipariş TCMB kuruyla çevrilir (kur yoksa hata → yanlış tahsilat yok).
+    const charge = await convertToTry(parseAmountValue(order.totalAmount), order.currency);
+    const plan = priceForInstallment(charge.amount, installments);
+    const rate = charge.rate * (charge.amount > 0 ? plan.total / charge.amount : 1);
+
     const session = await createPaymentSession({
       merchantPaymentId: order.trackingCode,
-      amount: order.totalAmount,
+      amount: plan.total.toFixed(2),
+      installments,
       currency: "TRY",
       returnUrl: `${siteUrl}/api/payments/ziraatpay/callback`,
       customerId: order.email || order.dealerUser,
@@ -162,7 +177,7 @@ export async function payCartWithCardAction(): Promise<void> {
         productCode: item.sku,
         name: item.productName,
         quantity: Number(item.quantity) || 1,
-        amount: parseFloat(String(item.lineTotal).replace(",", ".")) || 0
+        amount: Math.round(parseAmountValue(item.lineTotal) * rate * 100) / 100
       }))
     });
     target = session.redirectUrl;

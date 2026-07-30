@@ -4,6 +4,8 @@ import { getOrderByTrackingCode } from "../../../lib/commercial-repository";
 import { PayWithCardButton } from "../../../components/PayWithCardButton";
 import { reorderAction } from "../../cart/actions";
 import { buildTrackingUrl, getCarrier } from "../../../lib/shipping-carriers";
+import { convertToTry, normalizeCurrencyCode } from "../../../lib/fx";
+import { installmentOptions } from "../../../lib/installments";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +33,27 @@ export default async function OrderTrackingPage({
 
   const trackingUrl = buildTrackingUrl(order.carrier, order.trackingNumber);
   const carrierLabel = getCarrier(order.carrier)?.label;
+
+  // Tahsilat TRY yapılır. USD/EUR sipariş için TCMB kuruyla çevrilen tutarı ve
+  // taksit seçeneklerini hazırla. Kur alınamazsa ödeme gösterilmez (yanlış tutar riski).
+  const orderCurrency = normalizeCurrencyCode(order.currency);
+  let paymentPlan: { options: ReturnType<typeof installmentOptions>; note?: string } | null = null;
+  let paymentError: string | null = null;
+  if (order.status === "PAYMENT_PENDING") {
+    try {
+      const charge = await convertToTry(parseAmount(order.totalAmount), orderCurrency);
+      paymentPlan = {
+        options: installmentOptions(charge.amount),
+        ...(orderCurrency !== "TRY"
+          ? {
+              note: `Sipariş ${order.totalAmount} ${orderCurrency} · TCMB kuru ${charge.rate.toLocaleString("tr-TR", { maximumFractionDigits: 4 })} ile ${formatTryAmount(charge.amount)} olarak tahsil edilir.`
+            }
+          : {})
+      };
+    } catch (error) {
+      paymentError = error instanceof Error ? error.message : "Kur bilgisi alınamadı.";
+    }
+  }
 
   const notice = payment
     ? PAYMENT_NOTICE[payment]
@@ -106,8 +129,15 @@ export default async function OrderTrackingPage({
             <StatusPill tone={notice.tone === "success" ? "success" : "danger"}>{notice.text}</StatusPill>
           ) : null}
 
-          {order.status === "PAYMENT_PENDING" ? (
-            <PayWithCardButton trackingCode={order.trackingCode} />
+          {order.status === "PAYMENT_PENDING" && paymentPlan ? (
+            <PayWithCardButton
+              trackingCode={order.trackingCode}
+              options={paymentPlan.options}
+              {...(paymentPlan.note ? { note: paymentPlan.note } : {})}
+            />
+          ) : null}
+          {paymentError ? (
+            <p className="formError">Kart ödemesi şu an başlatılamıyor: {paymentError}</p>
           ) : null}
 
           <form action={reorderAction} className="reorderForm">
@@ -158,4 +188,13 @@ export default async function OrderTrackingPage({
       </section>
     </main>
   );
+}
+
+function parseAmount(value: string): number {
+  const parsed = parseFloat(String(value ?? "").replace(/\s/g, "").replace(",", "."));
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function formatTryAmount(value: number): string {
+  return new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY" }).format(value);
 }

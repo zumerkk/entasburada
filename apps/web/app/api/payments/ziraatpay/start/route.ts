@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { getOrderByTrackingCode } from "../../../../../lib/commercial-repository";
+import { convertToTry } from "../../../../../lib/fx";
+import { isValidInstallmentCount, priceForInstallment } from "../../../../../lib/installments";
 import { createPaymentSession } from "../../../../../lib/payment/ziraatpay";
 
 export const dynamic = "force-dynamic";
@@ -11,9 +13,13 @@ export const dynamic = "force-dynamic";
  */
 export async function POST(request: Request): Promise<Response> {
   let trackingCode = "";
+  let installments = 1;
   try {
-    const body = (await request.json()) as { trackingCode?: string };
+    const body = (await request.json()) as { trackingCode?: string; installments?: number };
     trackingCode = (body.trackingCode ?? "").trim();
+    if (body.installments !== undefined && isValidInstallmentCount(body.installments)) {
+      installments = Math.trunc(Number(body.installments));
+    }
   } catch {
     return NextResponse.json({ error: "Geçersiz istek." }, { status: 400 });
   }
@@ -44,9 +50,18 @@ export async function POST(request: Request): Promise<Response> {
     "127.0.0.1";
 
   try {
+    // Tahsilat TRY yapılır. USD/EUR fiyatlı sipariş TCMB kuruyla çevrilir;
+    // kur alınamazsa hata fırlar ve YANLIŞ tutarla tahsilat yapılmaz.
+    const charge = await convertToTry(parseAmount(order.totalAmount), order.currency);
+    // Taksit farkı müşteriye yansır (tek çekimde tutar değişmez).
+    const plan = priceForInstallment(charge.amount, installments);
+    // Satır tutarları da taksit oranıyla ölçeklenir; ORDERITEMS toplamı AMOUNT ile tutarlı kalsın.
+    const rate = charge.rate * (charge.amount > 0 ? plan.total / charge.amount : 1);
+
     const session = await createPaymentSession({
       merchantPaymentId: order.trackingCode,
-      amount: order.totalAmount,
+      amount: plan.total.toFixed(2),
+      installments,
       currency: "TRY",
       returnUrl: `${siteUrl}/api/payments/ziraatpay/callback`,
       customerId: order.email || order.dealerUser,
@@ -58,7 +73,8 @@ export async function POST(request: Request): Promise<Response> {
         productCode: item.sku,
         name: item.productName,
         quantity: Number(item.quantity) || 1,
-        amount: parseFloat(String(item.lineTotal).replace(",", ".")) || 0
+        // Satır tutarları da aynı kurla çevrilir; toplamla tutarlı kalsın.
+        amount: Math.round(parseAmount(item.lineTotal) * rate * 100) / 100
       }))
     });
     return NextResponse.json({ redirectUrl: session.redirectUrl });
@@ -66,4 +82,9 @@ export async function POST(request: Request): Promise<Response> {
     const message = error instanceof Error ? error.message : "Ödeme başlatılamadı.";
     return NextResponse.json({ error: message }, { status: 502 });
   }
+}
+
+function parseAmount(value: string): number {
+  const parsed = parseFloat(String(value ?? "").replace(/\s/g, "").replace(",", "."));
+  return Number.isFinite(parsed) ? parsed : 0;
 }
