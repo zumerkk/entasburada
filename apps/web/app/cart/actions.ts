@@ -8,7 +8,7 @@ import { createOrderFromCustomerCart, createQuoteFromCustomerCart } from "../../
 import { getOrderByTrackingCode, updateOrderOperation } from "../../lib/commercial-repository";
 import { convertToTry } from "../../lib/fx";
 import { isValidInstallmentCount, priceForInstallment } from "../../lib/installments";
-import { createPaymentSession } from "../../lib/payment/ziraatpay";
+import { buildMerchantPaymentId, createPaymentSession } from "../../lib/payment/ziraatpay";
 import { trackCartEvent } from "../../lib/analytics-repository";
 import { requireCustomer } from "../../lib/customer-auth";
 
@@ -163,7 +163,7 @@ export async function payCartWithCardAction(formData: FormData): Promise<void> {
     const rate = charge.rate * (charge.amount > 0 ? plan.total / charge.amount : 1);
 
     const session = await createPaymentSession({
-      merchantPaymentId: order.trackingCode,
+      merchantPaymentId: buildMerchantPaymentId(order.trackingCode),
       amount: plan.total.toFixed(2),
       installments,
       currency: "TRY",

@@ -69,6 +69,26 @@ function requireEnv(name: string): string {
   return value.trim();
 }
 
+/**
+ * Her ödeme denemesi için BENZERSİZ MERCHANTPAYMENTID üretir.
+ *
+ * NEDEN: ZiraatPay bir sipariş numarasına ait oturumu ilk tutara kilitler; aynı ID ile
+ * farklı tutar (ör. müşteri taksit sayısını değiştirdi) gönderilirse ERR10118 döner.
+ * Bu yüzden ID = "{takipKodu}-{denemeJetonu}". Takip kodu tire içermez, callback
+ * tarafında ilk tireye kadarki kısım alınarak sipariş bulunur.
+ */
+export function buildMerchantPaymentId(trackingCode: string): string {
+  const token = `${Date.now().toString(36).slice(-5)}${Math.random().toString(36).slice(2, 5)}`;
+  return `${trackingCode}-${token}`;
+}
+
+/** MERCHANTPAYMENTID'den sipariş takip kodunu çıkarır (eski, tiresiz ID'lerle de uyumlu). */
+export function trackingCodeFromMerchantPaymentId(merchantPaymentId: string): string {
+  const value = (merchantPaymentId ?? "").trim();
+  const dashIndex = value.indexOf("-");
+  return dashIndex === -1 ? value : value.slice(0, dashIndex);
+}
+
 export interface SessionOrderItem {
   productCode: string;
   name: string;

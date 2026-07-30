@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getOrderByTrackingCode } from "../../../../../lib/commercial-repository";
 import { convertToTry } from "../../../../../lib/fx";
 import { isValidInstallmentCount, priceForInstallment } from "../../../../../lib/installments";
-import { createPaymentSession } from "../../../../../lib/payment/ziraatpay";
+import { buildMerchantPaymentId, createPaymentSession } from "../../../../../lib/payment/ziraatpay";
 
 export const dynamic = "force-dynamic";
 
@@ -59,7 +59,8 @@ export async function POST(request: Request): Promise<Response> {
     const rate = charge.rate * (charge.amount > 0 ? plan.total / charge.amount : 1);
 
     const session = await createPaymentSession({
-      merchantPaymentId: order.trackingCode,
+      // Her deneme benzersiz ID alır; aksi halde taksit değişince ERR10118 döner.
+      merchantPaymentId: buildMerchantPaymentId(order.trackingCode),
       amount: plan.total.toFixed(2),
       installments,
       currency: "TRY",

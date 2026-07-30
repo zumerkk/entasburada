@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getOrderByTrackingCode, updateOrderOperation } from "../../../../../lib/commercial-repository";
-import { verifyReturn, type ReturnParams } from "../../../../../lib/payment/ziraatpay";
+import { trackingCodeFromMerchantPaymentId, verifyReturn, type ReturnParams } from "../../../../../lib/payment/ziraatpay";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +22,9 @@ export async function POST(request: Request): Promise<Response> {
 
   const result = verifyReturn(params);
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "");
-  const trackingCode = params.merchantPaymentId;
+  // MERCHANTPAYMENTID "{takipKodu}-{deneme}" biçimindedir; siparişi takip kodundan bul.
+  // İmza doğrulaması ise ZiraatPay'in gönderdiği TAM değerle yapılır (yukarıda).
+  const trackingCode = trackingCodeFromMerchantPaymentId(params.merchantPaymentId);
 
   // İmza geçersiz: sahte POST olabilir — dokunma, güvenli tarafa yönlendir.
   if (!result.verified) {
