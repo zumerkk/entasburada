@@ -135,7 +135,7 @@ export default async function CartPage({ searchParams }: { searchParams: Promise
                     </p>
                   ) : null}
                   <p className="installmentNote">
-                    Taksit seçenekleri ve vade farkları ödeme adımında listelenir.
+                    Taksit seçenekleri ödeme adımında görüntülenir.
                   </p>
                 </div>
               ) : null}

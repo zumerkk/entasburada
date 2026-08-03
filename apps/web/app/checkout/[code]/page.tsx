@@ -5,7 +5,9 @@ import { getOrderByTrackingCode } from "../../../lib/commercial-repository";
 import { requireCustomer } from "../../../lib/customer-auth";
 import { convertToTry, normalizeCurrencyCode } from "../../../lib/fx";
 import { installmentOptions } from "../../../lib/installments";
+import { isDirectPostEnabled } from "../../../lib/payment/ziraatpay";
 import { InstallmentSelector } from "../../../components/InstallmentSelector";
+import { PayNowButton } from "../../../components/PayNowButton";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +35,9 @@ export default async function CheckoutPage({ params }: { params: Promise<{ code:
 
   const orderCurrency = normalizeCurrencyCode(order.currency);
   const alreadyPaid = order.paymentStatus?.toLowerCase().includes("ödendi");
+  // DirectPost açıkken taksit seçimi (vade farkıyla) burada yapılır ve kilitlenir.
+  // Kapalıyken tek ekran: ana tutar onaylanır, taksidi müşteri ZiraatPay'de seçer.
+  const directPost = isDirectPostEnabled();
 
   let options: ReturnType<typeof installmentOptions> = [];
   let convertedAmount: number | null = null;
@@ -69,8 +74,12 @@ export default async function CheckoutPage({ params }: { params: Promise<{ code:
         <article className="panel checkoutMain">
           <div className="panelHeader compact">
             <div>
-              <h2>Taksit seçenekleri</h2>
-              <p>Vade farkı dahil tutarlar aşağıdadır. Seçtiğiniz tutar tahsil edilir.</p>
+              <h2>{directPost ? "Taksit seçenekleri" : "Ödeme özeti"}</h2>
+              <p>
+                {directPost
+                  ? "Vade farkı dahil tutarlar aşağıdadır. Seçtiğiniz tutar tahsil edilir."
+                  : "Tutarı onaylayın; kart bilgileri ve taksit seçimi güvenli ZiraatPay ekranında yapılır."}
+              </p>
             </div>
           </div>
 
@@ -82,8 +91,13 @@ export default async function CheckoutPage({ params }: { params: Promise<{ code:
 
           {fxError ? (
             <p className="formError">Kart ödemesi şu an başlatılamıyor: {fxError}</p>
-          ) : (
+          ) : directPost ? (
             <InstallmentSelector trackingCode={order.trackingCode} options={options} />
+          ) : (
+            <PayNowButton
+              trackingCode={order.trackingCode}
+              amountLabel={formatTry(convertedAmount ?? 0)}
+            />
           )}
         </article>
 

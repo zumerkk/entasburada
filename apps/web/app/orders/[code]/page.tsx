@@ -134,7 +134,7 @@ export default async function OrderTrackingPage({
               <a className="btn btnPrimary" href={`/checkout/${encodeURIComponent(order.trackingCode)}`}>
                 Kartla Öde
               </a>
-              <span className="reorderHint">Taksit seçenekleri ve vade farkları sonraki adımda listelenir.</span>
+              <span className="reorderHint">Taksit seçenekleri ödeme adımında görüntülenir.</span>
             </div>
           ) : null}
           {paymentError ? (

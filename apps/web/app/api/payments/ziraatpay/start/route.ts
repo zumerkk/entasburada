@@ -53,8 +53,11 @@ export async function POST(request: Request): Promise<Response> {
     // Tahsilat TRY yapılır. USD/EUR fiyatlı sipariş TCMB kuruyla çevrilir;
     // kur alınamazsa hata fırlar ve YANLIŞ tutarla tahsilat yapılmaz.
     const charge = await convertToTry(parseAmount(order.totalAmount), order.currency);
-    // Taksit farkı müşteriye yansır (tek çekimde tutar değişmez).
-    const plan = priceForInstallment(charge.amount, installments);
+    // Vade farkı YALNIZCA DirectPost açıkken uygulanır; çünkü sadece o akışta taksit
+    // kilitlenir. HPP'de müşteri taksidi değiştirebildiği için vade farkı eklemek
+    // tutarsızlık yaratır (ekranımızda 2 taksit, ZiraatPay'de 12 taksit gibi).
+    const effectiveInstallments = isDirectPostEnabled() ? installments : 1;
+    const plan = priceForInstallment(charge.amount, effectiveInstallments);
     // Satır tutarları da taksit oranıyla ölçeklenir; ORDERITEMS toplamı AMOUNT ile tutarlı kalsın.
     const rate = charge.rate * (charge.amount > 0 ? plan.total / charge.amount : 1);
 
@@ -62,7 +65,7 @@ export async function POST(request: Request): Promise<Response> {
       // Her deneme benzersiz ID alır; aksi halde taksit değişince ERR10118 döner.
       merchantPaymentId: buildMerchantPaymentId(order.trackingCode),
       amount: plan.total.toFixed(2),
-      installments,
+      installments: effectiveInstallments,
       currency: "TRY",
       returnUrl: `${siteUrl}/api/payments/ziraatpay/callback`,
       customerId: order.email || order.dealerUser,
@@ -83,7 +86,7 @@ export async function POST(request: Request): Promise<Response> {
     return NextResponse.json({
       ...(isDirectPostEnabled() ? { directPostUrl: session.directPostUrl } : {}),
       redirectUrl: session.redirectUrl,
-      installments,
+      installments: effectiveInstallments,
       amount: plan.total.toFixed(2)
     });
   } catch (error) {
