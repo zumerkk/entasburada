@@ -8,7 +8,11 @@ import {
 } from "../../../lib/dealer-application-repository";
 import { buildCredentialsWhatsappHref } from "../../../lib/dealer-provisioning";
 import { getCustomers, type CustomerSegment } from "../../../lib/customer-auth";
-import { updateDealerAccountAction, updateDealerApplicationStatusAction } from "../actions";
+import {
+  createManualDealerApplicationAction,
+  updateDealerAccountAction,
+  updateDealerApplicationStatusAction
+} from "../actions";
 import { AdminFrame } from "../AdminFrame";
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -30,6 +34,8 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
   const status = (getParam(params, "status") || "all") as DealerApplicationStatus | "all";
   const q = getParam(params, "q");
   const highlight = getParam(params, "highlight");
+  const okMessage = getParam(params, "ok");
+  const errorMessage = getParam(params, "error");
   const [applications, customers] = await Promise.all([listDealerApplications({ status, q }), getCustomers()]);
   const accountTerm = q.trim().toLocaleLowerCase("tr-TR");
   const visibleCustomers = customers.filter((customer) =>
@@ -148,6 +154,92 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
         <div className="panelHeader compact">
           <h2>{applications.length.toLocaleString("tr-TR")} başvuru</h2>
         </div>
+
+        {okMessage ? <p className="formSuccess">{okMessage}</p> : null}
+        {errorMessage ? <p className="formError">{errorMessage}</p> : null}
+
+        <details className="manualApplication">
+          <summary>Elden alınan başvuruyu ekle</summary>
+          <form action={createManualDealerApplicationAction} className="adminFilterForm inlineCommercialForm">
+            <label>
+              Firma ünvanı *
+              <input name="companyTitle" required />
+            </label>
+            <label>
+              Yetkili kişi *
+              <input name="authorizedPerson" required />
+            </label>
+            <label>
+              Telefon *
+              <input name="phone" type="tel" required placeholder="+90 5xx xxx xx xx" />
+            </label>
+            <label>
+              E-posta *
+              <input name="email" type="email" required />
+            </label>
+            <label>
+              Vergi dairesi
+              <input name="taxOffice" />
+            </label>
+            <label>
+              Vergi no
+              <input name="taxNumber" />
+            </label>
+            <label>
+              MERSİS no
+              <input name="mersisNumber" />
+            </label>
+            <label>
+              Firma tipi
+              <select name="companyType" defaultValue="Hırdavat bayisi">
+                <option>Hırdavat bayisi</option>
+                <option>Yapı market</option>
+                <option>Sanayi işletmesi</option>
+                <option>Kurumsal satın alma</option>
+              </select>
+            </label>
+            <label>
+              İl
+              <input name="city" />
+            </label>
+            <label>
+              İlçe
+              <input name="district" />
+            </label>
+            <label>
+              Faaliyet alanı
+              <input name="activityArea" defaultValue="Hırdavat" />
+            </label>
+            <label>
+              Bayilik türü
+              <select name="dealershipType" defaultValue="Standart bayi">
+                <option>Standart bayi</option>
+                <option>Bölgesel bayi</option>
+                <option>Proje bazlı</option>
+                <option>Toptan ticaret</option>
+              </select>
+            </label>
+            <label className="spanTwo">
+              Fatura adresi
+              <textarea name="invoiceAddress" rows={2} />
+            </label>
+            <label className="spanTwo">
+              Teslimat adresi (boş bırakılırsa fatura adresi kullanılır)
+              <textarea name="deliveryAddress" rows={2} />
+            </label>
+            <label className="checkboxLabel spanTwo">
+              <input type="checkbox" name="kvkkAccepted" />
+              Müşteriden KVKK aydınlatma onayı alındı *
+            </label>
+            <label className="checkboxLabel spanTwo">
+              <input type="checkbox" name="commercialConsent" />
+              Ticari elektronik ileti izni alındı
+            </label>
+            <button className="btn btnPrimary" type="submit">
+              Başvuruyu Kaydet (onay bekler)
+            </button>
+          </form>
+        </details>
 
         {applications.length === 0 ? (
           <EmptyState

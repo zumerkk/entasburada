@@ -14,6 +14,7 @@ import {
   type QuoteStatus
 } from "../../lib/commercial-repository";
 import {
+  createDealerApplication,
   getDealerApplication,
   recordApplicationProvisioning,
   updateDealerApplicationStatus,
@@ -135,6 +136,63 @@ export async function updateDealerApplicationStatusAction(formData: FormData): P
   revalidatePath("/admin/dealers");
   revalidatePath("/admin");
   revalidatePath("/admin/notifications");
+}
+
+/**
+ * Elden (yüz yüze) alınan bayi başvurusunu sisteme girer.
+ *
+ * Halka açık form müşteri tarafından doldurulur; bu aksiyon ise başvuruyu kâğıt
+ * üzerinde alıp panele işleyen admin içindir. Başvuru "pending" durumda oluşur,
+ * normal onay akışına girer — hesap ancak onaylandığında açılır.
+ *
+ * KVKK/ticari izin kutuları admin tarafından İŞARETLENMEK ZORUNDA: müşteriden
+ * fiilen alınmış onayı beyan eder, otomatik varsayılmaz.
+ */
+export async function createManualDealerApplicationAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+
+  const required = (key: string) => getString(formData, key);
+  const companyTitle = required("companyTitle");
+  const authorizedPerson = required("authorizedPerson");
+  const phone = required("phone");
+  const email = required("email");
+
+  if (!companyTitle || !authorizedPerson || !phone || !email) {
+    redirect("/admin/dealers?error=" + encodeURIComponent("Firma, yetkili, telefon ve e-posta zorunlu."));
+  }
+  if (getString(formData, "kvkkAccepted") !== "on") {
+    redirect("/admin/dealers?error=" + encodeURIComponent("KVKK onayının alındığını işaretlemelisiniz."));
+  }
+
+  const invoiceAddress = required("invoiceAddress");
+  const deliveryAddress = required("deliveryAddress") || invoiceAddress;
+
+  const application = await createDealerApplication({
+    companyTitle,
+    taxOffice: required("taxOffice"),
+    taxNumber: required("taxNumber"),
+    mersisNumber: required("mersisNumber") || undefined,
+    companyType: required("companyType") || "Hırdavat bayisi",
+    authorizedPerson,
+    phone,
+    whatsapp: required("whatsapp") || undefined,
+    email,
+    invoiceAddress,
+    deliveryAddress,
+    city: required("city"),
+    district: required("district"),
+    activityArea: required("activityArea") || "Hırdavat",
+    dealershipType: required("dealershipType") || undefined,
+    kvkkAccepted: true,
+    commercialConsent: getString(formData, "commercialConsent") === "on"
+  });
+
+  revalidatePath("/admin/dealers");
+  revalidatePath("/admin");
+  redirect(
+    "/admin/dealers?ok=" +
+      encodeURIComponent(`Elden başvuru kaydedildi: ${application.reference} (onay bekliyor).`)
+  );
 }
 
 const DEALER_SEGMENTS: CustomerSegment[] = ["standard", "industrial", "project"];
