@@ -174,6 +174,121 @@ export async function syncImportedProducts({ publishNew = false, actor = "admin@
   return nextStore;
 }
 
+export interface UpdateCatalogProductInput {
+  name?: string;
+  brand?: string;
+  category?: string;
+  listPrice?: string;
+  currency?: string;
+  stockQuantity?: number;
+  unitType?: string;
+  imageUrl?: string;
+  description?: string;
+  status?: "ACTIVE" | "DRAFT" | "PASSIVE" | undefined;
+  isVisible?: boolean | undefined;
+}
+
+/**
+ * Admin panelinden tek ürün düzenleme.
+ *
+ * Notlar:
+ * - `slug` DEĞİŞTİRİLMEZ: ürün adı düzeltilse bile mevcut ürün linkleri kırılmasın.
+ * - Stok adedi değişirse `stockStatus` yeniden türetilir; aksi halde vitrindeki
+ *   "Stokta / Az stok / Stok yok" rozeti gerçekle çelişir.
+ * - Değişiklik denetim kaydına (audit log) yazılır.
+ */
+export async function updateCatalogProduct(
+  productId: string,
+  input: UpdateCatalogProductInput,
+  actor = "admin@entasburada.com"
+): Promise<void> {
+  const store = await loadCatalogStore();
+  const index = store.products.findIndex((product) => product.id === productId);
+  if (index === -1) {
+    throw new Error("Ürün bulunamadı.");
+  }
+
+  const current = store.products[index]!;
+  const now = new Date().toISOString();
+  const changes: string[] = [];
+  const next = { ...current };
+
+  const setText = (field: "name" | "brand" | "category" | "unitType" | "imageUrl" | "description", label: string) => {
+    const value = input[field];
+    if (value === undefined) return;
+    const trimmed = value.trim();
+    if (trimmed === (current[field] ?? "")) return;
+    (next as Record<string, unknown>)[field] = trimmed;
+    changes.push(label);
+  };
+
+  setText("name", "ad");
+  setText("brand", "marka");
+  setText("category", "kategori");
+  setText("unitType", "birim");
+  setText("imageUrl", "görsel");
+  setText("description", "açıklama");
+
+  if (input.listPrice !== undefined) {
+    const price = input.listPrice.trim().replace(",", ".");
+    const parsed = Number(price);
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      throw new Error("Geçersiz fiyat.");
+    }
+    const normalized = parsed.toFixed(2);
+    if (normalized !== current.listPrice) {
+      next.listPrice = normalized;
+      changes.push(`fiyat ${current.listPrice} → ${normalized}`);
+    }
+  }
+
+  if (input.currency !== undefined) {
+    const currency = input.currency.trim().toUpperCase() === "TL" ? "TRY" : input.currency.trim().toUpperCase();
+    if (currency && currency !== current.currency) {
+      next.currency = currency;
+      changes.push(`para birimi ${current.currency} → ${currency}`);
+    }
+  }
+
+  if (input.stockQuantity !== undefined && Number.isFinite(input.stockQuantity)) {
+    const quantity = Math.max(0, Math.trunc(input.stockQuantity));
+    if (quantity !== current.stockQuantity) {
+      next.stockQuantity = quantity;
+      // Rozet gerçekle uyumlu kalsın diye stok durumu yeniden türetilir.
+      next.stockStatus = quantity <= 0 ? "out_of_stock" : quantity < 5 ? "low_stock" : "in_stock";
+      next.stockQuantityKnown = true;
+      changes.push(`stok ${current.stockQuantity} → ${quantity}`);
+    }
+  }
+
+  if (input.status !== undefined && input.status !== current.status) {
+    next.status = input.status;
+    changes.push(`durum ${current.status} → ${input.status}`);
+  }
+
+  if (input.isVisible !== undefined && input.isVisible !== current.isVisible) {
+    next.isVisible = input.isVisible;
+    changes.push(input.isVisible ? "vitrine açıldı" : "vitrinden gizlendi");
+  }
+
+  if (changes.length === 0) return;
+
+  next.updatedAt = now;
+  store.products[index] = next;
+  await saveCatalogStore(store);
+  await appendAuditLogs([
+    {
+      id: `audit-edit-${productId}-${now}`,
+      timestamp: now,
+      actor,
+      action: "PRODUCT_PUBLISH",
+      entityType: "product",
+      entityId: productId,
+      message: `${next.name} güncellendi: ${changes.join(", ")}.`
+    }
+  ]);
+}
+
 export async function publishDraftProducts(actor = "admin@entasburada.com"): Promise<CatalogStore> {
   const store = await loadCatalogStore();
   const ids = store.products

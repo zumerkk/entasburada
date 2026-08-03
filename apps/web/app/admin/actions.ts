@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getAdminEmail } from "../../lib/admin-auth";
-import { publishDraftProducts, publishProductIds, syncImportedProducts } from "../../lib/catalog-repository";
+import { publishDraftProducts, publishProductIds, syncImportedProducts, updateCatalogProduct } from "../../lib/catalog-repository";
 import { requireAdmin } from "../../lib/admin-auth";
 import {
   convertQuoteToOrder,
@@ -50,6 +50,49 @@ export async function publishSelectedAction(formData: FormData): Promise<void> {
 
   await publishProductIds(ids, getAdminEmail());
   revalidateCatalogPaths();
+}
+
+/** Admin panelinden tek ürün düzenleme (ad, fiyat, stok, durum, görsel...). */
+export async function updateProductAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+  const productId = getString(formData, "productId");
+  if (!productId) {
+    redirect("/admin/products?error=" + encodeURIComponent("Ürün seçilmedi."));
+  }
+
+  // Sayfa/filtre kaybolmasın diye dönüş adresi formdan taşınır.
+  const rawReturn = getString(formData, "returnTo");
+  const returnTo = rawReturn.startsWith("/admin/products") ? rawReturn : "/admin/products";
+
+  try {
+    await updateCatalogProduct(
+      productId,
+      {
+        name: getString(formData, "name"),
+        brand: getString(formData, "brand"),
+        category: getString(formData, "category"),
+        listPrice: getString(formData, "listPrice"),
+        currency: getString(formData, "currency"),
+        stockQuantity: Number(getString(formData, "stockQuantity")),
+        unitType: getString(formData, "unitType"),
+        imageUrl: getString(formData, "imageUrl"),
+        status: toProductStatus(getString(formData, "status")),
+        isVisible: getString(formData, "isVisible") === "on"
+      },
+      getAdminEmail()
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Ürün güncellenemedi.";
+    redirect(`${returnTo}${returnTo.includes("?") ? "&" : "?"}error=${encodeURIComponent(message)}`);
+  }
+
+  revalidatePath("/admin/products");
+  revalidatePath("/catalog");
+  redirect(`${returnTo}${returnTo.includes("?") ? "&" : "?"}ok=${encodeURIComponent("Ürün güncellendi.")}`);
+}
+
+function toProductStatus(value: string): "ACTIVE" | "DRAFT" | "PASSIVE" | undefined {
+  return value === "ACTIVE" || value === "DRAFT" || value === "PASSIVE" ? value : undefined;
 }
 
 export async function updateQuoteStatusAction(formData: FormData): Promise<void> {

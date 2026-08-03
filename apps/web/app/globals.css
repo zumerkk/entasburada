@@ -6193,3 +6193,54 @@ a.metricCard {
   width: auto;
   margin: 0;
 }
+
+/* --- Admin: ürün düzenleme --- */
+.productEdit {
+  border: 1px solid var(--line);
+  border-top: none;
+  padding: 0 14px;
+  background: var(--surface);
+}
+.productEdit > summary {
+  cursor: pointer;
+  padding: 7px 0;
+  font-size: 0.8rem;
+  color: var(--green-900);
+  user-select: none;
+}
+.productEdit[open] > summary {
+  border-bottom: 1px dashed var(--line);
+  margin-bottom: 10px;
+}
+.productEditForm {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  padding-bottom: 14px;
+  align-items: end;
+}
+.productEditForm label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.productEditForm input,
+.productEditForm select {
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--white);
+  color: var(--anthracite);
+  font-size: 0.88rem;
+  width: 100%;
+}
+.productEditForm .spanTwo {
+  grid-column: span 2;
+}
+@media (max-width: 900px) {
+  .productEditForm {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

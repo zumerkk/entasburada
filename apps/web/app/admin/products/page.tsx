@@ -3,7 +3,7 @@ import { StatusPill } from "@entas/ui";
 import type { ProductStatus, StockStatus } from "@entas/catalog";
 import { requireAdmin } from "../../../lib/admin-auth";
 import { formatCatalogMoney, getAdminProducts, getCatalogFacets } from "../../../lib/catalog-repository";
-import { publishAllDraftAction, publishSelectedAction } from "../actions";
+import { publishAllDraftAction, publishSelectedAction, updateProductAction } from "../actions";
 import { AdminFrame } from "../AdminFrame";
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -39,6 +39,10 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
     getAdminProducts({ q, status, stockStatus, sourceKey, limit, offset: (page - 1) * limit })
   ]);
   const pageCount = Math.max(1, Math.ceil(products.total / products.limit));
+  const okMessage = getParam(params, "ok");
+  const errorMessage = getParam(params, "error");
+  // Düzenleme sonrası aynı filtre/sayfaya dönebilmek için mevcut adres taşınır.
+  const returnTo = pageHref(params, page);
 
   return (
     <AdminFrame active="products">
@@ -108,6 +112,8 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
             Seçilileri yayına al
           </button>
         </div>
+        {okMessage ? <p className="formSuccess">{okMessage}</p> : null}
+        {errorMessage ? <p className="formError">{errorMessage}</p> : null}
         <div className="adminTable">
           <div className="adminTableHead productRows">
             <span>Seç</span>
@@ -119,31 +125,92 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
             <span>Public</span>
           </div>
           {products.items.map((product) => (
-            <div className="adminTableRow productRows" key={product.id}>
-              <span>
-                <input name="productId" type="checkbox" value={product.id} />
-              </span>
-              <span>
-                <strong>{product.name}</strong>
-                <small>{product.sku}</small>
-              </span>
-              <span>{product.sourceName}</span>
-              <span>{formatCatalogMoney(product.listPrice, product.currency)}</span>
-              <span>
-                {product.stockQuantity.toLocaleString("tr-TR")} {product.unitType}
-              </span>
-              <span>
-                <StatusPill tone={product.status === "ACTIVE" ? "success" : product.status === "DRAFT" ? "warning" : "neutral"}>{product.status}</StatusPill>
-              </span>
-              <span>
-                {product.isVisible ? (
-                  <a className="textLink" href={`/products/${product.slug}`}>
-                    Aç
-                  </a>
-                ) : (
-                  <StatusPill tone="neutral">Kapalı</StatusPill>
-                )}
-              </span>
+            <div key={product.id}>
+              <div className="adminTableRow productRows">
+                <span>
+                  <input name="productId" type="checkbox" value={product.id} />
+                </span>
+                <span>
+                  <strong>{product.name}</strong>
+                  <small>{product.sku}</small>
+                </span>
+                <span>{product.sourceName}</span>
+                <span>{formatCatalogMoney(product.listPrice, product.currency)}</span>
+                <span>
+                  {product.stockQuantity.toLocaleString("tr-TR")} {product.unitType}
+                </span>
+                <span>
+                  <StatusPill tone={product.status === "ACTIVE" ? "success" : product.status === "DRAFT" ? "warning" : "neutral"}>{product.status}</StatusPill>
+                </span>
+                <span>
+                  {product.isVisible ? (
+                    <a className="textLink" href={`/products/${product.slug}`}>
+                      Aç
+                    </a>
+                  ) : (
+                    <StatusPill tone="neutral">Kapalı</StatusPill>
+                  )}
+                </span>
+              </div>
+              <details className="productEdit">
+                <summary>Düzenle</summary>
+                <div className="productEditForm">
+                  <input type="hidden" name="productId" value={product.id} form={`edit-${product.id}`} />
+                  <input type="hidden" name="returnTo" value={returnTo} form={`edit-${product.id}`} />
+                  <label>
+                    Ürün adı
+                    <input name="name" defaultValue={product.name} form={`edit-${product.id}`} />
+                  </label>
+                  <label>
+                    Marka
+                    <input name="brand" defaultValue={product.brand} form={`edit-${product.id}`} />
+                  </label>
+                  <label>
+                    Kategori
+                    <input name="category" defaultValue={product.category} form={`edit-${product.id}`} />
+                  </label>
+                  <label>
+                    Fiyat
+                    <input name="listPrice" defaultValue={product.listPrice} inputMode="decimal" form={`edit-${product.id}`} />
+                  </label>
+                  <label>
+                    Para birimi
+                    <select name="currency" defaultValue={product.currency} form={`edit-${product.id}`}>
+                      <option value="TRY">TRY</option>
+                      <option value="USD">USD</option>
+                      <option value="EUR">EUR</option>
+                      <option value="GBP">GBP</option>
+                    </select>
+                  </label>
+                  <label>
+                    Stok adedi
+                    <input name="stockQuantity" type="number" min={0} defaultValue={product.stockQuantity} form={`edit-${product.id}`} />
+                  </label>
+                  <label>
+                    Birim
+                    <input name="unitType" defaultValue={product.unitType} form={`edit-${product.id}`} />
+                  </label>
+                  <label>
+                    Durum
+                    <select name="status" defaultValue={product.status} form={`edit-${product.id}`}>
+                      <option value="ACTIVE">ACTIVE</option>
+                      <option value="DRAFT">DRAFT</option>
+                      <option value="PASSIVE">PASSIVE</option>
+                    </select>
+                  </label>
+                  <label className="spanTwo">
+                    Görsel adresi
+                    <input name="imageUrl" defaultValue={product.image ?? ""} form={`edit-${product.id}`} />
+                  </label>
+                  <label className="checkboxLabel spanTwo">
+                    <input type="checkbox" name="isVisible" defaultChecked={product.isVisible} form={`edit-${product.id}`} />
+                    Vitrinde görünsün
+                  </label>
+                  <button className="btn btnPrimary" type="submit" form={`edit-${product.id}`}>
+                    Kaydet
+                  </button>
+                </div>
+              </details>
             </div>
           ))}
         </div>
@@ -160,6 +227,12 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
           Sonraki
         </a>
       </nav>
+
+      {/* Düzenleme formları burada tanımlanır; satırdaki alanlar form="edit-{id}" ile
+          bunlara bağlanır. İç içe <form> geçersiz HTML olduğu için bu yöntem kullanılır. */}
+      {products.items.map((product) => (
+        <form key={`form-${product.id}`} id={`edit-${product.id}`} action={updateProductAction} hidden />
+      ))}
     </AdminFrame>
   );
 }
