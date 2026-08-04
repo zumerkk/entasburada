@@ -9,8 +9,8 @@ export interface ProvisionResult {
   status: "created" | "already-exists";
   accountId: string;
   email: string;
+  tempPassword?: string;
   mailSent: boolean;
-  passwordChangeRequired: boolean;
 }
 
 export interface DirectDealerAccountInput {
@@ -39,20 +39,19 @@ export function generateTempPassword(): string {
     return out;
   };
 
-  const numeric = String(randomBytes(1)[0]! % 10);
-  return `Entas-${block(4)}-${block(3)}${numeric}!`;
+  return `Entas-${block(4)}-${block(4)}`;
 }
 
 export async function provisionDealerAccount(application: DealerApplication): Promise<ProvisionResult> {
   const existing = await findCustomerByEmail(application.email);
   if (existing) {
-    return { status: "already-exists", accountId: existing.id, email: existing.email, mailSent: false, passwordChangeRequired: Boolean(existing.mustChangePassword) };
+    return { status: "already-exists", accountId: existing.id, email: existing.email, mailSent: false };
   }
 
   const tempPassword = generateTempPassword();
   const account: Omit<CustomerAccount, "password"> & { plainPassword: string } = {
     id: `cust-${randomUUID()}`,
-    email: application.email.trim().toLowerCase(),
+    email: application.email.trim().toLocaleLowerCase("tr-TR"),
     plainPassword: tempPassword,
     companyName: application.companyTitle,
     authorizedPerson: application.authorizedPerson,
@@ -64,8 +63,7 @@ export async function provisionDealerAccount(application: DealerApplication): Pr
     baseDiscountRate: 0,
     brandDiscounts: {},
     categoryDiscounts: {},
-    specialNetPrices: {},
-    mustChangePassword: true
+    specialNetPrices: {}
   };
 
   const record = await createCustomerAccount(account);
@@ -75,14 +73,14 @@ export async function provisionDealerAccount(application: DealerApplication): Pr
     html: buildWelcomeEmail(application, tempPassword)
   });
 
-  return { status: "created", accountId: record.id, email: record.email, mailSent, passwordChangeRequired: true };
+  return { status: "created", accountId: record.id, email: record.email, tempPassword, mailSent };
 }
 
 export async function provisionDirectDealerAccount(input: DirectDealerAccountInput): Promise<ProvisionResult> {
-  const email = input.email.trim().toLowerCase();
+  const email = input.email.trim().toLocaleLowerCase("tr-TR");
   const existing = await findCustomerByEmail(email);
   if (existing) {
-    return { status: "already-exists", accountId: existing.id, email: existing.email, mailSent: false, passwordChangeRequired: Boolean(existing.mustChangePassword) };
+    return { status: "already-exists", accountId: existing.id, email: existing.email, mailSent: false };
   }
 
   const segment = input.segment ?? "standard";
@@ -103,8 +101,7 @@ export async function provisionDirectDealerAccount(input: DirectDealerAccountInp
     baseDiscountRate: input.baseDiscountRate ?? profile.baseDiscountRate,
     brandDiscounts: {},
     categoryDiscounts: {},
-    specialNetPrices: {},
-    mustChangePassword: true
+    specialNetPrices: {}
   });
   const mailSent = input.sendWelcomeEmail === false
     ? false
@@ -114,7 +111,24 @@ export async function provisionDirectDealerAccount(input: DirectDealerAccountInp
         html: buildDirectWelcomeEmail(record, tempPassword)
       });
 
-  return { status: "created", accountId: record.id, email: record.email, mailSent, passwordChangeRequired: true };
+  return { status: "created", accountId: record.id, email: record.email, tempPassword, mailSent };
+}
+
+export function buildCredentialsWhatsappHref(application: DealerApplication, email: string, tempPassword: string): string {
+  const phone = (application.whatsapp || application.phone || "").replace(/\D+/g, "");
+  const international = phone.startsWith("0") ? `9${phone}` : phone.startsWith("5") ? `90${phone}` : phone;
+  const message = [
+    `${application.authorizedPerson} merhaba,`,
+    `ENTAŞBURADA bayi hesabınız açıldı. 🎉`,
+    ``,
+    `Giriş: https://entasburada.com/login`,
+    `Kullanıcı: ${email}`,
+    `Geçici şifre: ${tempPassword}`,
+    ``,
+    `Girişten sonra Hesabım sayfasından şifrenizi değiştirmenizi öneririz.`
+  ].join("\n");
+  const text = `?text=${encodeURIComponent(message)}`;
+  return international.length >= 12 ? `https://wa.me/${international}${text}` : `https://wa.me/${text}`;
 }
 
 function buildWelcomeEmail(application: DealerApplication, tempPassword: string): string {
