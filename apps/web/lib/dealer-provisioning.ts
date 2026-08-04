@@ -3,13 +3,14 @@ import { randomBytes, randomUUID } from "node:crypto";
 import { createCustomerAccount, findCustomerByEmail, updateCustomerAccount, type CustomerAccount } from "./customer-auth";
 import type { DealerApplication } from "./dealer-application-repository";
 import { sendMail } from "./mailer";
+import { COMPANY_CONTACT } from "./company-contact";
 
 export interface ProvisionResult {
   status: "created" | "already-exists";
   accountId: string;
   email: string;
-  tempPassword?: string;
   mailSent: boolean;
+  passwordChangeRequired: boolean;
 }
 
 export interface DirectDealerAccountInput {
@@ -38,19 +39,20 @@ export function generateTempPassword(): string {
     return out;
   };
 
-  return `Entas-${block(4)}-${block(4)}`;
+  const numeric = String(randomBytes(1)[0]! % 10);
+  return `Entas-${block(4)}-${block(3)}${numeric}!`;
 }
 
 export async function provisionDealerAccount(application: DealerApplication): Promise<ProvisionResult> {
   const existing = await findCustomerByEmail(application.email);
   if (existing) {
-    return { status: "already-exists", accountId: existing.id, email: existing.email, mailSent: false };
+    return { status: "already-exists", accountId: existing.id, email: existing.email, mailSent: false, passwordChangeRequired: Boolean(existing.mustChangePassword) };
   }
 
   const tempPassword = generateTempPassword();
   const account: Omit<CustomerAccount, "password"> & { plainPassword: string } = {
     id: `cust-${randomUUID()}`,
-    email: application.email.trim().toLocaleLowerCase("tr-TR"),
+    email: application.email.trim().toLowerCase(),
     plainPassword: tempPassword,
     companyName: application.companyTitle,
     authorizedPerson: application.authorizedPerson,
@@ -62,7 +64,8 @@ export async function provisionDealerAccount(application: DealerApplication): Pr
     baseDiscountRate: 0,
     brandDiscounts: {},
     categoryDiscounts: {},
-    specialNetPrices: {}
+    specialNetPrices: {},
+    mustChangePassword: true
   };
 
   const record = await createCustomerAccount(account);
@@ -72,14 +75,14 @@ export async function provisionDealerAccount(application: DealerApplication): Pr
     html: buildWelcomeEmail(application, tempPassword)
   });
 
-  return { status: "created", accountId: record.id, email: record.email, tempPassword, mailSent };
+  return { status: "created", accountId: record.id, email: record.email, mailSent, passwordChangeRequired: true };
 }
 
 export async function provisionDirectDealerAccount(input: DirectDealerAccountInput): Promise<ProvisionResult> {
-  const email = input.email.trim().toLocaleLowerCase("tr-TR");
+  const email = input.email.trim().toLowerCase();
   const existing = await findCustomerByEmail(email);
   if (existing) {
-    return { status: "already-exists", accountId: existing.id, email: existing.email, mailSent: false };
+    return { status: "already-exists", accountId: existing.id, email: existing.email, mailSent: false, passwordChangeRequired: Boolean(existing.mustChangePassword) };
   }
 
   const segment = input.segment ?? "standard";
@@ -100,7 +103,8 @@ export async function provisionDirectDealerAccount(input: DirectDealerAccountInp
     baseDiscountRate: input.baseDiscountRate ?? profile.baseDiscountRate,
     brandDiscounts: {},
     categoryDiscounts: {},
-    specialNetPrices: {}
+    specialNetPrices: {},
+    mustChangePassword: true
   });
   const mailSent = input.sendWelcomeEmail === false
     ? false
@@ -110,24 +114,7 @@ export async function provisionDirectDealerAccount(input: DirectDealerAccountInp
         html: buildDirectWelcomeEmail(record, tempPassword)
       });
 
-  return { status: "created", accountId: record.id, email: record.email, tempPassword, mailSent };
-}
-
-export function buildCredentialsWhatsappHref(application: DealerApplication, email: string, tempPassword: string): string {
-  const phone = (application.whatsapp || application.phone || "").replace(/\D+/g, "");
-  const international = phone.startsWith("0") ? `9${phone}` : phone.startsWith("5") ? `90${phone}` : phone;
-  const message = [
-    `${application.authorizedPerson} merhaba,`,
-    `ENTAŞBURADA bayi hesabınız açıldı. 🎉`,
-    ``,
-    `Giriş: https://entasburada.com/login`,
-    `Kullanıcı: ${email}`,
-    `Geçici şifre: ${tempPassword}`,
-    ``,
-    `Girişten sonra Hesabım sayfasından şifrenizi değiştirmenizi öneririz.`
-  ].join("\n");
-  const text = `?text=${encodeURIComponent(message)}`;
-  return international.length >= 12 ? `https://wa.me/${international}${text}` : `https://wa.me/${text}`;
+  return { status: "created", accountId: record.id, email: record.email, mailSent, passwordChangeRequired: true };
 }
 
 function buildWelcomeEmail(application: DealerApplication, tempPassword: string): string {
@@ -142,7 +129,7 @@ function buildWelcomeEmail(application: DealerApplication, tempPassword: string)
       <tr><td style="padding:6px 12px;background:#f3f7f5">Geçici şifre</td><td style="padding:6px 12px"><code>${escapeHtml(tempPassword)}</code></td></tr>
     </table>
     <p>Güvenliğiniz için ilk girişten sonra <strong>Hesabım</strong> sayfasından şifrenizi değiştirmenizi öneririz.</p>
-    <p>Bayi fiyatlarınız, iskonto grubunuz ve satış temsilciniz hesabınıza tanımlanmıştır. Sorularınız için: +90 532 385 51 18</p>
+    <p>Bayi fiyatlarınız, iskonto grubunuz ve satış temsilciniz hesabınıza tanımlanmıştır. Sorularınız için: ${COMPANY_CONTACT.technicalSupportPhone}</p>
     <p style="color:#6b7c76;font-size:13px">ENTAŞBURADA — Türkiye'nin Yapı Marketi</p>
   </div>`;
 }
@@ -159,7 +146,7 @@ function buildDirectWelcomeEmail(account: CustomerAccount, tempPassword: string)
       <tr><td style="padding:6px 12px;background:#f3f7f5">Geçici şifre</td><td style="padding:6px 12px"><code>${escapeHtml(tempPassword)}</code></td></tr>
     </table>
     <p>Güvenliğiniz için ilk girişten sonra <strong>Hesabım</strong> sayfasından şifrenizi değiştirmenizi öneririz.</p>
-    <p>Sorularınız için: +90 532 385 51 18</p>
+    <p>Sorularınız için: ${COMPANY_CONTACT.technicalSupportPhone}</p>
     <p style="color:#6b7c76;font-size:13px">ENTAŞBURADA — Türkiye'nin Yapı Marketi</p>
   </div>`;
 }
