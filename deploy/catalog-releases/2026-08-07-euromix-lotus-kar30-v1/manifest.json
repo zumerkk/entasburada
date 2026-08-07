@@ -1,0 +1,134 @@
+{
+  "version": "2026-08-07-euromix-lotus-kar30-v1",
+  "createdAt": "2026-08-07T06:58:50.958Z",
+  "sourceCounts": {
+    "euromix-stock": 17
+  },
+  "productCount": 17,
+  "imageCount": 0,
+  "priceMarkup": {
+    "multiplier": 1.3,
+    "match": "lotus",
+    "changes": [
+      {
+        "sku": "EURO 089",
+        "name": "35Ø LOTUS BANYO BATARYASI",
+        "currency": "TRY",
+        "previousPrice": "1690.00",
+        "nextPrice": "2197.00"
+      },
+      {
+        "sku": "EURO 125",
+        "name": "KROM & SİYAH LOTUS LAVABO BATARYASI",
+        "currency": "TRY",
+        "previousPrice": "1690.00",
+        "nextPrice": "2197.00"
+      },
+      {
+        "sku": "EURO 126",
+        "name": "KROM & SİYAH LOTUS BANYO BATARYASI",
+        "currency": "TRY",
+        "previousPrice": "1755.00",
+        "nextPrice": "2281.50"
+      },
+      {
+        "sku": "EURO 127",
+        "name": "KROM & BEYAZ LOTUS BANYO BATARYASI",
+        "currency": "TRY",
+        "previousPrice": "1755.00",
+        "nextPrice": "2281.50"
+      },
+      {
+        "sku": "EURO 128",
+        "name": "KROM & BEYAZ LOTUS LAVABO BATARYASI",
+        "currency": "TRY",
+        "previousPrice": "1755.00",
+        "nextPrice": "2281.50"
+      },
+      {
+        "sku": "EURO 199",
+        "name": "KROM & SİYAH LOTUS KUĞU EVYE BATARYASI",
+        "currency": "TRY",
+        "previousPrice": "1755.00",
+        "nextPrice": "2281.50"
+      },
+      {
+        "sku": "EURO 198",
+        "name": "KROM & SİYAH LOTUS KUĞU LAVABO BATARYASI",
+        "currency": "TRY",
+        "previousPrice": "1755.00",
+        "nextPrice": "2281.50"
+      },
+      {
+        "sku": "EURO 197",
+        "name": "KROM & BEYAZ LOTUS KUĞU EVYE BATARYASI",
+        "currency": "TRY",
+        "previousPrice": "1755.00",
+        "nextPrice": "2281.50"
+      },
+      {
+        "sku": "EURO 196",
+        "name": "KROM & BEYAZ LOTUS KUĞU LAVABO BATARYASI",
+        "currency": "TRY",
+        "previousPrice": "1755.00",
+        "nextPrice": "2281.50"
+      },
+      {
+        "sku": "EURO 086",
+        "name": "GOLD LOTUS KUĞU LAVABO BATARYASI",
+        "currency": "USD",
+        "previousPrice": "57.00",
+        "nextPrice": "74.10"
+      },
+      {
+        "sku": "EURO 070",
+        "name": "35Ø LOTUS UZUN KUĞU EVYE BATARYASI",
+        "currency": "TRY",
+        "previousPrice": "1430.00",
+        "nextPrice": "1859.00"
+      },
+      {
+        "sku": "EURO 084",
+        "name": "GOLD LOTUS BANYO BATARYASI",
+        "currency": "USD",
+        "previousPrice": "67.50",
+        "nextPrice": "87.75"
+      },
+      {
+        "sku": "MK 013",
+        "name": "LOTUS MİX KOLU",
+        "currency": "USD",
+        "previousPrice": "6.75",
+        "nextPrice": "8.78"
+      },
+      {
+        "sku": "EURO 071",
+        "name": "35Ø LOTUS LAVABO BATARYASI",
+        "currency": "TRY",
+        "previousPrice": "1755.00",
+        "nextPrice": "2281.50"
+      },
+      {
+        "sku": "EURO 108",
+        "name": "35Ø LOTUS KISA KUĞU LAVAVO BATARYASI",
+        "currency": "TRY",
+        "previousPrice": "1430.00",
+        "nextPrice": "1859.00"
+      },
+      {
+        "sku": "EURO 085",
+        "name": "GOLD LOTUS KUĞU EVYE BATARYASI",
+        "currency": "USD",
+        "previousPrice": "57.00",
+        "nextPrice": "74.10"
+      },
+      {
+        "sku": "EURO 097",
+        "name": "GOLD & SİYAH LOTUS LAVABO BATARYASI",
+        "currency": "USD",
+        "previousPrice": "49.50",
+        "nextPrice": "64.35"
+      }
+    ]
+  }
+}

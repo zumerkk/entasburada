@@ -21,6 +21,7 @@
     "audit:pdf-import": "node --import tsx scripts/audit-pdf-import.ts",
     "catalog:release:build": "node --import tsx scripts/build-catalog-release.ts",
     "catalog:release:apply": "node --import tsx scripts/apply-catalog-release.ts",
+    "price:markup:build": "node --import tsx scripts/build-price-markup-release.ts",
     "images:normalize": "node --import tsx scripts/normalize-product-images.ts",
     "catalog:sync": "tsx scripts/sync-catalog-store.ts",
     "catalog:reclassify": "tsx scripts/reclassify-catalog.ts",
