@@ -1,7 +1,20 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, ChevronLeft, ChevronRight, Droplets, PackageSearch, Pause, Play, ShieldCheck, Sprout, Wrench } from "lucide-react";
+import {
+  ArrowRight,
+  BadgePercent,
+  ChevronLeft,
+  ChevronRight,
+  Droplets,
+  FileText,
+  PackageSearch,
+  Pause,
+  Play,
+  ShieldCheck,
+  Sprout,
+  Wrench
+} from "lucide-react";
 
 interface HomeHeroSliderProps {
   metrics: {
@@ -13,6 +26,20 @@ interface HomeHeroSliderProps {
 
 const SLIDES = [
   {
+    id: "bulk-quote-campaign",
+    eyebrow: "Toplu alıma özel indirim fırsatı",
+    title: "Toplu alımlarda teklif oluşturun, indirimli fiyatlarla alışveriş yapın",
+    body: "Koli, palet ve proje ihtiyaçlarınızı tek teklifte toplayın; alım miktarınıza özel avantajlı fiyatımızı alın.",
+    image: "/images/industrial-hero.png",
+    href: "/quote",
+    cta: "Teklif Oluştur",
+    secondaryHref: "/catalog",
+    secondaryCta: "Ürünleri İncele",
+    Icon: BadgePercent,
+    ActionIcon: FileText,
+    SecondaryIcon: PackageSearch
+  },
+  {
     id: "professional-supply",
     eyebrow: "B2B hırdavat ve endüstriyel tedarik",
     title: "Profesyonellerin tedarik merkezi",
@@ -20,7 +47,11 @@ const SLIDES = [
     image: "/images/hero-tools-v2.webp",
     href: "/catalog",
     cta: "Ana kataloğu aç",
-    Icon: Wrench
+    secondaryHref: "/login",
+    secondaryCta: "Bayi girişi",
+    Icon: Wrench,
+    ActionIcon: PackageSearch,
+    SecondaryIcon: ShieldCheck
   },
   {
     id: "plumbing-systems",
@@ -30,7 +61,11 @@ const SLIDES = [
     image: "/images/hero-plumbing-v2.webp",
     href: "/catalog?group=su-tesisati",
     cta: "Tesisat ürünlerine git",
-    Icon: Droplets
+    secondaryHref: "/login",
+    secondaryCta: "Bayi girişi",
+    Icon: Droplets,
+    ActionIcon: PackageSearch,
+    SecondaryIcon: ShieldCheck
   },
   {
     id: "irrigation-season",
@@ -40,7 +75,11 @@ const SLIDES = [
     image: "/images/hero-irrigation-v2.webp",
     href: "/catalog?group=sulama-bahce",
     cta: "Sulama kataloğunu aç",
-    Icon: Sprout
+    secondaryHref: "/login",
+    secondaryCta: "Bayi girişi",
+    Icon: Sprout,
+    ActionIcon: PackageSearch,
+    SecondaryIcon: ShieldCheck
   }
 ] as const;
 
@@ -65,7 +104,7 @@ export function HomeHeroSlider({ metrics }: HomeHeroSliderProps) {
   const showNext = () => setActiveIndex((current) => (current + 1) % SLIDES.length);
 
   return (
-    <section className="homeHeroStage" aria-roledescription="carousel" aria-label="ENTAŞ öne çıkan katalogları">
+    <section className="homeHeroStage" aria-roledescription="carousel" aria-label="ENTAŞ öne çıkan kampanya ve katalogları">
       <div className="homeHeroBrandDecor homeHeroBrandDecorLeft" aria-hidden="true">
         <strong>ENTAŞ</strong>
         <span>Profesyonel tedarik</span>
@@ -98,6 +137,8 @@ export function HomeHeroSlider({ metrics }: HomeHeroSliderProps) {
             {SLIDES.map((slide, index) => {
               const isActive = index === activeIndex;
               const Icon = slide.Icon;
+              const ActionIcon = slide.ActionIcon;
+              const SecondaryIcon = slide.SecondaryIcon;
               return (
                 <article className={`homeHeroSlide${isActive ? " active" : ""}`} aria-hidden={!isActive} key={slide.id}>
                   <img className="homeHeroSlideImage" src={slide.image} alt="" />
@@ -111,12 +152,12 @@ export function HomeHeroSlider({ metrics }: HomeHeroSliderProps) {
                     <p>{slide.body}</p>
                     <div className="homeHeroActions">
                       <a className="btn btnPrimary" href={slide.href} tabIndex={isActive ? undefined : -1}>
-                        <PackageSearch size={18} aria-hidden="true" />
+                        <ActionIcon size={18} aria-hidden="true" />
                         {slide.cta}
                       </a>
-                      <a className="btn btnHeroSecondary" href="/login" tabIndex={isActive ? undefined : -1}>
-                        <ShieldCheck size={18} aria-hidden="true" />
-                        Bayi girişi
+                      <a className="btn btnHeroSecondary" href={slide.secondaryHref} tabIndex={isActive ? undefined : -1}>
+                        <SecondaryIcon size={18} aria-hidden="true" />
+                        {slide.secondaryCta}
                       </a>
                     </div>
                   </div>
