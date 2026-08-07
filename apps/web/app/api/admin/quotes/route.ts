@@ -1,7 +1,19 @@
 import { getAdminEmail, isAdminAuthenticated } from "../../../../lib/admin-auth";
 import { convertQuoteToOrder, priceQuote, searchAdminQuotes, updateQuoteStatus, type QuoteStatus } from "../../../../lib/commercial-repository";
+import { z } from "zod";
+import { readJsonBody, requestErrorResponse } from "../../../../lib/security";
 
 export const dynamic = "force-dynamic";
+
+const quoteMutationSchema = z.object({
+  action: z.enum(["price", "convert", "status"]),
+  quoteId: z.string().trim().min(1).max(160),
+  status: z.enum(["DRAFT", "SUBMITTED", "ASSIGNED", "PRICED", "APPROVED", "REJECTED", "EXPIRED", "CONVERTED"]).optional(),
+  validUntil: z.string().trim().max(10).optional(),
+  salesRepresentative: z.string().trim().max(160).optional(),
+  internalNote: z.string().trim().max(2_000).optional(),
+  prices: z.array(z.object({ itemId: z.string().trim().min(1).max(160), quotedUnitPrice: z.string().trim().min(1).max(40) }).strict()).max(500).optional()
+}).strict();
 
 export async function GET(request: Request): Promise<Response> {
   if (!(await isAdminAuthenticated())) {
@@ -31,20 +43,14 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   try {
-    const body = (await request.json()) as {
-      action?: string;
-      quoteId?: string;
-      status?: QuoteStatus;
-      validUntil?: string;
-      salesRepresentative?: string;
-      internalNote?: string;
-      prices?: Array<{ itemId: string; quotedUnitPrice: string }>;
-    };
+    const parsed = quoteMutationSchema.safeParse(await readJsonBody<unknown>(request));
+    if (!parsed.success) return Response.json({ error: "Geçersiz teklif işlemi.", issues: parsed.error.flatten() }, { status: 400 });
+    const body = parsed.data;
 
     if (body.action === "price") {
       const quote = await priceQuote(
         {
-          quoteId: body.quoteId ?? "",
+          quoteId: body.quoteId,
           validUntil: body.validUntil,
           salesRepresentative: body.salesRepresentative,
           internalNote: body.internalNote,
@@ -56,18 +62,18 @@ export async function POST(request: Request): Promise<Response> {
     }
 
     if (body.action === "convert") {
-      const order = await convertQuoteToOrder(body.quoteId ?? "", getAdminEmail());
+      const order = await convertQuoteToOrder(body.quoteId, getAdminEmail());
       return Response.json({ order }, { status: 201 });
     }
 
     if (body.action === "status" && body.status) {
-      const quote = await updateQuoteStatus(body.quoteId ?? "", body.status, getAdminEmail());
+      const quote = await updateQuoteStatus(body.quoteId, body.status as QuoteStatus, getAdminEmail());
       return Response.json({ quote });
     }
 
     return Response.json({ error: "Unsupported action" }, { status: 400 });
   } catch (error) {
-    return Response.json({ error: error instanceof Error ? error.message : "Quote action failed" }, { status: 400 });
+    return requestErrorResponse(error, "Quote action failed");
   }
 }
 

@@ -34,17 +34,11 @@ export interface UserEvent {
   resultCount?: number | undefined;
   successful?: boolean | undefined;
   durationSeconds?: number | undefined;
-  device?: string | undefined;
-  ip?: string | undefined;
-  referrer?: string | undefined;
   metadata?: Record<string, string | number | boolean | null> | undefined;
 }
 
 export interface EventRequestMeta {
   sessionId?: string | undefined;
-  device?: string | undefined;
-  ip?: string | undefined;
-  referrer?: string | undefined;
 }
 
 export interface CustomerBehaviorRow {
@@ -155,15 +149,31 @@ const dataDir = path.join(rootDir, "data");
 const eventsPath = path.join(dataDir, "user-events.json");
 const opportunitiesPath = path.join(dataDir, "sales-opportunities.json");
 const tasksPath = path.join(dataDir, "sales-tasks.json");
+let analyticsMutationQueue: Promise<void> = Promise.resolve();
 
-export async function trackUserEvent(input: Omit<UserEvent, "id" | "occurredAt"> & { occurredAt?: string }): Promise<UserEvent> {
+function enqueueAnalyticsMutation<T>(mutation: () => Promise<T>): Promise<T> {
+  const operation = analyticsMutationQueue.then(mutation, mutation);
+  analyticsMutationQueue = operation.then(() => undefined, () => undefined);
+  return operation;
+}
+
+export function trackUserEvent(input: Omit<UserEvent, "id" | "occurredAt"> & { occurredAt?: string }): Promise<UserEvent> {
+  return enqueueAnalyticsMutation(() => trackUserEventUnlocked(input));
+}
+
+async function trackUserEventUnlocked(input: Omit<UserEvent, "id" | "occurredAt"> & { occurredAt?: string }): Promise<UserEvent> {
   const events = await loadUserEvents();
   const event = stripUndefined({
     ...input,
     id: `evt-${randomUUID()}`,
     occurredAt: input.occurredAt ?? new Date().toISOString()
   }) as UserEvent;
-  await writeJson(eventsPath, [event, ...events].slice(0, 5000));
+  const retentionCutoff = Date.now() - 90 * 24 * 60 * 60 * 1000;
+  const retainedEvents = events.filter((entry) => {
+    const occurredAt = Date.parse(entry.occurredAt);
+    return Number.isFinite(occurredAt) && occurredAt >= retentionCutoff;
+  });
+  await writeJson(eventsPath, [event, ...retainedEvents].slice(0, 5000));
   return event;
 }
 
@@ -401,7 +411,11 @@ export async function getSearchMissesReport(): Promise<{ generatedAt: string; ro
   return { generatedAt: new Date().toISOString(), rows: rows.sort((a, b) => b.searchCount - a.searchCount) };
 }
 
-export async function createSalesOpportunity(input: SalesOpportunityInput, actor: string): Promise<SalesOpportunity> {
+export function createSalesOpportunity(input: SalesOpportunityInput, actor: string): Promise<SalesOpportunity> {
+  return enqueueAnalyticsMutation(() => createSalesOpportunityUnlocked(input, actor));
+}
+
+async function createSalesOpportunityUnlocked(input: SalesOpportunityInput, actor: string): Promise<SalesOpportunity> {
   const rows = await loadSalesOpportunities();
   const opportunity: SalesOpportunity = {
     id: `opp-${randomUUID()}`,
@@ -419,7 +433,11 @@ export async function createSalesOpportunity(input: SalesOpportunityInput, actor
   return opportunity;
 }
 
-export async function createSalesTask(input: SalesTaskInput, actor: string): Promise<SalesTask> {
+export function createSalesTask(input: SalesTaskInput, actor: string): Promise<SalesTask> {
+  return enqueueAnalyticsMutation(() => createSalesTaskUnlocked(input, actor));
+}
+
+async function createSalesTaskUnlocked(input: SalesTaskInput, actor: string): Promise<SalesTask> {
   const rows = await loadSalesTasks();
   const task: SalesTask = {
     id: `task-${randomUUID()}`,
@@ -482,7 +500,7 @@ async function ensureEventFile(): Promise<void> {
     return;
   }
 
-  await mkdir(dataDir, { recursive: true });
+  await mkdir(dataDir, { recursive: true, mode: 0o700 });
   await writeJson(eventsPath, await createInitialEvents());
 }
 
@@ -633,10 +651,10 @@ async function readJson<T>(filePath: string, fallback: T): Promise<T> {
 }
 
 async function writeJson(filePath: string, value: unknown): Promise<void> {
-  await mkdir(path.dirname(filePath), { recursive: true });
+  await mkdir(path.dirname(filePath), { recursive: true, mode: 0o700 });
   // tmp adi istek basina benzersiz olmali: ayni pid'de esazamanli yazmalar carpisiyordu
   const tmpPath = `${filePath}.${process.pid}.${randomUUID()}.tmp`;
-  await writeFile(tmpPath, `${JSON.stringify(value, null, 2)}\n`);
+  await writeFile(tmpPath, `${JSON.stringify(value, null, 2)}\n`, { mode: 0o600 });
   await rename(tmpPath, filePath);
 }
 

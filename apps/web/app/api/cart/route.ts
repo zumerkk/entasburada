@@ -2,10 +2,12 @@ import { z } from "zod";
 import { addCartItems, CartInputError, clearCart, loadPricedCart } from "../../../lib/cart-repository";
 import { trackCartEvent } from "../../../lib/analytics-repository";
 import { getCurrentCustomer } from "../../../lib/customer-auth";
+import { readJsonBody, requestErrorResponse } from "../../../lib/security";
 
 export const dynamic = "force-dynamic";
 
 const cartItemSchema = z.object({
+  productSlug: z.string().trim().max(240).optional(),
   sku: z.string().trim().min(1).max(160),
   productName: z.string().trim().max(300).optional(),
   quantity: z.number().int().min(1).max(999_999),
@@ -33,10 +35,12 @@ export async function POST(request: Request): Promise<Response> {
     return Response.json({ error: "Customer login required" }, { status: 401 });
   }
 
-  const rawBody = await request.json().catch(() => null);
-  const parsed = cartBodySchema.safeParse(rawBody);
-  if (!parsed.success) {
-    return noStoreJson({ error: "Geçerli bir ürün ve miktar gönderin." }, 400);
+  let parsed: z.SafeParseReturnType<unknown, z.infer<typeof cartBodySchema>>;
+  try {
+    parsed = cartBodySchema.safeParse(await readJsonBody<unknown>(request, 64 * 1024));
+    if (!parsed.success) return noStoreJson({ error: "Geçerli bir ürün ve miktar gönderin." }, 400);
+  } catch (error) {
+    return requestErrorResponse(error, "Sepet isteği okunamadı.");
   }
 
   if ("clear" in parsed.data) {

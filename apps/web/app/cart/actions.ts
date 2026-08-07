@@ -163,6 +163,7 @@ async function itemsFromUpload(formData: FormData): Promise<CartItemInput[]> {
   if (!(file instanceof File) || file.size === 0) {
     return [];
   }
+  if (file.size > 1024 * 1024) throw new Error("Hızlı sipariş dosyası en fazla 1 MB olabilir.");
 
   const text = await file.text();
   return parseDelimitedItems(text);
@@ -182,7 +183,7 @@ function parseDelimitedItems(text: string): CartItemInput[] {
   const delimiter = headerLine.includes("\t") ? "\t" : headerLine.includes(";") ? ";" : ",";
   const first = splitDelimitedLine(headerLine, delimiter).map((cell) => cell.toLocaleLowerCase("tr-TR"));
   const hasHeader = first.some((cell) => ["sku", "urun", "ürün", "adet", "quantity", "miktar"].includes(cell));
-  const rows = hasHeader ? lines.slice(1) : lines;
+  const rows = (hasHeader ? lines.slice(1) : lines).slice(0, 500);
   const indexOf = (names: string[], fallback: number) => {
     const index = first.findIndex((cell) => names.includes(cell));
     return index === -1 ? fallback : index;
@@ -207,7 +208,7 @@ function parseDelimitedItems(text: string): CartItemInput[] {
 }
 
 function splitDelimitedLine(line: string, delimiter: string): string[] {
-  return line.split(delimiter).map((cell) => cell.trim().replace(/^"|"$/g, ""));
+  return line.split(delimiter).slice(0, 20).map((cell) => cell.trim().replace(/^"|"$/g, "").slice(0, 500));
 }
 
 function getString(formData: FormData, key: string): string {

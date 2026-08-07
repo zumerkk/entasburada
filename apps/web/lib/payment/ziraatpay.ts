@@ -72,7 +72,24 @@ export function getZiraatPayConfig(): ZiraatPayConfig {
     apiBaseUrl: process.env.ZIRAATPAY_API_URL?.trim() || API_BASE[mode],
     paymentPageBaseUrl: process.env.ZIRAATPAY_PAYMENT_PAGE_URL?.trim() || PAYMENT_PAGE_BASE[mode]
   };
+  if (process.env.NODE_ENV === "production") {
+    assertTrustedZiraatPayUrl(cachedConfig.apiBaseUrl);
+    assertTrustedZiraatPayUrl(cachedConfig.paymentPageBaseUrl);
+  }
   return cachedConfig;
+}
+
+function assertTrustedZiraatPayUrl(value: string): void {
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error("ZiraatPay adresi geçersiz.");
+  }
+  const hostname = url.hostname.toLowerCase();
+  if (url.protocol !== "https:" || url.username || url.password || !(hostname === "ziraatpay.com.tr" || hostname.endsWith(".ziraatpay.com.tr"))) {
+    throw new Error("ZiraatPay production adresi güvenilir HTTPS alan adında olmalıdır.");
+  }
 }
 
 function requireEnv(name: string): string {

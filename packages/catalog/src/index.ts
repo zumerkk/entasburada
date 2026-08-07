@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { CATALOG_TREE, flattenCatalogTree } from "./catalog-tree";
 import {
   CATALOG_CLASSIFICATION_VERSION,
@@ -359,12 +360,38 @@ export function mergeImportedProducts(store: CatalogStore, importedProducts: Imp
     }
   }
 
+  const repaired = ensureUniqueCatalogProductIds(nextProducts);
   return {
     version: 1,
     updatedAt: now,
-    products: nextProducts,
-    importSummary: createSummary(nextProducts)
+    products: repaired.products,
+    importSummary: createSummary(repaired.products)
   };
+}
+
+export function ensureUniqueCatalogProductIds(products: CatalogProductRecord[]): { products: CatalogProductRecord[]; changed: boolean } {
+  const counts = new Map<string, number>();
+  for (const product of products) counts.set(product.id, (counts.get(product.id) ?? 0) + 1);
+  const seen = new Set<string>();
+  let changed = false;
+  const repaired = products.map((product) => {
+    let id = product.id;
+    if ((counts.get(id) ?? 0) > 1 || seen.has(id)) {
+      const identity = `${product.sourceKey}\0${product.externalId || product.sku}\0${product.slug}`;
+      const suffix = createHash("sha256").update(identity).digest("hex").slice(0, 16);
+      id = `supplier:${slugify(product.sourceKey)}:${slugify(product.externalId || product.sku)}-${suffix}`;
+      let collision = 2;
+      while (seen.has(id)) {
+        id = `supplier:${slugify(product.sourceKey)}:${slugify(product.externalId || product.sku)}-${suffix}-${collision}`;
+        collision += 1;
+      }
+    }
+    seen.add(id);
+    if (id === product.id) return product;
+    changed = true;
+    return { ...product, id };
+  });
+  return { products: repaired, changed };
 }
 
 export function publishProducts(store: CatalogStore, ids: string[], actor: string, now = new Date().toISOString()): { store: CatalogStore; auditLogs: AuditLogEntry[] } {

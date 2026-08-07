@@ -16,6 +16,12 @@ describe("session token", () => {
     expect(verifySessionToken(token, SECRET)).toBe(subject);
   });
 
+  it("creates a fresh unpredictable token for every session", () => {
+    const first = createSessionToken("cust-123", SECRET, HOUR);
+    const second = createSessionToken("cust-123", SECRET, HOUR);
+    expect(first).not.toBe(second);
+  });
+
   it("rejects a token signed with a different secret", () => {
     const token = createSessionToken("cust-123", SECRET, HOUR);
     expect(verifySessionToken(token, "other-secret")).toBeNull();
@@ -38,17 +44,16 @@ describe("session token", () => {
   });
 
   it("rejects an expired token", () => {
-    const token = createSessionToken("cust-123", SECRET, -1);
-    expect(verifySessionToken(token, SECRET)).toBeNull();
+    expect(() => createSessionToken("cust-123", SECRET, -1)).toThrow();
   });
 
   it("rejects empty, malformed, and wrong-version tokens", () => {
     expect(verifySessionToken("", SECRET)).toBeNull();
     expect(verifySessionToken("not-a-token", SECRET)).toBeNull();
-    expect(verifySessionToken("v1.only.three", SECRET)).toBeNull();
+    expect(verifySessionToken("v2.only.three", SECRET)).toBeNull();
     const valid = createSessionToken("cust-123", SECRET, HOUR);
     const [, subject, exp, signature] = valid.split(".");
-    expect(verifySessionToken(["v2", subject, exp, signature].join("."), SECRET)).toBeNull();
+    expect(verifySessionToken(["v3", subject, exp, signature].join("."), SECRET)).toBeNull();
   });
 
   it("rejects a token with a non-numeric expiry", () => {

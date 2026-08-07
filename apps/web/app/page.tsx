@@ -1,6 +1,7 @@
 import { ArrowRight, FileText, Gauge, PackageSearch, Truck } from "lucide-react";
 import { ProductCard, TrustStrip } from "@entas/ui";
 import { AddToCartControl } from "../components/AddToCartControl";
+import { BulkQuoteCampaign } from "../components/BulkQuoteCampaign";
 import { HomeHeroSlider } from "../components/HomeHeroSlider";
 import { getCatalogNavigation, getCatalogOverview, getFeaturedPublicProducts } from "../lib/catalog-repository";
 import { getCurrentCustomer } from "../lib/customer-auth";
@@ -33,6 +34,7 @@ export default async function HomePage() {
           stockedProducts: formatCount(overview.store.importSummary.inStock + overview.store.importSummary.lowStock)
         }}
       />
+      <BulkQuoteCampaign variant="home" />
 
       <section className="shell quickCategories" aria-labelledby="quick-categories-title">
         <div className="sectionHeader">
@@ -91,7 +93,7 @@ export default async function HomePage() {
         <div className="productGrid">
           {featuredProducts.items.map((product) => (
             <ProductCard
-              key={product.sku}
+              key={product.slug}
               href={`/products/${product.slug}`}
               brand={product.brand}
               name={product.name}
@@ -107,6 +109,7 @@ export default async function HomePage() {
               discountRate={product.discountRate}
               cartAction={
                 <AddToCartControl
+                  slug={product.slug}
                   sku={product.sku}
                   name={product.name}
                   unit={product.unitType}

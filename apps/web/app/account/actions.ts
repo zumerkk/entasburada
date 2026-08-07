@@ -4,11 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { changeCustomerPassword, requireCustomer } from "../../lib/customer-auth";
 import { toggleFavorite } from "../../lib/favorites-repository";
+import { safeInternalRedirect } from "../../lib/security";
 import { subscribeToStock, unsubscribeFromStock } from "../../lib/stock-notify-repository";
-
-function safeInternalPath(value: string, fallback: string): string {
-  return value.startsWith("/") && !value.startsWith("//") ? value : fallback;
-}
 
 /**
  * Favori ekler/çıkarır. `redirectTo` verilirse oraya, yoksa /account#favorites'e döner.
@@ -18,18 +15,15 @@ export async function toggleFavoriteAction(formData: FormData): Promise<void> {
   const customer = await requireCustomer();
   const sku = String(formData.get("sku") ?? "").trim();
   const productName = String(formData.get("productName") ?? "").trim();
+  const productSlug = String(formData.get("productSlug") ?? "").trim();
   const redirectTo = String(formData.get("redirectTo") ?? "").trim();
 
   if (sku) {
-    await toggleFavorite({ customerId: customer.id, sku, productName });
+    await toggleFavorite({ customerId: customer.id, sku, productName, productSlug });
   }
 
   revalidatePath("/account");
-  // Güvenlik: yalnızca site-içi göreli yol. "//evil.com" (protokol-göreli) engellenir.
-  if (redirectTo.startsWith("/") && !redirectTo.startsWith("//")) {
-    redirect(redirectTo);
-  }
-  redirect("/account#favorites");
+  redirect(safeInternalRedirect(redirectTo, "/account#favorites"));
 }
 
 /** "Stok gelince haber ver" — müşteri ürüne abone olur. */
@@ -44,23 +38,24 @@ export async function subscribeStockAction(formData: FormData): Promise<void> {
     await subscribeToStock({ customerId: customer.id, email: customer.email, sku, productName, productSlug });
   }
   revalidatePath("/account");
-  redirect(safeInternalPath(redirectTo, "/account#stock-alerts"));
+  redirect(safeInternalRedirect(redirectTo, "/account#stock-alerts"));
 }
 
 /** Stok bildirim aboneliğini iptal eder. */
 export async function unsubscribeStockAction(formData: FormData): Promise<void> {
   const customer = await requireCustomer();
   const sku = String(formData.get("sku") ?? "").trim();
+  const productSlug = String(formData.get("productSlug") ?? "").trim();
   const redirectTo = String(formData.get("redirectTo") ?? "").trim();
   if (sku) {
-    await unsubscribeFromStock(customer.id, sku);
+    await unsubscribeFromStock(customer.id, sku, productSlug);
   }
   revalidatePath("/account");
-  redirect(safeInternalPath(redirectTo, "/account#stock-alerts"));
+  redirect(safeInternalRedirect(redirectTo, "/account#stock-alerts"));
 }
 
 export async function changePasswordAction(formData: FormData): Promise<void> {
-  const customer = await requireCustomer();
+  const customer = await requireCustomer({ allowPasswordChangeRequired: true });
   const currentPassword = String(formData.get("currentPassword") ?? "");
   const newPassword = String(formData.get("newPassword") ?? "");
   const newPasswordRepeat = String(formData.get("newPasswordRepeat") ?? "");

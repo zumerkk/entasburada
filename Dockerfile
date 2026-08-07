@@ -13,10 +13,12 @@ FROM node:22-slim AS runtime
 WORKDIR /app
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends poppler-utils python3 python3-pip ca-certificates \
+  && apt-get install -y --no-install-recommends poppler-utils python3 python3-pip ca-certificates gosu \
   && pip3 install --no-cache-dir --break-system-packages pdfplumber \
   && rm -rf /var/lib/apt/lists/*
 RUN corepack enable
+RUN addgroup --system --gid 1001 nodejs \
+  && adduser --system --uid 1001 --ingroup nodejs --home /nonexistent --no-create-home nextjs
 
 COPY --from=build /app /app
 # git'e dahil seed (ilk acilista bos diske kopyalanir)

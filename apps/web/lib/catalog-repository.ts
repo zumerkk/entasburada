@@ -10,6 +10,7 @@ import {
   classifyCatalogProduct,
   createEmptyCatalogStore,
   createImportAudit,
+  ensureUniqueCatalogProductIds,
   mergeImportedProducts,
   publishProducts,
   searchCatalogRecords,
@@ -28,7 +29,7 @@ import {
 } from "@entas/catalog";
 import type { CustomerAccount } from "./customer-auth";
 import { priceProductForCustomer } from "./customer-pricing";
-import { notifyRestockedSkus } from "./stock-notify-repository";
+import { notifyRestockedProducts } from "./stock-notify-repository";
 
 interface ImportReport {
   generatedAt: string;
@@ -124,7 +125,12 @@ export async function loadCatalogStore(): Promise<CatalogStore> {
   const loadPromise = (async () => {
     const now = new Date().toISOString();
     const fallback = createEmptyCatalogStore(now);
-    const store = await readJson<CatalogStore>(catalogStorePath, fallback);
+    let store = await readJson<CatalogStore>(catalogStorePath, fallback);
+    const repairedIds = ensureUniqueCatalogProductIds(store.products);
+    if (repairedIds.changed) {
+      store = { ...store, products: repairedIds.products };
+      await writeJson(catalogStorePath, store);
+    }
 
     if (store.products.length > 0 || !existsSync(importProductsPath)) {
       if (fileStat) catalogStoreCache = { mtimeMs: fileStat.mtimeMs, size: fileStat.size, store };
@@ -163,12 +169,12 @@ export async function syncImportedProducts({ publishNew = false, actor = "admin@
   await appendAuditLogs(auditLogs);
 
   // Stok geri gelen ürünlerin abonelerine bildirim gönder (out_of_stock → in_stock).
-  const previousStock = new Map(existingStore.products.map((product) => [product.sku, product.stockStatus]));
-  const restockedSkus = nextStore.products
-    .filter((product) => product.stockStatus === "in_stock" && previousStock.get(product.sku) === "out_of_stock")
-    .map((product) => product.sku);
-  if (restockedSkus.length > 0) {
-    await notifyRestockedSkus(restockedSkus).catch(() => undefined);
+  const previousStock = new Map(existingStore.products.map((product) => [product.slug, product.stockStatus]));
+  const restockedProducts = nextStore.products
+    .filter((product) => product.stockStatus === "in_stock" && previousStock.get(product.slug) === "out_of_stock")
+    .map((product) => ({ sku: product.sku, productSlug: product.slug }));
+  if (restockedProducts.length > 0) {
+    await notifyRestockedProducts(restockedProducts).catch(() => undefined);
   }
 
   return nextStore;
@@ -216,7 +222,9 @@ export async function updateCatalogProduct(
   const setText = (field: "name" | "brand" | "category" | "unitType" | "imageUrl" | "description", label: string) => {
     const value = input[field];
     if (value === undefined) return;
-    const trimmed = value.trim();
+    const limits = { name: 300, brand: 160, category: 160, unitType: 40, imageUrl: 2_048, description: 10_000 } as const;
+    const trimmed = field === "imageUrl" ? normalizeProductImageUrl(value) : value.trim().slice(0, limits[field]);
+    if (field === "name" && trimmed.length < 2) throw new Error("Ürün adı en az 2 karakter olmalıdır.");
     if (trimmed === (current[field] ?? "")) return;
     (next as Record<string, unknown>)[field] = trimmed;
     changes.push(label);
@@ -232,7 +240,7 @@ export async function updateCatalogProduct(
   if (input.listPrice !== undefined) {
     const price = input.listPrice.trim().replace(",", ".");
     const parsed = Number(price);
-    if (!Number.isFinite(parsed) || parsed < 0) {
+    if (!Number.isFinite(parsed) || parsed < 0 || parsed > 1_000_000_000) {
       throw new Error("Geçersiz fiyat.");
     }
     const normalized = parsed.toFixed(2);
@@ -244,6 +252,7 @@ export async function updateCatalogProduct(
 
   if (input.currency !== undefined) {
     const currency = input.currency.trim().toUpperCase() === "TL" ? "TRY" : input.currency.trim().toUpperCase();
+    if (currency && !["TRY", "USD", "EUR", "GBP"].includes(currency)) throw new Error("Desteklenmeyen para birimi.");
     if (currency && currency !== current.currency) {
       next.currency = currency;
       changes.push(`para birimi ${current.currency} → ${currency}`);
@@ -251,7 +260,7 @@ export async function updateCatalogProduct(
   }
 
   if (input.stockQuantity !== undefined && Number.isFinite(input.stockQuantity)) {
-    const quantity = Math.max(0, Math.trunc(input.stockQuantity));
+    const quantity = Math.min(1_000_000_000, Math.max(0, Math.trunc(input.stockQuantity)));
     if (quantity !== current.stockQuantity) {
       next.stockQuantity = quantity;
       // Rozet gerçekle uyumlu kalsın diye stok durumu yeniden türetilir.
@@ -625,7 +634,7 @@ async function writeJson(filePath: string, value: unknown): Promise<void> {
   await mkdir(path.dirname(filePath), { recursive: true });
   // atomik yazim: okuyucular asla yarim dosya gormesin
   const tmpPath = `${filePath}.${process.pid}.${randomUUID()}.tmp`;
-  await writeFile(tmpPath, `${JSON.stringify(value, null, 2)}\n`);
+  await writeFile(tmpPath, `${JSON.stringify(value, null, 2)}\n`, { mode: 0o600 });
   await rename(tmpPath, filePath);
 }
 
@@ -649,4 +658,19 @@ function isWorkspaceRoot(dir: string): boolean {
     existsSync(path.join(dir, "data", "catalog-store.json")) ||
     existsSync(path.join(dir, "data", "import-results", "supplier-products.json"))
   );
+}
+
+function normalizeProductImageUrl(value: string): string {
+  const cleaned = value.trim().slice(0, 2_048);
+  if (!cleaned) return "";
+  if (cleaned.startsWith("/") && !cleaned.startsWith("//") && !cleaned.startsWith("/\\")) return cleaned;
+  try {
+    const url = new URL(cleaned);
+    if (url.protocol === "https:" && !url.username && !url.password && ["bayi.euro-mix.com.tr", "www.mir-san.com.tr"].includes(url.hostname.toLowerCase())) {
+      return url.toString();
+    }
+  } catch {
+    // Invalid URLs are rejected below.
+  }
+  throw new Error("Ürün görseli yalnızca güvenilir HTTPS tedarikçi adresi veya site içi yol olabilir.");
 }

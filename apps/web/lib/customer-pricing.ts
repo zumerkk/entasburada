@@ -46,18 +46,13 @@ export function priceProductForCustomer(product: CatalogProductRecord, customer:
 }
 
 function findSpecialPrice(product: CatalogProductRecord, customer: CustomerAccount): number | null {
-  const candidates = [product.sku, product.barcode ?? "", product.manufacturerCode ?? ""].filter(Boolean);
+  const specialPrices = new Map(Object.entries(customer.specialNetPrices).map(([key, value]) => [normalize(key), value]));
+  const candidates = [product.id, `${product.sourceKey}:${product.sku}`, product.sku, product.barcode ?? "", product.manufacturerCode ?? ""].filter(Boolean);
   for (const candidate of candidates) {
-    const value = customer.specialNetPrices[candidate];
+    const value = specialPrices.get(normalize(candidate));
     if (value) {
-      return parseMoney(value);
-    }
-  }
-
-  const productText = normalize([product.sku, product.name, product.barcode ?? "", product.manufacturerCode ?? ""].join(" "));
-  for (const [key, value] of Object.entries(customer.specialNetPrices)) {
-    if (productText.includes(normalize(key))) {
-      return parseMoney(value);
+      const parsed = parseMoney(value);
+      if (parsed > 0) return parsed;
     }
   }
 
@@ -80,7 +75,8 @@ function bestDiscountRule(product: CatalogProductRecord, customer: CustomerAccou
     }
   }
 
-  return rules.sort((a, b) => b.discountRate - a.discountRate)[0]!;
+  const selected = rules.sort((a, b) => b.discountRate - a.discountRate)[0]!;
+  return { ...selected, discountRate: Math.min(90, Math.max(0, Number(selected.discountRate) || 0)) };
 }
 
 export function segmentLabel(segment: CustomerAccount["segment"]): string {
@@ -99,7 +95,7 @@ export function parseMoney(value: string): number {
   const raw = value.trim().replace(/\s/g, "");
   const normalized = raw.includes(",") ? raw.replace(/\./g, "").replace(",", ".") : raw;
   const parsed = Number(normalized);
-  return Number.isFinite(parsed) ? parsed : 0;
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
 }
 
 export function money(value: number): string {

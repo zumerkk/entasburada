@@ -1,4 +1,4 @@
-import sharp from "sharp";
+import sharp, { type Sharp } from "sharp";
 
 export const PRODUCT_IMAGE_CANVAS_SIZE = 1200;
 export const PRODUCT_IMAGE_CONTENT_SIZE = 1080;
@@ -102,7 +102,7 @@ export async function readProductImageContentBounds(input: Buffer | string, samp
   };
 }
 
-function createOutputPipeline(input: Buffer | string, trimWhitespace: boolean): sharp.Sharp {
+function createOutputPipeline(input: Buffer | string, trimWhitespace: boolean): Sharp {
   let pipeline = sharp(input, { failOn: "none", limitInputPixels: 200_000_000 })
     .rotate()
     .flatten({ background: PRODUCT_IMAGE_BACKGROUND });

@@ -166,7 +166,6 @@ export async function updateDealerApplicationStatusAction(formData: FormData): P
       await recordApplicationProvisioning(applicationId, {
         accountId: result.accountId,
         accountEmail: result.email,
-        ...(result.tempPassword ? { tempPassword: result.tempPassword } : {}),
         welcomeMailSent: result.mailSent,
         note:
           result.status === "created"
@@ -210,25 +209,30 @@ export async function createManualDealerApplicationAction(formData: FormData): P
   const invoiceAddress = required("invoiceAddress");
   const deliveryAddress = required("deliveryAddress") || invoiceAddress;
 
-  const application = await createDealerApplication({
-    companyTitle,
-    taxOffice: required("taxOffice"),
-    taxNumber: required("taxNumber"),
-    mersisNumber: required("mersisNumber") || undefined,
-    companyType: required("companyType") || "Hırdavat bayisi",
-    authorizedPerson,
-    phone,
-    whatsapp: required("whatsapp") || undefined,
-    email,
-    invoiceAddress,
-    deliveryAddress,
-    city: required("city"),
-    district: required("district"),
-    activityArea: required("activityArea") || "Hırdavat",
-    dealershipType: required("dealershipType") || undefined,
-    kvkkAccepted: true,
-    commercialConsent: getString(formData, "commercialConsent") === "on"
-  });
+  let application;
+  try {
+    application = await createDealerApplication({
+      companyTitle,
+      taxOffice: required("taxOffice"),
+      taxNumber: required("taxNumber"),
+      mersisNumber: required("mersisNumber") || undefined,
+      companyType: required("companyType") || "Hırdavat bayisi",
+      authorizedPerson,
+      phone,
+      whatsapp: required("whatsapp") || undefined,
+      email,
+      invoiceAddress,
+      deliveryAddress,
+      city: required("city"),
+      district: required("district"),
+      activityArea: required("activityArea") || "Hırdavat",
+      dealershipType: required("dealershipType") || undefined,
+      kvkkAccepted: true,
+      commercialConsent: getString(formData, "commercialConsent") === "on"
+    });
+  } catch (error) {
+    redirect("/admin/dealers?error=" + encodeURIComponent(error instanceof Error ? error.message : "Başvuru kaydedilemedi."));
+  }
 
   revalidatePath("/admin/dealers");
   revalidatePath("/admin");

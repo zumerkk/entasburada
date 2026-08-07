@@ -195,10 +195,37 @@ const rootDir = findWorkspaceRoot(process.cwd());
 const dataDir = process.env.ENTAS_COMMERCIAL_DATA_DIR ? path.resolve(process.env.ENTAS_COMMERCIAL_DATA_DIR) : path.join(rootDir, "data");
 const quotesPath = path.join(dataDir, "quotes.json");
 const ordersPath = path.join(dataDir, "orders.json");
+let commercialMutationQueue: Promise<void> = Promise.resolve();
+
+function enqueueCommercialMutation<T>(mutation: () => Promise<T>): Promise<T> {
+  const operation = commercialMutationQueue.then(mutation, mutation);
+  commercialMutationQueue = operation.then(() => undefined, () => undefined);
+  return operation;
+}
+
+export function createQuote(input: CreateQuoteInput): Promise<AdminQuote> {
+  return enqueueCommercialMutation(() => createQuoteUnlocked(input));
+}
+
+export function updateQuoteStatus(id: string, status: QuoteStatus, actorName: string, message?: string): Promise<AdminQuote> {
+  return enqueueCommercialMutation(() => updateQuoteStatusUnlocked(id, status, actorName, message));
+}
+
+export function priceQuote(input: PriceQuoteInput, actorName: string): Promise<AdminQuote> {
+  return enqueueCommercialMutation(() => priceQuoteUnlocked(input, actorName));
+}
+
+export function convertQuoteToOrder(id: string, actorName: string, actor: CommercialActor = "admin"): Promise<AdminOrder> {
+  return enqueueCommercialMutation(() => convertQuoteToOrderUnlocked(id, actorName, actor));
+}
+
+export function updateOrderOperation(input: OrderOperationInput, actorName: string): Promise<AdminOrder> {
+  return enqueueCommercialMutation(() => updateOrderOperationUnlocked(input, actorName));
+}
 const DEFAULT_CURRENCY = "TRY";
 const DEFAULT_REPRESENTATIVE = "Atanmadi";
 
-export async function createQuote(input: CreateQuoteInput): Promise<AdminQuote> {
+async function createQuoteUnlocked(input: CreateQuoteInput): Promise<AdminQuote> {
   const normalized = normalizeCreateQuoteInput(input);
   const [quotes, catalogStore] = await Promise.all([loadQuotes(), loadCatalogStore()]);
   const now = new Date().toISOString();
@@ -296,10 +323,10 @@ export async function getQuoteByTrackingCode(code: string): Promise<AdminQuote |
   }
 
   const rows = await loadQuotes();
-  return rows.find((row) => normalize(row.trackingCode) === normalized || normalize(row.quoteNo) === normalized) ?? null;
+  return rows.find((row) => normalize(row.trackingCode) === normalized) ?? null;
 }
 
-export async function updateQuoteStatus(id: string, status: QuoteStatus, actorName: string, message?: string): Promise<AdminQuote> {
+async function updateQuoteStatusUnlocked(id: string, status: QuoteStatus, actorName: string, message?: string): Promise<AdminQuote> {
   const quotes = await loadQuotes();
   const index = quotes.findIndex((quote) => quote.id === id);
   if (index === -1) {
@@ -331,7 +358,7 @@ export async function updateQuoteStatus(id: string, status: QuoteStatus, actorNa
   return nextQuote;
 }
 
-export async function priceQuote(input: PriceQuoteInput, actorName: string): Promise<AdminQuote> {
+async function priceQuoteUnlocked(input: PriceQuoteInput, actorName: string): Promise<AdminQuote> {
   const quotes = await loadQuotes();
   const index = quotes.findIndex((quote) => quote.id === input.quoteId);
   if (index === -1) {
@@ -341,6 +368,12 @@ export async function priceQuote(input: PriceQuoteInput, actorName: string): Pro
   const now = new Date().toISOString();
   const quote = quotes[index]!;
   const priceByItemId = new Map(input.prices.map((item) => [item.itemId, parseMoney(item.quotedUnitPrice)]));
+  if (quote.items.some((item) => !priceByItemId.has(item.id) || (priceByItemId.get(item.id) ?? 0) <= 0)) {
+    throw new Error("Her teklif satırı için sıfırdan büyük geçerli bir birim fiyat girilmelidir.");
+  }
+  if (input.validUntil && !/^\d{4}-\d{2}-\d{2}$/.test(input.validUntil)) {
+    throw new Error("Teklif geçerlilik tarihi geçersiz.");
+  }
   const items = quote.items.map((item) => {
     const quoted = priceByItemId.get(item.id);
     if (quoted == null) {
@@ -380,7 +413,7 @@ export async function priceQuote(input: PriceQuoteInput, actorName: string): Pro
   return nextQuote;
 }
 
-export async function convertQuoteToOrder(id: string, actorName: string, actor: CommercialActor = "admin"): Promise<AdminOrder> {
+async function convertQuoteToOrderUnlocked(id: string, actorName: string, actor: CommercialActor = "admin"): Promise<AdminOrder> {
   const [quotes, orders] = await Promise.all([loadQuotes(), loadOrders()]);
   const quoteIndex = quotes.findIndex((quote) => quote.id === id);
   if (quoteIndex === -1) {
@@ -388,6 +421,9 @@ export async function convertQuoteToOrder(id: string, actorName: string, actor: 
   }
 
   const quote = quotes[quoteIndex]!;
+  if (!["PRICED", "APPROVED"].includes(quote.status)) {
+    throw new Error("Yalnızca fiyatlanmış veya onaylanmış teklif siparişe çevrilebilir.");
+  }
   if (quote.convertedOrderId) {
     const existing = orders.find((order) => order.id === quote.convertedOrderId);
     if (existing) {
@@ -538,10 +574,10 @@ export async function getOrderByTrackingCode(code: string): Promise<AdminOrder |
   }
 
   const rows = await loadOrders();
-  return rows.find((row) => normalize(row.trackingCode) === normalized || normalize(row.orderNo) === normalized) ?? null;
+  return rows.find((row) => normalize(row.trackingCode) === normalized) ?? null;
 }
 
-export async function updateOrderOperation(input: OrderOperationInput, actorName: string): Promise<AdminOrder> {
+async function updateOrderOperationUnlocked(input: OrderOperationInput, actorName: string): Promise<AdminOrder> {
   const orders = await loadOrders();
   const index = orders.findIndex((order) => order.id === input.orderId);
   if (index === -1) {
@@ -636,17 +672,17 @@ async function ensureDataFile(filePath: string): Promise<void> {
 
 function normalizeCreateQuoteInput(input: CreateQuoteInput): Required<CreateQuoteInput> {
   const normalized: Required<CreateQuoteInput> = {
-    companyTitle: clean(input.companyTitle),
-    authorizedPerson: clean(input.authorizedPerson),
-    phone: clean(input.phone),
-    email: clean(input.email).toLocaleLowerCase("tr-TR"),
-    projectName: clean(input.projectName),
-    projectCode: clean(input.projectCode),
-    deliveryCity: clean(input.deliveryCity),
-    deliveryAddress: clean(input.deliveryAddress),
-    paymentPreference: clean(input.paymentPreference) || "Havale/EFT",
-    notes: clean(input.notes),
-    items: input.items
+    companyTitle: boundedText(input.companyTitle, 180),
+    authorizedPerson: boundedText(input.authorizedPerson, 120),
+    phone: boundedText(input.phone, 32),
+    email: boundedText(input.email, 254).toLowerCase(),
+    projectName: boundedText(input.projectName, 160),
+    projectCode: boundedText(input.projectCode, 80),
+    deliveryCity: boundedText(input.deliveryCity, 100),
+    deliveryAddress: boundedText(input.deliveryAddress, 600),
+    paymentPreference: boundedText(input.paymentPreference, 80) || "Havale/EFT",
+    notes: boundedText(input.notes, 2_000),
+    items: Array.isArray(input.items) ? input.items.slice(0, 200) : []
   };
 
   if (normalized.companyTitle.length < 2) {
@@ -682,7 +718,7 @@ function buildQuoteItems(inputItems: CreateQuoteItemInput[], catalogProducts: Ca
       }
 
       const catalogProduct = findCatalogProduct(catalogProducts, sku, productName);
-      const quantity = Math.max(1, Math.trunc(Number(input.quantity) || 1));
+      const quantity = Math.min(999_999, Math.max(1, Math.trunc(Number(input.quantity) || 1)));
       const currency = catalogProduct?.currency === "TL" ? "TRY" : catalogProduct?.currency || DEFAULT_CURRENCY;
       return stripUndefined({
         id: `quote-item-${randomUUID()}`,
@@ -792,6 +828,10 @@ function clean(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function boundedText(value: unknown, maxLength: number): string {
+  return clean(value).slice(0, maxLength);
+}
+
 function isWithinDate(value: string, dateFrom?: string, dateTo?: string): boolean {
   const timestamp = Date.parse(value);
   if (!Number.isFinite(timestamp)) {
@@ -815,7 +855,7 @@ function nextNumber(prefix: "TEK" | "SIP", sequence: number, now: string): strin
 }
 
 function trackingCode(prefix: "T" | "S"): string {
-  return `${prefix}${randomUUID().slice(0, 8).toUpperCase()}`;
+  return `${prefix}${randomUUID().replace(/-/g, "").toUpperCase()}`;
 }
 
 function historyEntry(actor: CommercialActor, actorName: string, message: string, fromStatus?: string, toStatus?: string, at = new Date().toISOString()): CommercialHistoryEntry {
@@ -872,7 +912,7 @@ async function readJson<T>(filePath: string, fallback: T): Promise<T> {
 async function writeJson(filePath: string, value: unknown): Promise<void> {
   await mkdir(path.dirname(filePath), { recursive: true });
   const tmpPath = `${filePath}.${process.pid}.${randomUUID()}.tmp`;
-  await writeFile(tmpPath, `${JSON.stringify(value, null, 2)}\n`);
+  await writeFile(tmpPath, `${JSON.stringify(value, null, 2)}\n`, { mode: 0o600 });
   await rename(tmpPath, filePath);
 }
 

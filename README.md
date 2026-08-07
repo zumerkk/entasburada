@@ -31,7 +31,7 @@ Yerel geliştirme admin bilgisi:
 
 ```text
 E-posta: admin@entasburada.local
-Şifre: change-me-local-dev-only
+Şifre: `.env` içindeki `ADMIN_PASSWORD` (örnek geliştirme değeri: `change-me-local-dev-only-2026!`)
 ```
 
 Production/Vercel ortamında `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`,

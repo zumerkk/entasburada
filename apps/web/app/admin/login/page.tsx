@@ -26,14 +26,18 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: P
               <span>{brandSettings.tagline}</span>
             </div>
           </div>
-          {hasError ? <div className="formError">E-posta veya şifre hatalı.</div> : null}
+          {hasError ? <div className="formError">Giriş bilgileri veya doğrulama kodu hatalı; çok sayıda denemede erişim geçici olarak sınırlandırılır.</div> : null}
           <label>
             E-posta
-            <input name="email" type="email" defaultValue={getAdminEmail()} required />
+            <input name="email" type="email" defaultValue={getAdminEmail()} autoComplete="username" required />
           </label>
           <label>
             Şifre
-            <input name="password" type="password" required />
+            <input name="password" type="password" autoComplete="current-password" required />
+          </label>
+          <label>
+            Doğrulama kodu
+            <input name="totp" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} placeholder="000000" required={process.env.NODE_ENV === "production" || Boolean(process.env.ADMIN_TOTP_SECRET)} />
           </label>
           <button className="btn btnPrimary" type="submit">
             <ShieldCheck size={18} aria-hidden="true" />

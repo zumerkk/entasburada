@@ -10,6 +10,7 @@ import type { CustomerAccount } from "./customer-auth";
 import { formatMoney, money, parseMoney, priceProductForCustomer } from "./customer-pricing";
 
 export interface CartItemInput {
+  productSlug?: string | undefined;
   sku?: string | undefined;
   productName?: string | undefined;
   quantity?: number | undefined;
@@ -20,6 +21,7 @@ export interface CartItem {
   id: string;
   sku: string;
   productName: string;
+  productSlug?: string | undefined;
   quantity: number;
   unit: string;
   addedAt: string;
@@ -93,19 +95,24 @@ export async function addCartItems(
       const productName = clean(input.productName);
       if (!sku && !productName) continue;
 
-      const product = findCatalogProduct(store.products, sku, productName);
+      const product = findCatalogProduct(store.products, clean(input.productSlug), sku, productName);
       if (!product && options.catalogOnly) {
-        throw new CartInputError(`${sku || productName} aktif katalogda bulunamadı.`);
+        throw new CartInputError(`${sku || productName} aktif katalogda bulunamadı veya birden fazla ürünle eşleşti.`);
       }
 
       const normalizedSku = product?.sku || sku || customSku(productName);
       const minimum = product?.minOrder ?? 1;
       const quantity = normalizeCartQuantity(input.quantity, minimum);
-      const existingItem = nextItems.find((item) => normalize(item.sku) === normalize(normalizedSku));
+      const existingItem = nextItems.find((item) =>
+        product
+          ? item.productSlug === product.slug || (!item.productSlug && normalize(item.sku) === normalize(normalizedSku) && normalize(item.productName) === normalize(product.name))
+          : normalize(item.sku) === normalize(normalizedSku) && normalize(item.productName) === normalize(productName)
+      );
 
       if (existingItem) {
         existingItem.quantity = normalizeCartQuantity(existingItem.quantity + quantity, minimum);
         existingItem.productName = product?.name || productName || existingItem.productName;
+        existingItem.productSlug = product?.slug || existingItem.productSlug;
         existingItem.unit = product?.unitType || clean(input.unit) || existingItem.unit;
         continue;
       }
@@ -114,6 +121,7 @@ export async function addCartItems(
         id: `cart-item-${randomUUID()}`,
         sku: normalizedSku,
         productName: product?.name || productName || normalizedSku,
+        productSlug: product?.slug,
         quantity,
         unit: product?.unitType || clean(input.unit) || "Adet",
         addedAt: now
@@ -143,7 +151,7 @@ export async function updateCartQuantities(customer: CustomerAccount, quantities
         const requested = quantityById.get(item.id);
         if (requested == null) return [{ ...item }];
         if (Number(requested) <= 0) return [];
-        const product = findCatalogProduct(store.products, item.sku, item.productName);
+        const product = findCatalogProduct(store.products, item.productSlug ?? "", item.sku, item.productName);
         return [{ ...item, quantity: normalizeCartQuantity(requested, product?.minOrder ?? 1), unit: product?.unitType || item.unit }];
       })
     };
@@ -212,7 +220,7 @@ async function loadCarts(): Promise<CustomerCart[]> {
 async function saveCarts(rows: CustomerCart[]): Promise<void> {
   await mkdir(dataDir, { recursive: true });
   const tmpPath = `${cartsPath}.${process.pid}.${randomUUID()}.tmp`;
-  await writeFile(tmpPath, `${JSON.stringify(rows, null, 2)}\n`);
+  await writeFile(tmpPath, `${JSON.stringify(rows, null, 2)}\n`, { mode: 0o600 });
   await rename(tmpPath, cartsPath);
 }
 
@@ -222,11 +230,11 @@ async function ensureFile(): Promise<void> {
   }
 
   await mkdir(dataDir, { recursive: true });
-  await writeFile(cartsPath, "[]\n");
+  await writeFile(cartsPath, "[]\n", { mode: 0o600 });
 }
 
 function priceCartItem(item: CartItem, customer: CustomerAccount, products: CatalogProductRecord[]): PricedCartItem {
-  const product = findCatalogProduct(products, item.sku, item.productName);
+  const product = findCatalogProduct(products, item.productSlug ?? "", item.sku, item.productName);
   const publicProduct = product ? toPublicProduct(product) : null;
   const currency = product?.currency === "TL" ? "TRY" : product?.currency || "TRY";
   const price = product ? priceProductForCustomer(product, customer) : null;
@@ -259,24 +267,33 @@ function createEmptyCart(customerId: string): CustomerCart {
   return { customerId, updatedAt: new Date().toISOString(), items: [] };
 }
 
-function findCatalogProduct(products: CatalogProductRecord[], sku: string, productName: string): CatalogProductRecord | undefined {
+function findCatalogProduct(products: CatalogProductRecord[], productSlug: string, sku: string, productName: string): CatalogProductRecord | undefined {
   const eligibleProducts = products.filter((product) => product.status === "ACTIVE" && product.isVisible);
+  const normalizedSlug = normalize(productSlug);
   const normalizedSku = normalize(sku);
   const normalizedName = normalize(productName);
 
+  if (normalizedSlug) {
+    const slugMatches = eligibleProducts.filter((product) => normalize(product.slug) === normalizedSlug);
+    if (slugMatches.length === 1) return slugMatches[0];
+    return undefined;
+  }
+
   if (normalizedSku) {
-    const exact = eligibleProducts.find((product) =>
+    const matches = eligibleProducts.filter((product) =>
       [product.sku, product.barcode ?? "", product.manufacturerCode ?? ""].some((value) => normalize(value) === normalizedSku)
     );
-    if (exact) return exact;
+    if (matches.length === 1) return matches[0];
+    if (matches.length > 1 && normalizedName) {
+      const namedMatches = matches.filter((product) => normalize(product.name) === normalizedName);
+      return namedMatches.length === 1 ? namedMatches[0] : undefined;
+    }
+    if (matches.length > 1) return undefined;
   }
 
   if (normalizedName) {
-    const exact = eligibleProducts.find((product) => normalize(product.name) === normalizedName);
-    if (exact) return exact;
-    if (normalizedName.length >= 4) {
-      return eligibleProducts.find((product) => normalize(product.name).includes(normalizedName) || normalizedName.includes(normalize(product.name)));
-    }
+    const exactMatches = eligibleProducts.filter((product) => normalize(product.name) === normalizedName);
+    return exactMatches.length === 1 ? exactMatches[0] : undefined;
   }
 
   return undefined;

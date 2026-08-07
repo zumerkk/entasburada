@@ -11,6 +11,7 @@ import {
   rejectImportJob,
   updateImportProduct
 } from "../../../lib/smart-import-repository";
+import { fetchRemoteXml } from "../../../lib/remote-xml";
 
 export async function createXmlSmartImportAction(formData: FormData): Promise<void> {
   await requireAdmin();
@@ -21,13 +22,11 @@ export async function createXmlSmartImportAction(formData: FormData): Promise<vo
   if (file instanceof File && file.size > 0) {
     await createXmlImportJobFromFile(file, getAdminEmail());
   } else if (xmlText) {
+    if (Buffer.byteLength(xmlText, "utf8") > 2 * 1024 * 1024) throw new Error("XML metni en fazla 2 MB olabilir.");
     await createXmlImportJob({ xml: xmlText, sourceName: getString(formData, "sourceName") || "XML metin import", actor: getAdminEmail() });
   } else if (xmlUrl) {
-    const response = await fetch(xmlUrl, { cache: "no-store" });
-    if (!response.ok) {
-      throw new Error(`XML URL okunamadi: ${response.status}`);
-    }
-    await createXmlImportJob({ xml: await response.text(), sourceName: xmlUrl, fileName: xmlUrl, actor: getAdminEmail() });
+    const xml = await fetchRemoteXml(xmlUrl);
+    await createXmlImportJob({ xml, sourceName: xmlUrl, fileName: xmlUrl, actor: getAdminEmail() });
   }
 
   revalidateImportPaths();

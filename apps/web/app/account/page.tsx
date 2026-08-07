@@ -20,7 +20,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const passwordChanged = params.passwordChanged === "1";
   const passwordErrorRaw = params.passwordError;
   const passwordError = Array.isArray(passwordErrorRaw) ? passwordErrorRaw[0] : passwordErrorRaw;
-  const customer = await requireCustomer();
+  const customer = await requireCustomer({ allowPasswordChangeRequired: true });
   const [quotes, orders, cart, notifications, balance, ledger, favorites, stockSubscriptions] = await Promise.all([
     searchAdminQuotes({ q: customer.email, limit: 5 }),
     searchAdminOrders({ q: customer.email, limit: 5 }),
@@ -348,13 +348,14 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
             </div>
             <div className="favoriteList">
               {favorites.map((favorite) => (
-                <div className="favoriteRow" key={favorite.sku}>
+                <div className="favoriteRow" key={favorite.productSlug || favorite.sku}>
                   <div className="favoriteInfo">
                     <strong>{favorite.productName}</strong>
                     <small>{favorite.sku}</small>
                   </div>
                   <form action={toggleFavoriteAction}>
                     <input type="hidden" name="sku" value={favorite.sku} />
+                    <input type="hidden" name="productSlug" value={favorite.productSlug ?? ""} />
                     <input type="hidden" name="productName" value={favorite.productName} />
                     <input type="hidden" name="redirectTo" value="/account#favorites" />
                     <button type="submit" className="btn btnGhost btnSmall" aria-label="Favorilerden çıkar">
@@ -389,6 +390,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
                   </div>
                   <form action={unsubscribeStockAction}>
                     <input type="hidden" name="sku" value={sub.sku} />
+                    <input type="hidden" name="productSlug" value={sub.productSlug} />
                     <input type="hidden" name="redirectTo" value="/account#stock-alerts" />
                     <button type="submit" className="btn btnGhost btnSmall">
                       İptal

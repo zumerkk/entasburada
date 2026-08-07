@@ -1,4 +1,5 @@
 import { readFile, writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import path from "node:path";
 import { loadEnvFile } from "node:process";
 import { fileURLToPath } from "node:url";
@@ -49,12 +50,11 @@ interface CartResponse {
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 loadLocalWebEnv();
 const baseUrl = process.env.ENTAS_BASE_URL ?? "http://localhost:3000";
-const adminCookie = `entas_admin_session=${encodeURIComponent(process.env.ADMIN_SESSION_SECRET ?? "dev-admin-session")}`;
-const customerCookie = `entas_customer_session=${createSessionToken(
-  "cust-test-project",
-  process.env.AUTH_SECRET?.trim() || "local-dev-auth-secret",
-  60 * 60
-)}`;
+const adminSecret = process.env.ADMIN_SESSION_SECRET?.trim() || "local-development-admin-session-secret-only";
+const adminEmail = (process.env.ADMIN_EMAIL || "admin@entasburada.local").trim().toLowerCase();
+const adminCookie = `entas_admin_session=${encodeURIComponent(createSessionToken(`admin:${adminEmail}`, adminSecret, 60 * 60 * 8))}`;
+const customerCookie = await createSmokeCustomerCookie();
+const requestOrigin = new URL(baseUrl).origin;
 const mutableFiles = ["data/quotes.json", "data/orders.json", "data/carts.json", "data/notifications.json"];
 
 function loadLocalWebEnv(): void {
@@ -76,10 +76,9 @@ async function main(): Promise<void> {
   try {
     const sku = await firstPricedSku();
 
-    const health = await requestJson<{ ok: boolean; catalog: { importedRows: number } }>("/api/health");
+    const health = await requestJson<{ ok: boolean }>("/api/health");
     assert(health.body.ok === true, "Health endpoint ok olmali.");
-    assert(health.body.catalog.importedRows > 0, "Katalogda import edilmis urun olmali.");
-    report.health = { importedRows: health.body.catalog.importedRows };
+    report.health = { ok: true };
 
     const unauthorizedAdmin = await requestJson<{ error: string }>("/api/admin/quotes?limit=1", { expectedStatus: 401 });
     assert(unauthorizedAdmin.body.error === "Unauthorized", "Admin API cookie olmadan 401 donmeli.");
@@ -224,6 +223,7 @@ async function requestJson<T>(
     method: options.method ?? (options.body ? "POST" : "GET"),
     headers: {
       ...(options.body ? { "Content-Type": "application/json" } : {}),
+      ...(options.method === "POST" || options.body ? { Origin: requestOrigin } : {}),
       ...options.headers
     },
     body: options.body ? JSON.stringify(options.body) : undefined
@@ -233,6 +233,16 @@ async function requestJson<T>(
   const expected = options.expectedStatus ?? 200;
   assert(response.status === expected, `${route} ${expected} donmeli; gelen ${response.status}: ${text}`);
   return { body, status: response.status };
+}
+
+async function createSmokeCustomerCookie(): Promise<string> {
+  const customers = JSON.parse(await readFile(path.join(rootDir, "data/customer-accounts.json"), "utf8")) as Array<{ id: string; password: string }>;
+  const customer = customers.find((entry) => entry.id === "cust-test-project");
+  if (!customer) throw new Error("Smoke test müşterisi bulunamadı.");
+  const credentialVersion = createHash("sha256").update(customer.password).digest("base64url").slice(0, 22);
+  const subject = JSON.stringify({ id: customer.id, credentialVersion });
+  const token = createSessionToken(subject, process.env.AUTH_SECRET?.trim() || "local-development-customer-auth-secret-only", 60 * 60);
+  return `entas_customer_session=${encodeURIComponent(token)}`;
 }
 
 async function firstPricedSku(): Promise<string> {

@@ -1,7 +1,11 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { createDealerApplication, type DealerApplicationInput } from "../../lib/dealer-application-repository";
+import { dealerApplicationSchema } from "@entas/validation";
+import { consumeRateLimit } from "../../lib/rate-limit";
+import { getClientAddress } from "../../lib/security";
 
 const REQUIRED_FIELDS: Array<[keyof DealerApplicationInput, string]> = [
   ["companyTitle", "Firma ünvanı"],
@@ -19,6 +23,10 @@ const REQUIRED_FIELDS: Array<[keyof DealerApplicationInput, string]> = [
 ];
 
 export async function submitDealerApplicationAction(formData: FormData): Promise<void> {
+  const rateLimit = await consumeRateLimit("dealer-application", getClientAddress(await headers()), { limit: 5, windowMs: 60 * 60 * 1000 });
+  if (!rateLimit.allowed) {
+    redirect(`/dealer-application?error=${encodeURIComponent("Çok fazla başvuru gönderildi. Lütfen daha sonra tekrar deneyin.")}`);
+  }
   const value = (key: string): string => String(formData.get(key) ?? "").trim();
 
   const input: DealerApplicationInput = {
@@ -53,6 +61,12 @@ export async function submitDealerApplicationAction(formData: FormData): Promise
     redirect(`/dealer-application?error=${encodeURIComponent("KVKK onayı zorunludur")}`);
   }
 
-  const application = await createDealerApplication(input);
+  const parsed = dealerApplicationSchema.safeParse(input);
+  if (!parsed.success) {
+    const message = parsed.error.issues[0]?.message ?? "Başvuru bilgileri geçersiz.";
+    redirect(`/dealer-application?error=${encodeURIComponent(message)}`);
+  }
+
+  const application = await createDealerApplication(parsed.data as DealerApplicationInput);
   redirect(`/dealer-application?submitted=${encodeURIComponent(application.reference)}`);
 }

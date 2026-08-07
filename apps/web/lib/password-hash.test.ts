@@ -14,8 +14,8 @@ describe("password-hash", () => {
     expect(hashPassword("abc")).not.toBe(hashPassword("abc"));
   });
 
-  it("eski duz metin kayitla geriye uyumlu", () => {
-    expect(verifyPassword("duzmetin", "duzmetin")).toBe(true);
+  it("eski duz metin kayitlari reddeder", () => {
+    expect(verifyPassword("duzmetin", "duzmetin")).toBe(false);
     expect(verifyPassword("baska", "duzmetin")).toBe(false);
     expect(verifyPassword("x", "")).toBe(false);
   });
@@ -33,8 +33,7 @@ describe("session-token", () => {
   });
 
   it("suresi dolmus tokeni reddeder", () => {
-    const token = createSessionToken("cust-42", "sir", -10);
-    expect(verifySessionToken(token, "sir")).toBeNull();
+    expect(() => createSessionToken("cust-42", "sir", -10)).toThrow();
   });
 
   it("eski ciplak id cerezini reddeder", () => {

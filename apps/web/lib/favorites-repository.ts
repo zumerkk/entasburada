@@ -13,6 +13,7 @@ export interface FavoriteEntry {
   customerId: string;
   sku: string;
   productName: string;
+  productSlug?: string | undefined;
   addedAt: string;
 }
 
@@ -30,6 +31,13 @@ function findWorkspaceRoot(startDir: string): string {
 const rootDir = findWorkspaceRoot(process.cwd());
 const dataDir = path.join(rootDir, "data");
 const favoritesPath = path.join(dataDir, "customer-favorites.json");
+let favoritesMutationQueue: Promise<void> = Promise.resolve();
+
+function mutateFavorites<T>(operation: () => Promise<T>): Promise<T> {
+  const result = favoritesMutationQueue.then(operation, operation);
+  favoritesMutationQueue = result.then(() => undefined, () => undefined);
+  return result;
+}
 
 export async function listFavorites(customerId: string): Promise<FavoriteEntry[]> {
   const all = await readAll();
@@ -43,19 +51,25 @@ export async function getFavoriteSkus(customerId: string): Promise<Set<string>> 
   return new Set(entries.map((entry) => normalizeSku(entry.sku)));
 }
 
-export async function isFavorite(customerId: string, sku: string): Promise<boolean> {
-  const set = await getFavoriteSkus(customerId);
-  return set.has(normalizeSku(sku));
+export async function isFavorite(customerId: string, sku: string, productSlug = ""): Promise<boolean> {
+  const entries = await listFavorites(customerId);
+  const key = productIdentity(sku, productSlug);
+  return entries.some((entry) => productIdentity(entry.sku, entry.productSlug ?? "") === key);
 }
 
 /** Favoriyi ekler/çıkarır; sonuçta favori mi (true) değil mi (false) döner. */
-export async function toggleFavorite(input: { customerId: string; sku: string; productName: string }): Promise<boolean> {
+export function toggleFavorite(input: { customerId: string; sku: string; productName: string; productSlug?: string }): Promise<boolean> {
+  return mutateFavorites(() => toggleFavoriteUnlocked(input));
+}
+
+async function toggleFavoriteUnlocked(input: { customerId: string; sku: string; productName: string; productSlug?: string }): Promise<boolean> {
   const sku = input.sku.trim();
   if (!sku) throw new Error("Ürün kodu (SKU) zorunlu.");
 
   const all = await readAll();
-  const key = normalizeSku(sku);
-  const existingIndex = all.findIndex((entry) => entry.customerId === input.customerId && normalizeSku(entry.sku) === key);
+  const productSlug = input.productSlug?.trim().slice(0, 240) ?? "";
+  const key = productIdentity(sku, productSlug);
+  const existingIndex = all.findIndex((entry) => entry.customerId === input.customerId && productIdentity(entry.sku, entry.productSlug ?? "") === key);
 
   if (existingIndex !== -1) {
     all.splice(existingIndex, 1);
@@ -63,9 +77,14 @@ export async function toggleFavorite(input: { customerId: string; sku: string; p
     return false;
   }
 
-  all.push({ customerId: input.customerId, sku, productName: input.productName.trim() || sku, addedAt: new Date().toISOString() });
+  all.push({ customerId: input.customerId, sku, productName: input.productName.trim().slice(0, 300) || sku, ...(productSlug ? { productSlug } : {}), addedAt: new Date().toISOString() });
   await saveAll(all);
   return true;
+}
+
+function productIdentity(sku: string, productSlug: string): string {
+  const slug = productSlug.trim().toLowerCase();
+  return slug ? `slug:${slug}` : `sku:${normalizeSku(sku)}`;
 }
 
 function normalizeSku(value: string): string {
@@ -81,8 +100,8 @@ async function readAll(): Promise<FavoriteEntry[]> {
 }
 
 async function saveAll(entries: FavoriteEntry[]): Promise<void> {
-  await mkdir(dataDir, { recursive: true });
+  await mkdir(dataDir, { recursive: true, mode: 0o700 });
   const tmpPath = `${favoritesPath}.${process.pid}.${randomUUID()}.tmp`;
-  await writeFile(tmpPath, `${JSON.stringify(entries, null, 2)}\n`);
+  await writeFile(tmpPath, `${JSON.stringify(entries, null, 2)}\n`, { mode: 0o600 });
   await rename(tmpPath, favoritesPath);
 }

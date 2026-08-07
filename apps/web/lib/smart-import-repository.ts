@@ -164,6 +164,7 @@ export async function getImportJob(jobId: string): Promise<SmartImportJob | null
 }
 
 export async function createXmlImportJob(input: { sourceName: string; fileName?: string; xml: string; actor: string }): Promise<SmartImportJob> {
+  if (Buffer.byteLength(input.xml, "utf8") > 20 * 1024 * 1024) throw new Error("XML dosyası en fazla 20 MB olabilir.");
   const preview = await parseProductXmlBufferPreview(Buffer.from(input.xml), { previewLimit: 500 });
   const store = await loadCatalogStore();
   const extractedProducts = preview.acceptedRows.map((row, index) => toExtractedProduct(row, index + 1, store.products));
@@ -188,6 +189,7 @@ export async function createXmlImportJob(input: { sourceName: string; fileName?:
 }
 
 export async function createXmlImportJobFromFile(file: File, actor: string): Promise<SmartImportJob> {
+  if (file.size > 20 * 1024 * 1024) throw new Error("XML dosyası en fazla 20 MB olabilir.");
   return createXmlImportJob({
     sourceName: file.name || "XML dosyası",
     fileName: file.name || "xml-import.xml",
@@ -572,31 +574,31 @@ export async function updateImportProduct(
     const index = job.extractedProducts.findIndex((product) => product.id === productId);
     if (index < 0) throw new Error("Ürün adayı bulunamadı.");
     const current = job.extractedProducts[index]!;
-    const productName = clean(input.productName) || current.productName;
-    const brandName = clean(input.brandName) || current.brandName;
-    const categoryName = clean(input.categoryName) || current.categoryName;
-    const listPrice = input.listPrice === undefined ? current.listPrice : normalizeMoney(input.listPrice);
-    const imageUrl = input.imageUrl === undefined ? current.imageUrl : clean(input.imageUrl);
+    const productName = boundedClean(input.productName, 300) || current.productName;
+    const brandName = boundedClean(input.brandName, 160) || current.brandName;
+    const categoryName = boundedClean(input.categoryName, 240) || current.categoryName;
+    const listPrice = input.listPrice === undefined ? current.listPrice : normalizeMoney(input.listPrice.slice(0, 80));
+    const imageUrl = input.imageUrl === undefined ? current.imageUrl : normalizeProductImageUrl(input.imageUrl);
     const stockQuantityKnown = input.stockQuantityKnown ?? current.stockQuantityKnown;
-    const specifications = input.technicalSpecs === undefined ? current.specifications : parseSpecifications(input.technicalSpecs);
+    const specifications = input.technicalSpecs === undefined ? current.specifications : parseSpecifications(input.technicalSpecs.slice(0, 20_000));
     const next: ImportExtractedProduct = {
       ...current,
-      sku: clean(input.sku) || current.sku,
-      barcode: input.barcode === undefined ? current.barcode : clean(input.barcode),
-      manufacturerCode: input.manufacturerCode === undefined ? current.manufacturerCode : clean(input.manufacturerCode),
+      sku: boundedClean(input.sku, 160) || current.sku,
+      barcode: input.barcode === undefined ? current.barcode : boundedClean(input.barcode, 120),
+      manufacturerCode: input.manufacturerCode === undefined ? current.manufacturerCode : boundedClean(input.manufacturerCode, 120),
       productName,
       brandName,
       categoryName,
       categoryPath: [categoryName],
       listPrice,
       currency: normalizeCurrency(input.currency) || current.currency,
-      taxRate: input.taxRate === undefined ? current.taxRate : String(clampNumber(parseLocaleNumber(input.taxRate), 0, 100)),
-      unitType: clean(input.unitType) || current.unitType,
-      stockQuantity: Math.max(0, input.stockQuantity ?? current.stockQuantity),
+      taxRate: input.taxRate === undefined ? current.taxRate : String(clampNumber(parseLocaleNumber(input.taxRate.slice(0, 40)), 0, 100)),
+      unitType: boundedClean(input.unitType, 40) || current.unitType,
+      stockQuantity: clampNumber(input.stockQuantity ?? current.stockQuantity, 0, 1_000_000_000),
       stockStatus: input.stockStatus ?? current.stockStatus,
       stockQuantityKnown,
       imageUrl,
-      description: input.description === undefined ? current.description : clean(input.description),
+      description: input.description === undefined ? current.description : boundedClean(input.description, 4_000),
       specifications,
       technicalSpecs: specifications.map((spec) => `${spec.label}: ${spec.value}`).join(" | "),
       minOrder: positiveInteger(input.minOrder ?? current.minOrder, 1),
@@ -902,7 +904,7 @@ async function acquireJobsFileLock(): Promise<() => Promise<void>> {
   const startedAt = Date.now();
   while (Date.now() - startedAt < 30_000) {
     try {
-      const handle = await open(jobsLockPath, "wx");
+      const handle = await open(jobsLockPath, "wx", 0o600);
       const lockToken = randomUUID();
       try {
         await handle.writeFile(`${process.pid}\t${lockToken}\t${new Date().toISOString()}\n`);
@@ -964,7 +966,7 @@ function toExtractedProduct(row: ImportedProductRow, index: number, existingProd
     stockQuantity: Math.max(0, Number(row.quantity?.replace(",", ".")) || 0),
     stockStatus: toStockStatus(row.quantity),
     stockQuantityKnown: clean(row.quantity) !== "",
-    imageUrl: clean(row.imageUrl),
+    imageUrl: normalizeProductImageUrl(row.imageUrl),
     sourceUrl: clean(row.sourceUrl),
     description: clean(row.description),
     technicalSpecs: clean(row.description),
@@ -1839,6 +1841,10 @@ function parseSpecifications(value: string): Array<{ label: string; value: strin
     .slice(0, 60);
 }
 
+function boundedClean(value: unknown, maxLength: number): string {
+  return clean(value).slice(0, maxLength);
+}
+
 function slugPart(value: string): string {
   return normalize(value).replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "pdf-katalog";
 }
@@ -1879,7 +1885,7 @@ async function writeJson(filePath: string, value: unknown): Promise<void> {
   await mkdir(path.dirname(filePath), { recursive: true });
   const tmpPath = `${filePath}.${process.pid}.${randomUUID()}.tmp`;
   try {
-    await writeFile(tmpPath, `${JSON.stringify(value, null, 2)}\n`);
+    await writeFile(tmpPath, `${JSON.stringify(value, null, 2)}\n`, { mode: 0o600 });
     await rename(tmpPath, filePath);
   } finally {
     await unlink(tmpPath).catch(() => undefined);
@@ -1900,6 +1906,20 @@ function escapeXml(value: string): string {
 
 function clean(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
+}
+
+function normalizeProductImageUrl(value: unknown): string {
+  const cleaned = clean(value).slice(0, 2_048);
+  if (!cleaned) return "";
+  if (cleaned.startsWith("/") && !cleaned.startsWith("//") && !cleaned.startsWith("/\\")) return cleaned;
+  try {
+    const url = new URL(cleaned);
+    const hostname = url.hostname.toLowerCase();
+    if (url.protocol === "https:" && !url.username && !url.password && ["bayi.euro-mix.com.tr", "www.mir-san.com.tr"].includes(hostname)) return url.toString();
+  } catch {
+    // Invalid or non-HTTP image URLs are intentionally discarded.
+  }
+  return "";
 }
 
 function normalize(value: string): string {

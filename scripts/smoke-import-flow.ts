@@ -2,6 +2,7 @@ import { readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { loadEnvFile } from "node:process";
 import { fileURLToPath } from "node:url";
+import { createSessionToken } from "../apps/web/lib/session-token";
 
 interface ImportJobResponse {
   job: {
@@ -16,7 +17,10 @@ interface ImportJobResponse {
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 loadLocalWebEnv();
 const baseUrl = process.env.ENTAS_BASE_URL ?? "http://localhost:3000";
-const adminCookie = `entas_admin_session=${encodeURIComponent(process.env.ADMIN_SESSION_SECRET ?? "dev-admin-session")}`;
+const adminSecret = process.env.ADMIN_SESSION_SECRET?.trim() || "local-development-admin-session-secret-only";
+const adminEmail = (process.env.ADMIN_EMAIL || "admin@entasburada.local").trim().toLowerCase();
+const adminCookie = `entas_admin_session=${encodeURIComponent(createSessionToken(`admin:${adminEmail}`, adminSecret, 60 * 60 * 8))}`;
+const requestOrigin = new URL(baseUrl).origin;
 const mutableFiles = ["data/ai-import-jobs.json", "data/catalog-store.json", "data/audit-log.json"];
 
 async function main(): Promise<void> {
@@ -177,6 +181,7 @@ function makeRequest(
     method: options.method ?? (options.body ? "POST" : "GET"),
     headers: {
       ...(options.authenticated ? { Cookie: adminCookie } : {}),
+      ...(options.method === "POST" || options.body ? { Origin: requestOrigin } : {}),
       ...(!isForm && options.body ? { "Content-Type": "application/json" } : {})
     },
     body: isForm ? options.body : options.body ? JSON.stringify(options.body) : undefined

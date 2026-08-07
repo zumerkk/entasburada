@@ -53,7 +53,6 @@ export interface DealerApplication {
   // Hesap açma (onay sonrası)
   accountId?: string | undefined;
   accountEmail?: string | undefined;
-  tempPassword?: string | undefined;
   provisionedAt?: string | undefined;
   welcomeMailSent?: boolean | undefined;
   history: DealerApplicationHistoryEntry[];
@@ -85,6 +84,13 @@ export interface DealerApplicationInput {
 const rootDir = findWorkspaceRoot(process.cwd());
 const dataDir = path.join(rootDir, "data");
 const applicationsPath = path.join(dataDir, "dealer-applications.json");
+let applicationMutationQueue: Promise<void> = Promise.resolve();
+
+function enqueueApplicationMutation<T>(mutation: () => Promise<T>): Promise<T> {
+  const operation = applicationMutationQueue.then(mutation, mutation);
+  applicationMutationQueue = operation.then(() => undefined, () => undefined);
+  return operation;
+}
 
 export async function listDealerApplications(filter: { status?: DealerApplicationStatus | "all"; q?: string } = {}): Promise<DealerApplication[]> {
   const rows = await loadApplications();
@@ -118,8 +124,18 @@ export async function countDealerApplicationsByStatus(): Promise<Record<DealerAp
   return counts;
 }
 
-export async function createDealerApplication(input: DealerApplicationInput): Promise<DealerApplication> {
+export function createDealerApplication(input: DealerApplicationInput): Promise<DealerApplication> {
+  return enqueueApplicationMutation(() => createDealerApplicationUnlocked(input));
+}
+
+async function createDealerApplicationUnlocked(input: DealerApplicationInput): Promise<DealerApplication> {
   const rows = await loadApplications();
+  const normalizedInput = normalizeApplicationInput(input);
+  const duplicate = rows.find((row) =>
+    (row.status === "pending" || row.status === "reviewing") &&
+    (row.email.toLowerCase() === normalizedInput.email || row.taxNumber === normalizedInput.taxNumber)
+  );
+  if (duplicate) throw new Error(`Bu firma için açık bir başvuru zaten var: ${duplicate.reference}`);
   const now = new Date().toISOString();
   const reference = buildReference(now, rows.length + 1);
 
@@ -129,12 +145,12 @@ export async function createDealerApplication(input: DealerApplicationInput): Pr
     createdAt: now,
     updatedAt: now,
     status: "pending",
-    ...input,
+    ...normalizedInput,
     history: [
       {
         id: `hist-${randomUUID()}`,
         at: now,
-        actor: input.authorizedPerson || "Başvuran",
+        actor: normalizedInput.authorizedPerson,
         message: "Bayi başvurusu alındı.",
         toStatus: "pending"
       }
@@ -154,7 +170,57 @@ export async function createDealerApplication(input: DealerApplicationInput): Pr
   return application;
 }
 
+function normalizeApplicationInput(input: DealerApplicationInput): DealerApplicationInput {
+  const required = (value: unknown, label: string, min: number, max: number): string => {
+    const cleaned = typeof value === "string" ? value.trim() : "";
+    if (cleaned.length < min || cleaned.length > max) throw new Error(`${label} uzunluğu geçersiz.`);
+    return cleaned;
+  };
+  const optional = (value: unknown, label: string, max: number): string | undefined => {
+    const cleaned = typeof value === "string" ? value.trim() : "";
+    if (cleaned.length > max) throw new Error(`${label} çok uzun.`);
+    return cleaned || undefined;
+  };
+  const taxNumber = required(input.taxNumber, "Vergi numarası", 10, 11);
+  if (!/^\d{10,11}$/.test(taxNumber)) throw new Error("Vergi numarası 10 veya 11 haneli olmalıdır.");
+  const email = required(input.email, "E-posta", 5, 254).toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Geçerli bir e-posta adresi girin.");
+  if (!input.kvkkAccepted) throw new Error("KVKK onayı zorunludur.");
+
+  return {
+    companyTitle: required(input.companyTitle, "Firma ünvanı", 2, 180),
+    taxOffice: required(input.taxOffice, "Vergi dairesi", 2, 100),
+    taxNumber,
+    tradeRegistryNumber: optional(input.tradeRegistryNumber, "Ticaret sicil numarası", 80),
+    mersisNumber: optional(input.mersisNumber, "MERSİS numarası", 32),
+    companyType: required(input.companyType, "Firma tipi", 2, 80),
+    authorizedPerson: required(input.authorizedPerson, "Yetkili kişi", 2, 120),
+    phone: required(input.phone, "Telefon", 10, 32),
+    whatsapp: optional(input.whatsapp, "WhatsApp", 32),
+    email,
+    invoiceAddress: required(input.invoiceAddress, "Fatura adresi", 10, 600),
+    deliveryAddress: required(input.deliveryAddress, "Teslimat adresi", 10, 600),
+    city: required(input.city, "İl", 2, 80),
+    district: required(input.district, "İlçe", 2, 80),
+    activityArea: required(input.activityArea, "Faaliyet alanı", 2, 160),
+    annualPurchaseVolume: optional(input.annualPurchaseVolume, "Yıllık alım hacmi", 80),
+    dealershipType: optional(input.dealershipType, "Bayilik türü", 80),
+    referenceCompany: optional(input.referenceCompany, "Referans firma", 180),
+    kvkkAccepted: true,
+    commercialConsent: Boolean(input.commercialConsent)
+  };
+}
+
 export async function updateDealerApplicationStatus(
+  id: string,
+  status: DealerApplicationStatus,
+  actor: string,
+  note?: string
+): Promise<DealerApplication> {
+  return enqueueApplicationMutation(() => updateDealerApplicationStatusUnlocked(id, status, actor, note));
+}
+
+async function updateDealerApplicationStatusUnlocked(
   id: string,
   status: DealerApplicationStatus,
   actor: string,
@@ -196,7 +262,14 @@ export async function updateDealerApplicationStatus(
 
 export async function recordApplicationProvisioning(
   id: string,
-  provisioning: { accountId: string; accountEmail: string; tempPassword?: string; welcomeMailSent: boolean; note: string }
+  provisioning: { accountId: string; accountEmail: string; welcomeMailSent: boolean; note: string }
+): Promise<DealerApplication> {
+  return enqueueApplicationMutation(() => recordApplicationProvisioningUnlocked(id, provisioning));
+}
+
+async function recordApplicationProvisioningUnlocked(
+  id: string,
+  provisioning: { accountId: string; accountEmail: string; welcomeMailSent: boolean; note: string }
 ): Promise<DealerApplication> {
   const rows = await loadApplications();
   const index = rows.findIndex((row) => row.id === id);
@@ -210,7 +283,6 @@ export async function recordApplicationProvisioning(
     ...current,
     accountId: provisioning.accountId,
     accountEmail: provisioning.accountEmail,
-    tempPassword: provisioning.tempPassword ?? current.tempPassword,
     provisionedAt: now,
     welcomeMailSent: provisioning.welcomeMailSent,
     updatedAt: now,
@@ -260,9 +332,9 @@ async function loadApplications(): Promise<DealerApplication[]> {
 }
 
 async function saveApplications(rows: DealerApplication[]): Promise<void> {
-  await mkdir(dataDir, { recursive: true });
+  await mkdir(dataDir, { recursive: true, mode: 0o700 });
   const tmpPath = `${applicationsPath}.${process.pid}.${randomUUID()}.tmp`;
-  await writeFile(tmpPath, `${JSON.stringify(rows, null, 2)}\n`);
+  await writeFile(tmpPath, `${JSON.stringify(rows, null, 2)}\n`, { mode: 0o600 });
   await rename(tmpPath, applicationsPath);
 }
 

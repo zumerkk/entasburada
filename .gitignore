@@ -17,6 +17,8 @@ data/ai-import-jobs.json
 
 # calisma-zamani veri depolari repoya girmez (deploy kiti rsync ile tasir)
 data/*.json
+# guvenlik depolari nereye duserse dussun repoya girmesin
+**/data/security-rate-limits.json*
 
 # kaynak PDF katalogları repoya girmez
 Pdfler/

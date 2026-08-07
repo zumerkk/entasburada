@@ -112,10 +112,10 @@ export default async function DealerApplicationPage({ searchParams }: { searchPa
             <label>
               Firma tipi
               <select name="companyType" required>
-                <option>Hırdavat bayisi</option>
-                <option>Yapı market</option>
-                <option>Sanayi işletmesi</option>
-                <option>Kurumsal satın alma</option>
+                <option value="dealer">Hırdavat bayisi</option>
+                <option value="construction">Yapı market</option>
+                <option value="industrial">Sanayi işletmesi</option>
+                <option value="corporate_purchase">Kurumsal satın alma</option>
               </select>
             </label>
           </fieldset>
@@ -174,10 +174,10 @@ export default async function DealerApplicationPage({ searchParams }: { searchPa
             <label>
               Bayilik türü
               <select name="dealershipType">
-                <option>Standart bayi</option>
-                <option>Bölgesel bayi</option>
-                <option>Proje bazlı</option>
-                <option>Toptan ticaret</option>
+                <option value="standard">Standart bayi</option>
+                <option value="regional">Bölgesel bayi</option>
+                <option value="project">Proje bazlı</option>
+                <option value="wholesale">Toptan ticaret</option>
               </select>
             </label>
             <label>

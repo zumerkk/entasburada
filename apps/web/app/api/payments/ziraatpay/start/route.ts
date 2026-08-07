@@ -3,6 +3,10 @@ import { getOrderByTrackingCode } from "../../../../../lib/commercial-repository
 import { convertToTry } from "../../../../../lib/fx";
 import { isValidInstallmentCount, priceForInstallment } from "../../../../../lib/installments";
 import { buildMerchantPaymentId, createPaymentSession, isDirectPostEnabled } from "../../../../../lib/payment/ziraatpay";
+import { getCurrentCustomer } from "../../../../../lib/customer-auth";
+import { isCommercialRecordOwner } from "../../../../../lib/commercial-access";
+import { getClientAddress, readJsonBody, trustedMutationError } from "../../../../../lib/security";
+import { consumeRateLimit } from "../../../../../lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -12,10 +16,16 @@ export const dynamic = "force-dynamic";
  * MERCHANTPAYMENTID olarak trackingCode kullanılır (callback'te geri lookup için).
  */
 export async function POST(request: Request): Promise<Response> {
+  const originError = trustedMutationError(request);
+  if (originError) return originError;
+  const customer = await getCurrentCustomer();
+  if (!customer) return NextResponse.json({ error: "Customer login required" }, { status: 401 });
+  const rateLimit = await consumeRateLimit("payment-start", customer.id, { limit: 8, windowMs: 10 * 60 * 1000 });
+  if (!rateLimit.allowed) return NextResponse.json({ error: "Çok fazla ödeme denemesi yapıldı." }, { status: 429 });
   let trackingCode = "";
   let installments = 1;
   try {
-    const body = (await request.json()) as { trackingCode?: string; installments?: number };
+    const body = await readJsonBody<{ trackingCode?: string; installments?: number }>(request, 8 * 1024);
     trackingCode = (body.trackingCode ?? "").trim();
     if (body.installments !== undefined && isValidInstallmentCount(body.installments)) {
       installments = Math.trunc(Number(body.installments));
@@ -29,7 +39,7 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   const order = await getOrderByTrackingCode(trackingCode);
-  if (!order) {
+  if (!order || !isCommercialRecordOwner(order, customer)) {
     return NextResponse.json({ error: "Sipariş bulunamadı." }, { status: 404 });
   }
   if (order.status !== "PAYMENT_PENDING") {
@@ -44,10 +54,7 @@ export async function POST(request: Request): Promise<Response> {
     return NextResponse.json({ error: "NEXT_PUBLIC_SITE_URL tanımlı değil." }, { status: 500 });
   }
 
-  const customerIp =
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    request.headers.get("x-real-ip")?.trim() ||
-    "127.0.0.1";
+  const customerIp = getClientAddress(request.headers);
 
   try {
     // Tahsilat TRY yapılır. USD/EUR fiyatlı sipariş TCMB kuruyla çevrilir;
@@ -90,7 +97,9 @@ export async function POST(request: Request): Promise<Response> {
       amount: plan.total.toFixed(2)
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Ödeme başlatılamadı.";
+    const message = process.env.NODE_ENV === "production"
+      ? "Ödeme başlatılamadı. Lütfen daha sonra yeniden deneyin."
+      : error instanceof Error ? error.message : "Ödeme başlatılamadı.";
     return NextResponse.json({ error: message }, { status: 502 });
   }
 }

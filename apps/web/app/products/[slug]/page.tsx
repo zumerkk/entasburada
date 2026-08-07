@@ -3,6 +3,7 @@ import { Box, FileText, PackageCheck, Scale, ShieldCheck, ShoppingCart, Truck } 
 import { PriceGate, StockBadge, StatusPill } from "@entas/ui";
 import { AddToCartControl } from "../../../components/AddToCartControl";
 import { AddToQuoteButton } from "../../../components/AddToQuoteButton";
+import { BulkQuoteCampaign } from "../../../components/BulkQuoteCampaign";
 import { FavoriteButton } from "../../../components/FavoriteButton";
 import { StockAlertButton } from "../../../components/StockAlertButton";
 import { ProductViewTracker } from "../../../components/AnalyticsTracker";
@@ -32,9 +33,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     notFound();
   }
 
-  const favorited = customer ? await isFavorite(customer.id, product.sku) : false;
+  const favorited = customer ? await isFavorite(customer.id, product.sku, product.slug) : false;
   const outOfStock = product.stockTone === "out_of_stock";
-  const stockSubscribed = outOfStock && customer ? await isSubscribedToStock(customer.id, product.sku) : false;
+  const stockSubscribed = outOfStock && customer ? await isSubscribedToStock(customer.id, product.sku, product.slug) : false;
 
   return (
     <main className="productDetailPage">
@@ -126,8 +127,14 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             </div>
           </div>
 
+          <BulkQuoteCampaign
+            variant="product"
+            product={{ sku: product.sku, name: product.name, unit: product.unitType }}
+          />
+
           <div className="detailActions">
             <AddToCartControl
+              slug={product.slug}
               sku={product.sku}
               name={product.name}
               unit={product.unitType}
@@ -138,6 +145,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             <AddToQuoteButton sku={product.sku} name={product.name} unit={product.unitType} />
             <FavoriteButton
               sku={product.sku}
+              slug={product.slug}
               name={product.name}
               isFavorite={favorited}
               isAuthenticated={Boolean(customer)}

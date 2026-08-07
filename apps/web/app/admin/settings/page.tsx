@@ -59,15 +59,15 @@ export default async function AdminSettingsPage() {
           <div className="adminFormGrid">
             <label>
               Kısa marka adı
-              <input name="siteName" defaultValue={settings.siteName} />
+              <input name="siteName" defaultValue={settings.siteName} maxLength={120} />
             </label>
             <label>
               Site başlığı
-              <input name="siteTitle" defaultValue={settings.siteTitle} />
+              <input name="siteTitle" defaultValue={settings.siteTitle} maxLength={180} />
             </label>
             <label className="wideField">
               Slogan
-              <input name="tagline" defaultValue={settings.tagline} />
+              <input name="tagline" defaultValue={settings.tagline} maxLength={300} />
             </label>
             <label>
               Header logo URL
@@ -75,7 +75,7 @@ export default async function AdminSettingsPage() {
             </label>
             <label>
               Header logo yükle
-              <input name="headerLogo" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" />
+              <input name="headerLogo" type="file" accept="image/png,image/jpeg,image/webp,image/avif" />
             </label>
             <label>
               Mobil logo URL
@@ -83,7 +83,7 @@ export default async function AdminSettingsPage() {
             </label>
             <label>
               Mobil logo yükle
-              <input name="mobileLogo" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" />
+              <input name="mobileLogo" type="file" accept="image/png,image/jpeg,image/webp,image/avif" />
             </label>
             <label>
               Footer logo URL
@@ -91,7 +91,7 @@ export default async function AdminSettingsPage() {
             </label>
             <label>
               Footer logo yükle
-              <input name="footerLogo" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" />
+              <input name="footerLogo" type="file" accept="image/png,image/jpeg,image/webp,image/avif" />
             </label>
             <label>
               Admin logo URL
@@ -99,7 +99,7 @@ export default async function AdminSettingsPage() {
             </label>
             <label>
               Admin logo yükle
-              <input name="adminLogo" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" />
+              <input name="adminLogo" type="file" accept="image/png,image/jpeg,image/webp,image/avif" />
             </label>
             <label>
               Favicon URL
@@ -107,7 +107,7 @@ export default async function AdminSettingsPage() {
             </label>
             <label>
               Favicon yükle
-              <input name="favicon" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" />
+              <input name="favicon" type="file" accept="image/png,image/jpeg,image/webp,image/avif" />
             </label>
           </div>
           <div className="formActions">
@@ -132,11 +132,11 @@ export default async function AdminSettingsPage() {
           </label>
           <label>
             Başlık
-            <input name="title" defaultValue={settings.videoPopup.title} />
+            <input name="title" defaultValue={settings.videoPopup.title} maxLength={200} />
           </label>
           <label>
             Açıklama
-            <textarea name="description" defaultValue={settings.videoPopup.description} />
+            <textarea name="description" defaultValue={settings.videoPopup.description} maxLength={2000} />
           </label>
           <label>
             Video URL
@@ -144,7 +144,7 @@ export default async function AdminSettingsPage() {
           </label>
           <label>
             Video dosyası yükle
-            <input name="videoFile" type="file" accept="video/mp4,video/webm" />
+            <input name="videoFile" type="file" accept="video/mp4" />
           </label>
           <label>
             Kapak görseli URL

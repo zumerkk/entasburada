@@ -78,7 +78,7 @@ export async function validateAndStorePdf(input: {
   }
 
   const jobDir = path.join(privateImportDir, safeSegment(input.jobId));
-  await mkdir(jobDir, { recursive: true });
+  await mkdir(jobDir, { recursive: true, mode: 0o700 });
   const filePath = path.join(jobDir, "source.pdf");
   await writeFile(filePath, input.buffer, { mode: 0o600 });
   return {

@@ -1,6 +1,8 @@
 import { FileText, Search, Truck } from "lucide-react";
 import { EmptyState, StatusPill } from "@entas/ui";
 import { getOrderByTrackingCode, getQuoteByTrackingCode } from "../../lib/commercial-repository";
+import { getCurrentCustomer } from "../../lib/customer-auth";
+import { canAccessCommercialRecord } from "../../lib/commercial-access";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -9,7 +11,11 @@ export const dynamic = "force-dynamic";
 export default async function OrderLookupPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const params = await searchParams;
   const code = getParam(params, "code");
-  const [order, quote] = code ? await Promise.all([getOrderByTrackingCode(code), getQuoteByTrackingCode(code)]) : [null, null];
+  const [foundOrder, foundQuote, customer] = code
+    ? await Promise.all([getOrderByTrackingCode(code), getQuoteByTrackingCode(code), getCurrentCustomer()])
+    : [null, null, await getCurrentCustomer()];
+  const order = foundOrder && canAccessCommercialRecord(foundOrder, customer) ? foundOrder : null;
+  const quote = foundQuote && canAccessCommercialRecord(foundQuote, customer) ? foundQuote : null;
 
   return (
     <main>

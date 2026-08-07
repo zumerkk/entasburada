@@ -7,12 +7,14 @@ import { toggleFavoriteAction } from "../app/account/actions";
  */
 export function FavoriteButton({
   sku,
+  slug,
   name,
   isFavorite,
   isAuthenticated,
   redirectTo
 }: {
   sku: string;
+  slug: string;
   name: string;
   isFavorite: boolean;
   isAuthenticated: boolean;
@@ -30,6 +32,7 @@ export function FavoriteButton({
   return (
     <form action={toggleFavoriteAction}>
       <input type="hidden" name="sku" value={sku} />
+      <input type="hidden" name="productSlug" value={slug} />
       <input type="hidden" name="productName" value={name} />
       <input type="hidden" name="redirectTo" value={redirectTo} />
       <button type="submit" className={`btn btnGhost favoriteBtn ${isFavorite ? "favoriteBtnActive" : ""}`}>

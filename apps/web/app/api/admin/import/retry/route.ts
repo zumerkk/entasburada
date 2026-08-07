@@ -11,7 +11,7 @@ export async function POST(request: Request): Promise<Response> {
   try {
     const body = (await request.json()) as { jobId?: string; pages?: unknown };
     const pages = Array.isArray(body.pages)
-      ? body.pages.map(Number).filter((page) => Number.isInteger(page))
+      ? body.pages.map(Number).filter((page) => Number.isInteger(page) && page > 0).slice(0, 500)
       : [];
     return Response.json({ job: await resetPdfImportPages(body.jobId ?? "", pages) });
   } catch (error) {

@@ -86,13 +86,14 @@ function postEvent(url: string, payload: Record<string, unknown>): void {
 
 function getSessionId(): string {
   try {
-    const existing = window.localStorage.getItem(sessionStorageKey);
+    window.localStorage.removeItem(sessionStorageKey);
+    const existing = window.sessionStorage.getItem(sessionStorageKey);
     if (existing) {
       return existing;
     }
 
     const next = `web-${crypto.randomUUID()}`;
-    window.localStorage.setItem(sessionStorageKey, next);
+    window.sessionStorage.setItem(sessionStorageKey, next);
     return next;
   } catch {
     return `web-${Date.now()}`;

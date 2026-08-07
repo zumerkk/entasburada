@@ -78,7 +78,7 @@ export async function addLedgerEntry(input: AddLedgerEntryInput): Promise<Ledger
 async function saveLedger(entries: LedgerEntry[]): Promise<void> {
   await mkdir(dataDir, { recursive: true });
   const tmpPath = `${ledgerPath}.${process.pid}.${randomUUID()}.tmp`;
-  await writeFile(tmpPath, `${JSON.stringify(entries, null, 2)}\n`);
+  await writeFile(tmpPath, `${JSON.stringify(entries, null, 2)}\n`, { mode: 0o600 });
   await rename(tmpPath, ledgerPath);
 }
 
@@ -87,7 +87,7 @@ async function ensureLedgerFile(): Promise<void> {
     return;
   }
   await mkdir(dataDir, { recursive: true });
-  await writeFile(ledgerPath, "[]\n");
+  await writeFile(ledgerPath, "[]\n", { mode: 0o600 });
 }
 
 async function readJson<T>(filePath: string, fallback: T): Promise<T> {

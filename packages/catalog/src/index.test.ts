@@ -45,6 +45,14 @@ describe("@entas/catalog", () => {
     expect(searchCatalogRecords(store, { publicOnly: true }).total).toBe(0);
   });
 
+  it("repairs product id collisions caused by equivalent slug values", () => {
+    const first = { ...imported, externalId: "ABC+123", sku: "FIRST-123" };
+    const second = { ...imported, externalId: "ABC 123", sku: "SECOND-123", productName: "Başka ürün" };
+    const store = mergeImportedProducts(createEmptyCatalogStore(), [first, second]);
+    expect(new Set(store.products.map((product) => product.id)).size).toBe(2);
+    expect(store.products.every((product) => /-[a-f0-9]{16}$/.test(product.id))).toBe(true);
+  });
+
   it("publishes selected products and writes an audit log", () => {
     const store = mergeImportedProducts(createEmptyCatalogStore(), [imported], "2026-07-07T01:00:00.000Z");
     const id = store.products[0]?.id;

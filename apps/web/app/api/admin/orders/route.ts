@@ -1,7 +1,20 @@
 import { getAdminEmail, isAdminAuthenticated } from "../../../../lib/admin-auth";
 import { searchAdminOrders, updateOrderOperation, type OrderStatus } from "../../../../lib/commercial-repository";
+import { z } from "zod";
+import { readJsonBody, requestErrorResponse } from "../../../../lib/security";
 
 export const dynamic = "force-dynamic";
+
+const orderMutationSchema = z.object({
+  orderId: z.string().trim().min(1).max(160),
+  status: z.enum(["DRAFT", "PAYMENT_PENDING", "APPROVAL_PENDING", "FINANCE_APPROVAL_PENDING", "STOCK_WAITING", "PREPARING", "READY_TO_SHIP", "SHIPPED", "DELIVERED", "CANCELLED", "COMPLETED"]).optional(),
+  paymentStatus: z.string().trim().max(160).optional(),
+  financeApproval: z.string().trim().max(160).optional(),
+  stockStatus: z.string().trim().max(160).optional(),
+  shipmentStatus: z.string().trim().max(160).optional(),
+  warehouse: z.string().trim().max(160).optional(),
+  internalNote: z.string().trim().max(2_000).optional()
+}).strict();
 
 export async function GET(request: Request): Promise<Response> {
   if (!(await isAdminAuthenticated())) {
@@ -32,21 +45,14 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   try {
-    const body = (await request.json()) as {
-      orderId?: string;
-      status?: OrderStatus;
-      paymentStatus?: string;
-      financeApproval?: string;
-      stockStatus?: string;
-      shipmentStatus?: string;
-      warehouse?: string;
-      internalNote?: string;
-    };
+    const parsed = orderMutationSchema.safeParse(await readJsonBody<unknown>(request));
+    if (!parsed.success) return Response.json({ error: "Geçersiz sipariş güncellemesi.", issues: parsed.error.flatten() }, { status: 400 });
+    const body = parsed.data;
 
     const order = await updateOrderOperation(
       {
-        orderId: body.orderId ?? "",
-        status: body.status,
+        orderId: body.orderId,
+        status: body.status as OrderStatus | undefined,
         paymentStatus: body.paymentStatus,
         financeApproval: body.financeApproval,
         stockStatus: body.stockStatus,
@@ -59,7 +65,7 @@ export async function POST(request: Request): Promise<Response> {
 
     return Response.json({ order });
   } catch (error) {
-    return Response.json({ error: error instanceof Error ? error.message : "Order action failed" }, { status: 400 });
+    return requestErrorResponse(error, "Order action failed");
   }
 }
 

@@ -1,5 +1,6 @@
 import { readdir, readFile, stat } from "node:fs/promises";
 import path from "node:path";
+import { createSessionToken } from "../apps/web/lib/session-token";
 
 type ImportJobStatus = "queued" | "processing" | "needs_review" | "preview" | "approved" | "rejected" | "failed";
 
@@ -61,7 +62,10 @@ if (!sessionSecret) {
   throw new Error("ADMIN_SESSION_SECRET tanımlı değil. Komutu apps/web/.env.local ile çalıştırın.");
 }
 
-const cookieHeader = `entas_admin_session=${sessionSecret}`;
+const adminEmail = (process.env.ADMIN_EMAIL || "admin@entasburada.local").trim().toLowerCase();
+const cookieName = process.env.NODE_ENV === "production" ? "__Host-entas_admin_session" : "entas_admin_session";
+const cookieHeader = `${cookieName}=${encodeURIComponent(createSessionToken(`admin:${adminEmail}`, sessionSecret, 60 * 60 * 8))}`;
+const requestOrigin = new URL(baseUrl).origin;
 
 async function main(): Promise<void> {
   const sourceJobs = await loadSourceJobs();
@@ -178,7 +182,7 @@ async function enqueuePdf(filePath: string, hints: CatalogHints): Promise<Import
 
   const response = await fetch(`${baseUrl}/api/admin/import/pdf`, {
     method: "POST",
-    headers: { cookie: cookieHeader },
+    headers: { cookie: cookieHeader, origin: requestOrigin },
     body: formData,
     signal: AbortSignal.timeout(30 * 60_000)
   });
@@ -193,7 +197,7 @@ async function processJob(initial: ImportJobSummary): Promise<void> {
   while (["queued", "processing"].includes(status)) {
     const response = await fetchWithRetry(`${baseUrl}/api/admin/import/process`, {
       method: "POST",
-      headers: { cookie: cookieHeader, "content-type": "application/json" },
+      headers: { cookie: cookieHeader, origin: requestOrigin, "content-type": "application/json" },
       body: JSON.stringify({ jobId: initial.id, batchSize })
     }, 4, 45 * 60_000);
     const payload = (await response.json()) as { job?: ImportJob; error?: string };

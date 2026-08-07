@@ -11,7 +11,11 @@ export async function POST(request: Request): Promise<Response> {
   try {
     const body = (await request.json()) as { jobId?: string; productIds?: unknown };
     const productIds = Array.isArray(body.productIds)
-      ? body.productIds.filter((value): value is string => typeof value === "string")
+      ? body.productIds
+          .filter((value): value is string => typeof value === "string")
+          .map((value) => value.trim())
+          .filter((value) => value.length > 0 && value.length <= 160)
+          .slice(0, 1_000)
       : [];
     const job = await reviewImportProducts(body.jobId ?? "", productIds);
     return Response.json({ job, reviewedCount: productIds.length });

@@ -1,10 +1,15 @@
 import { randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 
 export const SCRYPT_PREFIX = "scrypt$";
+const SALT_BYTES = 16;
+const HASH_BYTES = 64;
 
 export function hashPassword(password: string): string {
-  const salt = randomBytes(16);
-  const derived = scryptSync(password, salt, 64);
+  if (!password || password.length > 128) {
+    throw new Error("Şifre uzunluğu geçersiz.");
+  }
+  const salt = randomBytes(SALT_BYTES);
+  const derived = scryptSync(password, salt, HASH_BYTES);
   return `${SCRYPT_PREFIX}${salt.toString("base64url")}$${derived.toString("base64url")}`;
 }
 
@@ -13,18 +18,22 @@ export function verifyPassword(password: string, stored: string): boolean {
     return false;
   }
 
-  if (stored.startsWith(SCRYPT_PREFIX)) {
-    const [saltPart, hashPart] = stored.slice(SCRYPT_PREFIX.length).split("$");
-    if (!saltPart || !hashPart) {
-      return false;
-    }
-    const expected = Buffer.from(hashPart, "base64url");
-    const derived = scryptSync(password, Buffer.from(saltPart, "base64url"), expected.length);
-    return derived.length === expected.length && timingSafeEqual(derived, expected);
+  if (!stored.startsWith(SCRYPT_PREFIX)) {
+    return false;
   }
 
-  // eski duz metin kayit: dogrulama sonrasi cagiran taraf scrypt'e yukseltir
-  const provided = Buffer.from(password);
-  const legacy = Buffer.from(stored);
-  return provided.length === legacy.length && timingSafeEqual(provided, legacy);
+  const [saltPart, hashPart] = stored.slice(SCRYPT_PREFIX.length).split("$");
+  if (!saltPart || !hashPart) {
+    return false;
+  }
+  if (password.length > 128 || !/^[A-Za-z0-9_-]+$/.test(saltPart) || !/^[A-Za-z0-9_-]+$/.test(hashPart)) {
+    return false;
+  }
+  const salt = Buffer.from(saltPart, "base64url");
+  const expected = Buffer.from(hashPart, "base64url");
+  if (salt.length !== SALT_BYTES || expected.length !== HASH_BYTES) {
+    return false;
+  }
+  const derived = scryptSync(password, salt, HASH_BYTES);
+  return derived.length === expected.length && timingSafeEqual(derived, expected);
 }

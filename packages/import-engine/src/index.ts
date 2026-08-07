@@ -2,24 +2,24 @@ import { SaxesParser } from "saxes";
 import { z } from "zod";
 
 export const importedProductRowSchema = z.object({
-  externalId: z.string().min(1),
-  sku: z.string().optional(),
-  name: z.string().min(1),
-  brandName: z.string().optional(),
-  barcode: z.string().optional(),
-  manufacturerCode: z.string().optional(),
-  description: z.string().optional(),
-  unitType: z.string().optional(),
+  externalId: z.string().trim().min(1).max(160),
+  sku: z.string().trim().max(160).optional(),
+  name: z.string().trim().min(1).max(300),
+  brandName: z.string().trim().max(160).optional(),
+  barcode: z.string().trim().max(80).optional(),
+  manufacturerCode: z.string().trim().max(160).optional(),
+  description: z.string().trim().max(10_000).optional(),
+  unitType: z.string().trim().max(40).optional(),
   taxRate: z.string().regex(/^\d+([.,]\d+)?$/).optional(),
-  currency: z.string().optional(),
+  currency: z.string().trim().max(8).optional(),
   quantity: z.string().regex(/^-?\d+([.,]\d+)?$/).optional(),
-  imageUrl: z.string().url().optional(),
-  sourceUrl: z.string().url().optional(),
-  externalCategoryId: z.string().optional(),
-  categoryPath: z.array(z.string()).optional(),
-  categoryName: z.string().optional(),
+  imageUrl: z.string().url().max(2_048).optional(),
+  sourceUrl: z.string().url().max(2_048).optional(),
+  externalCategoryId: z.string().trim().max(160).optional(),
+  categoryPath: z.array(z.string().trim().max(160)).max(10).optional(),
+  categoryName: z.string().trim().max(160).optional(),
   listPrice: z.string().regex(/^\d+([.,]\d+)?$/).optional()
-});
+}).strict();
 
 export type ImportedProductRow = z.infer<typeof importedProductRowSchema>;
 
@@ -86,7 +86,11 @@ export async function parseProductXmlBufferPreview(
   buffer: Buffer,
   options: StreamProductXmlOptions = {}
 ): Promise<ImportPreview> {
-  return parseProductXmlPreview(toSingleChunk(decodeXmlBuffer(buffer)), options);
+  const decoded = decodeXmlBuffer(buffer);
+  if (/<!DOCTYPE|<!ENTITY/i.test(decoded.slice(0, 64 * 1024))) {
+    throw new Error("DTD ve XML entity tanımları güvenlik nedeniyle desteklenmez.");
+  }
+  return parseProductXmlPreview(toSingleChunk(decoded), options);
 }
 
 export async function parseProductXmlPreview(

@@ -8,6 +8,7 @@ node_modules
 Pdfler
 apps/web/public/uploads
 data/*.json
+**/data/security-rate-limits.json*
 data/catalog-imports
 data/import-sources
 .env*

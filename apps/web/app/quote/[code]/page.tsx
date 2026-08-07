@@ -3,6 +3,8 @@ import { CheckCircle2, XCircle } from "lucide-react";
 import { StatusPill } from "@entas/ui";
 import { getAdminOrderById, getQuoteByTrackingCode } from "../../../lib/commercial-repository";
 import { approveQuoteByTrackingCodeAction, rejectQuoteByTrackingCodeAction } from "../actions";
+import { getCurrentCustomer } from "../../../lib/customer-auth";
+import { canAccessCommercialRecord } from "../../../lib/commercial-access";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -11,10 +13,10 @@ export const dynamic = "force-dynamic";
 export default async function QuoteTrackingPage({ params, searchParams }: { params: Promise<{ code: string }>; searchParams: Promise<SearchParams> }) {
   const { code } = await params;
   const query = await searchParams;
-  const quote = await getQuoteByTrackingCode(code);
+  const [quote, customer] = await Promise.all([getQuoteByTrackingCode(code), getCurrentCustomer()]);
   const error = getParam(query, "error");
 
-  if (!quote) {
+  if (!quote || !canAccessCommercialRecord(quote, customer)) {
     notFound();
   }
 

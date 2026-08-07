@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
+import sharp from "sharp";
 import type { VideoPopupFrequency } from "./video-popup-policy";
 
 export interface VideoPopupSettings {
@@ -129,16 +130,37 @@ export async function getPublicVideoPopupSettings(customerSegment?: string): Pro
   };
 }
 
-export async function saveUploadedBrandFile(file: File, purpose: string): Promise<string> {
+export async function saveUploadedBrandFile(file: File, purpose: string, kind: "image" | "video"): Promise<string> {
   if (file.size === 0) {
     throw new Error("Dosya bos.");
   }
-
-  const extension = extensionFor(file);
+  const maxBytes = kind === "image" ? 10 * 1024 * 1024 : 15 * 1024 * 1024;
+  if (file.size > maxBytes) throw new Error(`${kind === "image" ? "Görsel" : "Video"} izin verilen boyut sınırını aşıyor.`);
   const safePurpose = slugify(purpose || "brand");
-  const fileName = `${safePurpose}-${Date.now()}${extension}`;
-  await mkdir(publicBrandDir, { recursive: true });
-  await writeFile(path.join(publicBrandDir, fileName), Buffer.from(await file.arrayBuffer()));
+  await mkdir(publicBrandDir, { recursive: true, mode: 0o700 });
+  const input = Buffer.from(await file.arrayBuffer());
+  let output: Buffer;
+  let extension: ".webp" | ".mp4";
+  if (kind === "image") {
+    const metadata = await sharp(input, { failOn: "error", limitInputPixels: 40_000_000 }).metadata();
+    if (!metadata.width || !metadata.height || !["jpeg", "png", "webp", "avif"].includes(metadata.format ?? "")) {
+      throw new Error("Yalnızca geçerli JPEG, PNG, WebP veya AVIF görsel yüklenebilir.");
+    }
+    output = await sharp(input, { failOn: "error", limitInputPixels: 40_000_000 })
+      .rotate()
+      .resize({ width: 2_000, height: 2_000, fit: "inside", withoutEnlargement: true })
+      .webp({ quality: 90, effort: 4 })
+      .toBuffer();
+    extension = ".webp";
+  } else {
+    if (file.type !== "video/mp4" || input.length < 12 || input.subarray(4, 8).toString("ascii") !== "ftyp") {
+      throw new Error("Yalnızca geçerli MP4 video yüklenebilir.");
+    }
+    output = input;
+    extension = ".mp4";
+  }
+  const fileName = `${safePurpose}-${Date.now()}-${randomUUID()}${extension}`;
+  await writeFile(path.join(publicBrandDir, fileName), output, { mode: 0o600, flag: "wx" });
   return `/uploads/brand/${fileName}`;
 }
 
@@ -146,14 +168,14 @@ function normalizeSettings(value: BrandSettingsInput): BrandSettings {
   return {
     ...defaultSettings,
     ...value,
-    siteName: clean(value.siteName) || defaultSettings.siteName,
-    siteTitle: clean(value.siteTitle) || defaultSettings.siteTitle,
-    tagline: clean(value.tagline) || defaultSettings.tagline,
-    headerLogoUrl: clean(value.headerLogoUrl) || defaultSettings.headerLogoUrl,
-    mobileLogoUrl: clean(value.mobileLogoUrl) || clean(value.headerLogoUrl) || defaultSettings.mobileLogoUrl,
-    footerLogoUrl: clean(value.footerLogoUrl) || clean(value.headerLogoUrl) || defaultSettings.footerLogoUrl,
-    adminLogoUrl: clean(value.adminLogoUrl) || clean(value.headerLogoUrl) || defaultSettings.adminLogoUrl,
-    faviconUrl: clean(value.faviconUrl) || clean(value.headerLogoUrl) || defaultSettings.faviconUrl,
+    siteName: boundedClean(value.siteName, 120) || defaultSettings.siteName,
+    siteTitle: boundedClean(value.siteTitle, 180) || defaultSettings.siteTitle,
+    tagline: boundedClean(value.tagline, 300) || defaultSettings.tagline,
+    headerLogoUrl: safeAssetUrl(value.headerLogoUrl) || defaultSettings.headerLogoUrl,
+    mobileLogoUrl: safeAssetUrl(value.mobileLogoUrl) || safeAssetUrl(value.headerLogoUrl) || defaultSettings.mobileLogoUrl,
+    footerLogoUrl: safeAssetUrl(value.footerLogoUrl) || safeAssetUrl(value.headerLogoUrl) || defaultSettings.footerLogoUrl,
+    adminLogoUrl: safeAssetUrl(value.adminLogoUrl) || safeAssetUrl(value.headerLogoUrl) || defaultSettings.adminLogoUrl,
+    faviconUrl: safeAssetUrl(value.faviconUrl) || safeAssetUrl(value.headerLogoUrl) || defaultSettings.faviconUrl,
     updatedAt: clean(value.updatedAt) || new Date().toISOString(),
     videoPopup: normalizeVideoPopup(value.videoPopup ?? defaultSettings.videoPopup)
   };
@@ -165,18 +187,18 @@ function normalizeVideoPopup(value: VideoPopupSettingsInput): VideoPopupSettings
     ...defaultSettings.videoPopup,
     ...value,
     enabled: Boolean(value.enabled),
-    title: clean(value.title) || defaultSettings.videoPopup.title,
-    description: clean(value.description),
-    videoUrl: clean(value.videoUrl) || defaultSettings.videoPopup.videoUrl,
-    posterUrl: clean(value.posterUrl),
-    ctaText: clean(value.ctaText),
-    ctaHref: clean(value.ctaHref) || "/catalog",
+    title: boundedClean(value.title, 200) || defaultSettings.videoPopup.title,
+    description: boundedClean(value.description, 2_000),
+    videoUrl: safeAssetUrl(value.videoUrl) || defaultSettings.videoPopup.videoUrl,
+    posterUrl: safeAssetUrl(value.posterUrl),
+    ctaText: boundedClean(value.ctaText, 120),
+    ctaHref: safeInternalHref(value.ctaHref) || "/catalog",
     frequency,
-    startsAt: clean(value.startsAt),
-    endsAt: clean(value.endsAt),
+    startsAt: boundedClean(value.startsAt, 80),
+    endsAt: boundedClean(value.endsAt, 80),
     showToGuests: value.showToGuests !== false,
     showToCustomers: value.showToCustomers !== false,
-    segmentTargets: Array.isArray(value.segmentTargets) ? value.segmentTargets.map(clean).filter(Boolean) : [],
+    segmentTargets: Array.isArray(value.segmentTargets) ? value.segmentTargets.map((entry) => boundedClean(entry, 80)).filter(Boolean).slice(0, 20) : [],
     closeOnOutsideClick: value.closeOnOutsideClick !== false,
     closeOnEsc: value.closeOnEsc !== false,
     autoCloseOnEnded: value.autoCloseOnEnded !== false,
@@ -219,37 +241,26 @@ async function readJson<T>(filePath: string, fallback: T): Promise<T> {
 async function writeJson(filePath: string, value: unknown): Promise<void> {
   await mkdir(path.dirname(filePath), { recursive: true });
   const tmpPath = `${filePath}.${process.pid}.${randomUUID()}.tmp`;
-  await writeFile(tmpPath, `${JSON.stringify(value, null, 2)}\n`);
+  await writeFile(tmpPath, `${JSON.stringify(value, null, 2)}\n`, { mode: 0o600 });
   await rename(tmpPath, filePath);
 }
 
-function extensionFor(file: File): string {
-  const explicit = path.extname(file.name || "").toLowerCase();
-  if (explicit && /^[.][a-z0-9]+$/.test(explicit)) {
-    return explicit;
-  }
+function safeAssetUrl(value: unknown): string {
+  const cleaned = clean(value);
+  return cleaned.startsWith("/") && !cleaned.startsWith("//") && !cleaned.startsWith("/\\") ? cleaned.slice(0, 500) : "";
+}
 
-  if (file.type === "image/png") {
-    return ".png";
-  }
-
-  if (file.type === "image/jpeg") {
-    return ".jpg";
-  }
-
-  if (file.type === "image/webp") {
-    return ".webp";
-  }
-
-  if (file.type === "video/mp4") {
-    return ".mp4";
-  }
-
-  return ".bin";
+function safeInternalHref(value: unknown): string {
+  const cleaned = clean(value);
+  return cleaned.startsWith("/") && !cleaned.startsWith("//") && !cleaned.startsWith("/\\") ? cleaned.slice(0, 500) : "";
 }
 
 function clean(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
+}
+
+function boundedClean(value: unknown, maxLength: number): string {
+  return clean(value).slice(0, maxLength);
 }
 
 function slugify(value: string): string {

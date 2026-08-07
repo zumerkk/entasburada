@@ -9,11 +9,18 @@ import {
   updateQuoteStatus,
   type CreateQuoteItemInput
 } from "../../lib/commercial-repository";
+import { getCurrentCustomer } from "../../lib/customer-auth";
+import { canAccessCommercialRecord } from "../../lib/commercial-access";
+import { headers } from "next/headers";
+import { consumeRateLimit } from "../../lib/rate-limit";
+import { getClientAddress } from "../../lib/security";
 
 export async function submitQuoteAction(formData: FormData): Promise<void> {
   let target = "/quote";
 
   try {
+    const rateLimit = await consumeRateLimit("public-quote-action", getClientAddress(await headers()), { limit: 10, windowMs: 60 * 60 * 1000 });
+    if (!rateLimit.allowed) throw new Error("Çok fazla teklif isteği gönderildi. Lütfen daha sonra tekrar deneyin.");
     const items = [...itemsFromForm(formData), ...(await itemsFromUpload(formData))];
     const quote = await createQuote({
       companyTitle: getString(formData, "companyTitle"),
@@ -42,8 +49,9 @@ export async function submitQuoteAction(formData: FormData): Promise<void> {
 export async function approveQuoteByTrackingCodeAction(formData: FormData): Promise<void> {
   const code = getString(formData, "trackingCode");
   const quote = await getQuoteByTrackingCode(code);
+  const customer = await getCurrentCustomer();
 
-  if (!quote) {
+  if (!quote || !canAccessCommercialRecord(quote, customer) || !["PRICED", "APPROVED"].includes(quote.status)) {
     redirect(`/quote/${encodeURIComponent(code)}?error=${encodeURIComponent("Teklif bulunamadi.")}`);
   }
 
@@ -56,8 +64,9 @@ export async function approveQuoteByTrackingCodeAction(formData: FormData): Prom
 export async function rejectQuoteByTrackingCodeAction(formData: FormData): Promise<void> {
   const code = getString(formData, "trackingCode");
   const quote = await getQuoteByTrackingCode(code);
+  const customer = await getCurrentCustomer();
 
-  if (!quote) {
+  if (!quote || !canAccessCommercialRecord(quote, customer) || !["PRICED", "SUBMITTED", "ASSIGNED"].includes(quote.status)) {
     redirect(`/quote/${encodeURIComponent(code)}?error=${encodeURIComponent("Teklif bulunamadi.")}`);
   }
 
@@ -91,6 +100,7 @@ async function itemsFromUpload(formData: FormData): Promise<CreateQuoteItemInput
   if (!(file instanceof File) || file.size === 0) {
     return [];
   }
+  if (file.size > 1024 * 1024) throw new Error("Teklif dosyası en fazla 1 MB olabilir.");
 
   const text = await file.text();
   return parseDelimitedQuoteItems(text);
@@ -110,7 +120,7 @@ function parseDelimitedQuoteItems(text: string): CreateQuoteItemInput[] {
   const delimiter = headerLine.includes("\t") ? "\t" : headerLine.includes(";") ? ";" : ",";
   const first = splitDelimitedLine(headerLine, delimiter).map((cell) => cell.toLocaleLowerCase("tr-TR"));
   const hasHeader = first.some((cell) => ["sku", "urun", "ürün", "adet", "quantity", "miktar"].includes(cell));
-  const rows = hasHeader ? lines.slice(1) : lines;
+  const rows = (hasHeader ? lines.slice(1) : lines).slice(0, 500);
   const indexOf = (names: string[], fallback: number) => {
     const index = first.findIndex((cell) => names.includes(cell));
     return index === -1 ? fallback : index;
@@ -137,7 +147,7 @@ function parseDelimitedQuoteItems(text: string): CreateQuoteItemInput[] {
 }
 
 function splitDelimitedLine(line: string, delimiter: string): string[] {
-  return line.split(delimiter).map((cell) => cell.trim().replace(/^"|"$/g, ""));
+  return line.split(delimiter).slice(0, 20).map((cell) => cell.trim().replace(/^"|"$/g, "").slice(0, 500));
 }
 
 function getString(formData: FormData, key: string): string {

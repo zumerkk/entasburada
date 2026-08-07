@@ -48,6 +48,9 @@ export async function POST(request: Request): Promise<Response> {
 
   // Idempotent: zaten ödendiyse tekrar güncelleme, direkt başarıya yönlendir.
   const alreadyPaid = order.paymentStatus?.toLowerCase().includes("ödendi");
+  if (!alreadyPaid && order.status !== "PAYMENT_PENDING") {
+    return redirectTo(`${siteUrl}/orders/${encodeURIComponent(trackingCode)}?payment=invalid`);
+  }
   if (!alreadyPaid) {
     await updateOrderOperation(
       {

@@ -62,7 +62,7 @@ async function uploadedUrl(formData: FormData, field: string, purpose: string): 
     return "";
   }
 
-  return saveUploadedBrandFile(file, `${purpose}-${getAdminEmail()}`);
+  return saveUploadedBrandFile(file, `${purpose}-${getAdminEmail()}`, field === "videoFile" ? "video" : "image");
 }
 
 function revalidateSettings(): void {

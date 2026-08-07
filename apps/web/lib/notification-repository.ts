@@ -73,7 +73,7 @@ async function loadNotifications(): Promise<NotificationRecord[]> {
 async function saveNotifications(rows: NotificationRecord[]): Promise<void> {
   await mkdir(dataDir, { recursive: true });
   const tmpPath = `${notificationsPath}.${process.pid}.${randomUUID()}.tmp`;
-  await writeFile(tmpPath, `${JSON.stringify(rows, null, 2)}\n`);
+  await writeFile(tmpPath, `${JSON.stringify(rows, null, 2)}\n`, { mode: 0o600 });
   await rename(tmpPath, notificationsPath);
 }
 
@@ -83,7 +83,7 @@ async function ensureFile(): Promise<void> {
   }
 
   await mkdir(dataDir, { recursive: true });
-  await writeFile(notificationsPath, "[]\n");
+  await writeFile(notificationsPath, "[]\n", { mode: 0o600 });
 }
 
 async function readJson<T>(filePath: string, fallback: T): Promise<T> {

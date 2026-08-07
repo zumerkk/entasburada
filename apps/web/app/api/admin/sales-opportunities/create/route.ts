@@ -5,13 +5,13 @@ import { createSalesOpportunity } from "../../../../../lib/analytics-repository"
 export const dynamic = "force-dynamic";
 
 const schema = z.object({
-  customerId: z.string().optional(),
-  companyName: z.string().optional(),
-  title: z.string().optional(),
-  source: z.string().optional(),
-  score: z.coerce.number().optional(),
-  note: z.string().optional()
-});
+  customerId: z.string().trim().max(120).optional(),
+  companyName: z.string().trim().max(300).optional(),
+  title: z.string().trim().max(300).optional(),
+  source: z.string().trim().max(120).optional(),
+  score: z.coerce.number().min(0).max(1000).optional(),
+  note: z.string().trim().max(4_000).optional()
+}).strict();
 
 export async function POST(request: Request): Promise<Response> {
   if (!(await isAdminAuthenticated())) {

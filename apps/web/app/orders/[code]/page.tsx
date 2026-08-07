@@ -5,6 +5,8 @@ import { reorderAction } from "../../cart/actions";
 import { buildTrackingUrl, getCarrier } from "../../../lib/shipping-carriers";
 import { convertToTry, normalizeCurrencyCode } from "../../../lib/fx";
 import { installmentOptions } from "../../../lib/installments";
+import { getCurrentCustomer } from "../../../lib/customer-auth";
+import { canAccessCommercialRecord } from "../../../lib/commercial-access";
 
 export const dynamic = "force-dynamic";
 
@@ -24,9 +26,9 @@ export default async function OrderTrackingPage({
 }) {
   const { code } = await params;
   const { payment, reorder } = await searchParams;
-  const order = await getOrderByTrackingCode(code);
+  const [order, customer] = await Promise.all([getOrderByTrackingCode(code), getCurrentCustomer()]);
 
-  if (!order) {
+  if (!order || !canAccessCommercialRecord(order, customer)) {
     notFound();
   }
 

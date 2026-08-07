@@ -7,6 +7,7 @@ import { CART_CHANGED_EVENT, type CartChangedDetail } from "./cart-events";
 type AddStatus = "idle" | "loading" | "added" | "error";
 
 interface AddToCartControlProps {
+  slug: string;
   sku: string;
   name: string;
   unit: string;
@@ -25,6 +26,7 @@ interface CartResponse {
 const MAX_QUANTITY = 999_999;
 
 export function AddToCartControl({
+  slug,
   sku,
   name,
   unit,
@@ -65,7 +67,7 @@ export function AddToCartControl({
       const response = await fetch("/api/cart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items: [{ sku, productName: name, quantity, unit }] })
+        body: JSON.stringify({ items: [{ productSlug: slug, sku, productName: name, quantity, unit }] })
       });
       const payload = (await response.json().catch(() => ({}))) as CartResponse;
       if (response.status === 401) {

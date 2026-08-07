@@ -33,6 +33,7 @@ export function StockAlertButton({
     return (
       <form action={unsubscribeStockAction}>
         <input type="hidden" name="sku" value={sku} />
+        <input type="hidden" name="productSlug" value={slug} />
         <input type="hidden" name="redirectTo" value={redirectTo} />
         <button type="submit" className="btn btnGhost stockAlertBtn stockAlertActive">
           <BellOff size={18} aria-hidden="true" />

@@ -1,4 +1,4 @@
-import { Building2, KeyRound, Mail, MapPin, MessageCircle, PhoneCall } from "lucide-react";
+import { Building2, KeyRound, Mail, MapPin, PhoneCall } from "lucide-react";
 import { EmptyState, StatusPill } from "@entas/ui";
 import { requireAdmin } from "../../../lib/admin-auth";
 import {
@@ -6,7 +6,6 @@ import {
   listDealerApplications,
   type DealerApplicationStatus
 } from "../../../lib/dealer-application-repository";
-import { buildCredentialsWhatsappHref } from "../../../lib/dealer-provisioning";
 import { getCustomers, type CustomerSegment } from "../../../lib/customer-auth";
 import {
   createManualDealerApplicationAction,
@@ -179,11 +178,11 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
             </label>
             <label>
               Vergi dairesi
-              <input name="taxOffice" />
+              <input name="taxOffice" required minLength={2} maxLength={100} />
             </label>
             <label>
               Vergi no
-              <input name="taxNumber" />
+              <input name="taxNumber" required inputMode="numeric" pattern="[0-9]{10,11}" maxLength={11} />
             </label>
             <label>
               MERSİS no
@@ -200,11 +199,11 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
             </label>
             <label>
               İl
-              <input name="city" />
+              <input name="city" required minLength={2} maxLength={80} />
             </label>
             <label>
               İlçe
-              <input name="district" />
+              <input name="district" required minLength={2} maxLength={80} />
             </label>
             <label>
               Faaliyet alanı
@@ -221,7 +220,7 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
             </label>
             <label className="spanTwo">
               Fatura adresi
-              <textarea name="invoiceAddress" rows={2} />
+              <textarea name="invoiceAddress" rows={2} required minLength={10} maxLength={600} />
             </label>
             <label className="spanTwo">
               Teslimat adresi (boş bırakılırsa fatura adresi kullanılır)
@@ -313,30 +312,16 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
 
                 {application.reviewNote ? <p className="dealerApplicationNote">Not: {application.reviewNote}</p> : null}
 
-                {application.accountId && application.tempPassword ? (
+                {application.accountId ? (
                   <div className="dealerCredentials">
                     <div className="dealerCredentialsHead">
                       <KeyRound size={15} aria-hidden="true" />
-                      Giriş bilgileri hazır — firmaya iletin
+                      Bayi hesabı hazır
                       {application.welcomeMailSent ? <StatusPill tone="success">E-posta gönderildi</StatusPill> : <StatusPill tone="warning">E-posta gönderilmedi</StatusPill>}
                     </div>
-                    <code>
-                      Kullanıcı: {application.accountEmail}
-                      {"\n"}Geçici şifre: {application.tempPassword}
-                    </code>
-                    <a
-                      className="btn btnPrimary"
-                      href={buildCredentialsWhatsappHref(application, application.accountEmail ?? application.email, application.tempPassword)}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      <MessageCircle size={16} aria-hidden="true" />
-                      WhatsApp ile Gönder
-                    </a>
+                    <code>Kullanıcı: {application.accountEmail}</code>
+                    <p>Geçici parola güvenlik nedeniyle panelde saklanmaz veya gösterilmez. Kullanıcı ilk girişte parolasını değiştirmek zorundadır.</p>
                   </div>
-                ) : null}
-                {application.accountId && !application.tempPassword ? (
-                  <p className="dealerApplicationNote">Bu e-postayla hesap zaten mevcuttu; yeni şifre üretilmedi.</p>
                 ) : null}
 
                 <form className="dealerApplicationActions" action={updateDealerApplicationStatusAction}>

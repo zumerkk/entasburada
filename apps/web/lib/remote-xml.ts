@@ -37,15 +37,38 @@ export async function fetchRemoteXml(urlValue: string): Promise<string> {
       throw new Error("XML dosyasi 20 MB sinirini asiyor.");
     }
 
-    const buffer = await response.arrayBuffer();
-    if (buffer.byteLength > MAX_XML_BYTES) {
-      throw new Error("XML dosyasi 20 MB sinirini asiyor.");
-    }
-
-    return new TextDecoder("utf-8").decode(buffer);
+    return readBoundedXml(response);
   }
 
   throw new Error("XML URL okunamadi.");
+}
+
+async function readBoundedXml(response: Response): Promise<string> {
+  if (!response.body) return "";
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > MAX_XML_BYTES) {
+      await reader.cancel().catch(() => undefined);
+      throw new Error("XML dosyasi 20 MB sinirini asiyor.");
+    }
+    chunks.push(value);
+  }
+  const buffer = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) {
+    buffer.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  try {
+    return new TextDecoder("utf-8", { fatal: true }).decode(buffer);
+  } catch {
+    throw new Error("XML kaynağı geçerli UTF-8 metni değil.");
+  }
 }
 
 async function assertSafeRemoteUrl(url: URL): Promise<void> {
@@ -77,5 +100,5 @@ function isAllowedProductionHost(hostname: string): boolean {
     .map((value) => value.trim().toLowerCase())
     .filter(Boolean);
   const allowedHosts = [...DEFAULT_PRODUCTION_HOSTS, ...configuredHosts];
-  return allowedHosts.some((allowedHost) => hostname === allowedHost || hostname.endsWith(`.${allowedHost}`));
+  return allowedHosts.some((allowedHost) => hostname === allowedHost);
 }

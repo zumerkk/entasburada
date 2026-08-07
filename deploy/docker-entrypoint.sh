@@ -53,5 +53,7 @@ if [ -f /app/data/catalog-store.json ]; then
   pnpm catalog:reclassify -- --write
 fi
 
+chown -R nextjs:nodejs "$DATA_DIR/data" "$DATA_DIR/uploads"
+
 cd /app/apps/web
-exec ./node_modules/.bin/next start --port "${PORT:-3000}"
+exec gosu nextjs ./node_modules/.bin/next start --port "${PORT:-3000}"

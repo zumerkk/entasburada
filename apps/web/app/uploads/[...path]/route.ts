@@ -1,4 +1,5 @@
-import { createReadStream, existsSync, statSync } from "node:fs";
+import { createReadStream } from "node:fs";
+import { realpath, stat } from "node:fs/promises";
 import path from "node:path";
 import { Readable } from "node:stream";
 
@@ -14,7 +15,6 @@ const contentTypes: Record<string, string> = {
   ".jpg": "image/jpeg",
   ".jpeg": "image/jpeg",
   ".gif": "image/gif",
-  ".svg": "image/svg+xml",
   ".mp4": "video/mp4",
   ".pdf": "application/pdf"
 };
@@ -22,14 +22,26 @@ const contentTypes: Record<string, string> = {
 export async function GET(_request: Request, context: { params: Promise<{ path: string[] }> }): Promise<Response> {
   const { path: segments } = await context.params;
   const relative = path.normalize((segments ?? []).join("/"));
-  if (!relative || relative.startsWith("..") || path.isAbsolute(relative)) {
+  if (!relative || relative.startsWith("..") || path.isAbsolute(relative) || relative.includes("\0")) {
     return new Response(null, { status: 404 });
   }
 
-  const filePath = path.join(uploadsRoot, relative);
-  if (!filePath.startsWith(uploadsRoot) || !existsSync(filePath) || !statSync(filePath).isFile()) {
+  const candidatePath = path.resolve(uploadsRoot, relative);
+  if (!candidatePath.startsWith(`${path.resolve(uploadsRoot)}${path.sep}`)) {
     return new Response(null, { status: 404 });
   }
+
+  let filePath: string;
+  let fileStat;
+  try {
+    const [realRoot, realFile] = await Promise.all([realpath(uploadsRoot), realpath(candidatePath)]);
+    if (!realFile.startsWith(`${realRoot}${path.sep}`)) return new Response(null, { status: 404 });
+    filePath = realFile;
+    fileStat = await stat(filePath);
+  } catch {
+    return new Response(null, { status: 404 });
+  }
+  if (!fileStat.isFile()) return new Response(null, { status: 404 });
 
   const contentType = contentTypes[path.extname(filePath).toLowerCase()];
   if (!contentType) {
@@ -40,8 +52,16 @@ export async function GET(_request: Request, context: { params: Promise<{ path: 
   return new Response(stream, {
     headers: {
       "content-type": contentType,
-      "content-length": String(statSync(filePath).size),
-      "cache-control": "public, max-age=31536000, immutable"
+      "content-length": String(fileStat.size),
+      "cache-control": "public, max-age=31536000, immutable",
+      "x-content-type-options": "nosniff",
+      "cross-origin-resource-policy": "same-origin",
+      ...(contentType === "application/pdf"
+        ? {
+            "content-disposition": `attachment; filename="${path.basename(filePath).replace(/[^A-Za-z0-9._-]/g, "_")}"`,
+            "content-security-policy": "default-src 'none'; sandbox"
+          }
+        : {})
     }
   });
 }

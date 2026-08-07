@@ -2,6 +2,7 @@ import { z } from "zod";
 import { isAdminAuthenticated } from "../../../../../lib/admin-auth";
 import { getCustomers } from "../../../../../lib/customer-auth";
 import { provisionDirectDealerAccount } from "../../../../../lib/dealer-provisioning";
+import { readJsonBody, requestErrorResponse } from "../../../../../lib/security";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,7 @@ const schema = z.object({
   baseDiscountRate: z.number().min(0).max(50).optional(),
   temporaryPassword: z.string().trim().min(12).max(128).regex(/^\S+$/).optional(),
   sendWelcomeEmail: z.boolean().default(true)
-});
+}).strict();
 
 export async function GET(): Promise<Response> {
   if (!(await isAdminAuthenticated())) {
@@ -32,11 +33,15 @@ export async function POST(request: Request): Promise<Response> {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const parsed = schema.safeParse(await request.json().catch(() => ({})));
-  if (!parsed.success) {
-    return Response.json({ error: "Geçersiz bayi hesabı bilgileri.", issues: parsed.error.flatten() }, { status: 400 });
-  }
+  try {
+    const parsed = schema.safeParse(await readJsonBody<unknown>(request, 32 * 1024));
+    if (!parsed.success) {
+      return Response.json({ error: "Geçersiz bayi hesabı bilgileri.", issues: parsed.error.flatten() }, { status: 400 });
+    }
 
-  const result = await provisionDirectDealerAccount(parsed.data);
-  return Response.json(result, { status: result.status === "created" ? 201 : 200 });
+    const result = await provisionDirectDealerAccount(parsed.data);
+    return Response.json(result, { status: result.status === "created" ? 201 : 200 });
+  } catch (error) {
+    return requestErrorResponse(error, "Bayi hesabı oluşturulamadı.");
+  }
 }

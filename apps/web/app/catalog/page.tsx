@@ -2,6 +2,7 @@ import { Filter, Search, SlidersHorizontal } from "lucide-react";
 import { EmptyState, ProductCard, StatusPill } from "@entas/ui";
 import { AddToCartControl } from "../../components/AddToCartControl";
 import { CatalogSearchTracker } from "../../components/AnalyticsTracker";
+import { BulkQuoteCampaign } from "../../components/BulkQuoteCampaign";
 import { getCatalogFacets, getCatalogNavigation, getPricedPublicProducts } from "../../lib/catalog-repository";
 import { getCurrentCustomer } from "../../lib/customer-auth";
 import type { StockStatus } from "@entas/catalog";
@@ -53,6 +54,8 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
           Bayi Başvurusu
         </a>
       </section>
+
+      <BulkQuoteCampaign variant="catalog" />
 
       <section className="shell catalogLayout">
         <aside className="filterPanel" aria-label="Katalog filtreleri">
@@ -145,7 +148,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
             <div className="productGrid dense">
               {products.items.map((product) => (
                 <ProductCard
-                  key={product.sku}
+                  key={product.slug}
                   href={`/products/${product.slug}`}
                   brand={product.brand}
                   name={product.name}
@@ -161,6 +164,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
                   discountRate={product.discountRate}
                   cartAction={
                     <AddToCartControl
+                      slug={product.slug}
                       sku={product.sku}
                       name={product.name}
                       unit={product.unitType}
