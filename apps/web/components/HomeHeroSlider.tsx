@@ -35,6 +35,7 @@ const SLIDES = [
     cta: "Teklif Oluştur",
     secondaryHref: "/catalog",
     secondaryCta: "Ürünleri İncele",
+    accent: "campaign",
     Icon: BadgePercent,
     ActionIcon: FileText,
     SecondaryIcon: PackageSearch
@@ -49,6 +50,7 @@ const SLIDES = [
     cta: "Ana kataloğu aç",
     secondaryHref: "/login",
     secondaryCta: "Bayi girişi",
+    accent: "default",
     Icon: Wrench,
     ActionIcon: PackageSearch,
     SecondaryIcon: ShieldCheck
@@ -63,6 +65,7 @@ const SLIDES = [
     cta: "Tesisat ürünlerine git",
     secondaryHref: "/login",
     secondaryCta: "Bayi girişi",
+    accent: "default",
     Icon: Droplets,
     ActionIcon: PackageSearch,
     SecondaryIcon: ShieldCheck
@@ -77,6 +80,7 @@ const SLIDES = [
     cta: "Sulama kataloğunu aç",
     secondaryHref: "/login",
     secondaryCta: "Bayi girişi",
+    accent: "default",
     Icon: Sprout,
     ActionIcon: PackageSearch,
     SecondaryIcon: ShieldCheck
@@ -140,7 +144,11 @@ export function HomeHeroSlider({ metrics }: HomeHeroSliderProps) {
               const ActionIcon = slide.ActionIcon;
               const SecondaryIcon = slide.SecondaryIcon;
               return (
-                <article className={`homeHeroSlide${isActive ? " active" : ""}`} aria-hidden={!isActive} key={slide.id}>
+                <article
+                  className={`homeHeroSlide${isActive ? " active" : ""}${slide.accent === "campaign" ? " campaign" : ""}`}
+                  aria-hidden={!isActive}
+                  key={slide.id}
+                >
                   <img className="homeHeroSlideImage" src={slide.image} alt="" />
                   <div className="homeHeroSlideShade" />
                   <div className="homeHeroSlideContent">

@@ -1353,128 +1353,360 @@ button {
   gap: 10px;
 }
 
+/* ---------- Toplu alim teklif kampanyasi ---------- */
 .bulkQuoteCampaign {
   position: relative;
+  z-index: 0;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
-  gap: 18px;
-  min-height: 118px;
-  padding: 22px 24px;
+  gap: 30px;
+  padding: 26px 30px 26px 34px;
   overflow: hidden;
   color: var(--white);
-  background:
-    radial-gradient(circle at 94% 50%, rgba(249, 115, 22, 0.32), transparent 28%),
-    linear-gradient(120deg, var(--green-950), var(--green-800));
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 10px;
-  box-shadow: 0 16px 38px rgba(9, 47, 42, 0.16);
+  background: linear-gradient(116deg, var(--green-950) 0%, var(--green-900) 54%, var(--green-800) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 12px;
+  box-shadow:
+    0 18px 44px rgba(9, 47, 42, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.09);
 }
 
-.bulkQuoteCampaign::after {
+/* sol kenarda turuncu kampanya seridi */
+.bulkQuoteCampaign::before {
   position: absolute;
-  right: 168px;
-  top: 50%;
-  width: 96px;
-  height: 96px;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 2;
+  width: 5px;
   content: "";
-  border: 20px solid rgba(255, 255, 255, 0.06);
-  border-radius: 50%;
-  box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.025);
-  transform: translateY(-52%);
+  background: linear-gradient(180deg, var(--orange-600), var(--orange-700));
+}
+
+/* endustriyel capraz tarama dokusu */
+.bulkQuoteCampaignHatch {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(255, 255, 255, 0.045) 0,
+    rgba(255, 255, 255, 0.045) 1px,
+    transparent 1px,
+    transparent 9px
+  );
+  -webkit-mask-image: linear-gradient(100deg, transparent 42%, #000 100%);
+  mask-image: linear-gradient(100deg, transparent 42%, #000 100%);
   pointer-events: none;
 }
 
-.bulkQuoteCampaign.home {
-  margin-top: 22px;
-}
-
-.bulkQuoteCampaign.home + .quickCategories {
-  padding-top: 34px;
-}
-
-.bulkQuoteCampaign.catalog {
-  margin-top: 22px;
-  margin-bottom: 22px;
-}
-
-.bulkQuoteCampaign.product {
-  min-height: 0;
-  padding: 16px;
-  gap: 13px;
-  box-shadow: none;
-}
-
-.bulkQuoteCampaign.product::after {
-  right: 142px;
-  width: 74px;
-  height: 74px;
-  border-width: 16px;
-}
-
-.bulkQuoteCampaignIcon {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  place-items: center;
-  width: 62px;
-  height: 62px;
-  color: var(--white);
-  background: rgba(255, 255, 255, 0.11);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 10px;
-}
-
-.bulkQuoteCampaign.product .bulkQuoteCampaignIcon {
-  width: 50px;
-  height: 50px;
+/* turuncu atmosfer isigi */
+.bulkQuoteCampaignGlow {
+  position: absolute;
+  top: 50%;
+  right: -60px;
+  z-index: 0;
+  width: 420px;
+  height: 420px;
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.34) 0%, rgba(249, 115, 22, 0.1) 42%, transparent 68%);
+  border-radius: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
 }
 
 .bulkQuoteCampaignCopy {
   position: relative;
   z-index: 1;
   display: grid;
-  gap: 5px;
+  gap: 9px;
   min-width: 0;
 }
 
 .bulkQuoteCampaignEyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  justify-self: start;
+  gap: 7px;
+  padding: 5px 11px;
   color: #ffd8bb;
+  background: rgba(249, 115, 22, 0.16);
+  border: 1px solid rgba(249, 115, 22, 0.42);
+  border-radius: 999px;
   font-size: 11px;
   font-weight: 900;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
 }
 
 .bulkQuoteCampaignCopy > strong {
-  max-width: 720px;
-  font-size: clamp(18px, 2.2vw, 25px);
-  line-height: 1.16;
+  max-width: 30ch;
+  font-size: clamp(21px, 2.5vw, 30px);
+  font-weight: 900;
+  line-height: 1.14;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+.bulkQuoteCampaignCopy > strong em {
+  position: relative;
+  color: #ffb27a;
+  font-style: normal;
+  white-space: nowrap;
+}
+
+/* vurgulu ifadenin altinda turuncu kalem izi */
+.bulkQuoteCampaignCopy > strong em::after {
+  position: absolute;
+  right: 0;
+  bottom: -3px;
+  left: 0;
+  height: 3px;
+  content: "";
+  background: linear-gradient(90deg, rgba(249, 115, 22, 0.15), var(--orange-600) 22%, var(--orange-600) 78%, rgba(249, 115, 22, 0.15));
+  border-radius: 2px;
 }
 
 .bulkQuoteCampaignCopy p {
-  max-width: 760px;
+  max-width: 58ch;
   margin: 0;
-  color: rgba(255, 255, 255, 0.78);
-  font-size: 13px;
-  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 13.5px;
+  line-height: 1.5;
 }
 
-.bulkQuoteCampaign.product .bulkQuoteCampaignCopy > strong {
-  font-size: 17px;
+/* hacim raylari: koli -> palet -> proje */
+.bulkQuoteCampaignTiers {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: 13px;
+  margin: 0;
+  padding: 15px 18px 13px;
+  list-style: none;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 11px;
+  backdrop-filter: blur(2px);
 }
 
-.bulkQuoteCampaign.product .bulkQuoteCampaignCopy p {
+.bulkQuoteCampaignTiers > li {
+  display: grid;
+  justify-items: center;
+  gap: 9px;
+}
+
+.bulkQuoteCampaignTierBar {
+  width: 52px;
+  height: calc(13px + var(--tier-index, 0) * 10px);
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px 3px 1px 1px;
+  transform-origin: bottom;
+}
+
+.bulkQuoteCampaignTiers > li:nth-child(3) .bulkQuoteCampaignTierBar {
+  background: linear-gradient(180deg, var(--orange-600), var(--orange-700));
+  box-shadow: 0 0 16px rgba(249, 115, 22, 0.45);
+}
+
+.bulkQuoteCampaignTierLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 11.5px;
+  font-weight: 850;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.bulkQuoteCampaignTiers > li:nth-child(3) .bulkQuoteCampaignTierLabel {
+  color: var(--white);
+}
+
+/* `.bulkQuoteCampaignTiers > li` ozgullugu tek sinifi ezdigi icin not kurallari
+   da ayni ozgullukte yazilmali; aksi halde gap ve display degerleri uygulanmaz. */
+.bulkQuoteCampaignTiers > li.bulkQuoteCampaignTierNote {
+  display: grid;
+  gap: 2px;
+  padding-left: 13px;
+  border-left: 1px dashed rgba(255, 255, 255, 0.22);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.bulkQuoteCampaignTiers > li.bulkQuoteCampaignTierNote strong {
+  color: #ffb27a;
   font-size: 12px;
+  font-weight: 900;
 }
 
 .bulkQuoteCampaignCta {
   position: relative;
   z-index: 1;
-  min-width: 154px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 50px;
+  min-width: 186px;
+  padding: 0 22px;
+  overflow: hidden;
+  color: var(--white);
+  background: linear-gradient(135deg, var(--orange-600), var(--orange-700));
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 9px;
+  font-weight: 900;
+  font-size: 14.5px;
+  line-height: 1.1;
+  white-space: nowrap;
+  box-shadow: 0 10px 24px rgba(216, 94, 13, 0.36);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+/* uzerine gelince gecen isik huzmesi */
+.bulkQuoteCampaignCta::after {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -70%;
+  width: 45%;
+  content: "";
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.42), transparent);
+  transform: skewX(-18deg);
+  pointer-events: none;
+}
+
+.bulkQuoteCampaignCta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 30px rgba(216, 94, 13, 0.46);
+}
+
+.bulkQuoteCampaignCta svg {
+  transition: transform 180ms ease;
+}
+
+.bulkQuoteCampaignCta:hover svg {
+  transform: translateX(4px);
+}
+
+.bulkQuoteCampaignCta:focus-visible {
+  outline: 3px solid #ffd8bb;
+  outline-offset: 3px;
+}
+
+/* ---- yerlesim varyantlari ---- */
+.bulkQuoteCampaign.home {
+  margin-top: 24px;
+}
+
+.bulkQuoteCampaign.home + .quickCategories {
+  padding-top: 36px;
+}
+
+.bulkQuoteCampaign.catalog {
+  margin-top: 22px;
+  margin-bottom: 22px;
+  padding: 22px 26px 22px 30px;
+}
+
+.bulkQuoteCampaign.catalog .bulkQuoteCampaignCopy > strong {
+  font-size: clamp(19px, 2vw, 24px);
+}
+
+.bulkQuoteCampaign.product {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  padding: 20px 20px 20px 24px;
+  box-shadow: 0 10px 26px rgba(9, 47, 42, 0.18);
+}
+
+.bulkQuoteCampaign.product .bulkQuoteCampaignGlow {
+  right: -140px;
+  width: 300px;
+  height: 300px;
+}
+
+.bulkQuoteCampaign.product .bulkQuoteCampaignCopy > strong {
+  max-width: none;
+  font-size: 19px;
+}
+
+.bulkQuoteCampaign.product .bulkQuoteCampaignCopy p {
+  font-size: 12.5px;
+}
+
+.bulkQuoteCampaign.product .bulkQuoteCampaignCta {
+  justify-self: start;
+  min-height: 46px;
+  min-width: 0;
+}
+
+/* ---- hareket ---- */
+@media (prefers-reduced-motion: no-preference) {
+  .bulkQuoteCampaignCopy,
+  .bulkQuoteCampaignTiers,
+  .bulkQuoteCampaignCta {
+    animation: bulkQuoteRise 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .bulkQuoteCampaignTiers {
+    animation-delay: 90ms;
+  }
+
+  .bulkQuoteCampaignCta {
+    animation-delay: 170ms;
+  }
+
+  .bulkQuoteCampaignTierBar {
+    animation: bulkQuoteGrow 640ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(240ms + var(--tier-index, 0) * 110ms);
+  }
+
+  .bulkQuoteCampaignCta::after {
+    animation: bulkQuoteSheen 4.5s ease-in-out 1.4s infinite;
+  }
+}
+
+@keyframes bulkQuoteRise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes bulkQuoteGrow {
+  from {
+    transform: scaleY(0.15);
+    opacity: 0.35;
+  }
+
+  to {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+@keyframes bulkQuoteSheen {
+  0%,
+  72% {
+    left: -70%;
+  }
+
+  92%,
+  100% {
+    left: 130%;
+  }
 }
 
 .detailTabs {
@@ -4919,8 +5151,44 @@ a.metricCard {
   object-position: center;
 }
 
+/* Yonlu gölge: metnin durdugu sol tarafta koyu, gorselin okundugu sagda seffaf.
+   Duz %20 kaplama yogun depo fotograflarinda beyaz metni zor okunur birakiyordu. */
 .homeHeroSlideShade {
-  background: rgba(4, 28, 24, 0.2);
+  background:
+    linear-gradient(
+      98deg,
+      rgba(4, 28, 24, 0.93) 0%,
+      rgba(4, 28, 24, 0.76) 30%,
+      rgba(4, 28, 24, 0.34) 55%,
+      rgba(4, 28, 24, 0.08) 78%,
+      rgba(4, 28, 24, 0.02) 100%
+    ),
+    linear-gradient(0deg, rgba(4, 28, 24, 0.34) 0%, transparent 42%);
+}
+
+/* kampanya slaydinda alt kenarda turuncu isik cizgisi */
+.homeHeroSlide.campaign .homeHeroSlideShade::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  content: "";
+  background: linear-gradient(90deg, var(--orange-600), rgba(249, 115, 22, 0.05));
+}
+
+.homeHeroSlide.campaign .homeHeroEyebrow {
+  padding: 6px 12px;
+  color: #ffd8bb;
+  background: rgba(249, 115, 22, 0.2);
+  border: 1px solid rgba(249, 115, 22, 0.5);
+  border-radius: 999px;
+  letter-spacing: 0.06em;
+}
+
+.homeHeroSlide.campaign .homeHeroSlideContent h1 {
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 20px rgba(4, 28, 24, 0.45);
 }
 
 .homeHeroSlideContent {
@@ -5353,12 +5621,17 @@ a.metricCard {
     display: none;
   }
 
+  /* tablette metin tam genislige gecer, raylar ve buton altta yan yana durur */
   .bulkQuoteCampaign {
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 20px;
+  }
+
+  .bulkQuoteCampaignCopy {
+    grid-column: 1 / -1;
   }
 
   .bulkQuoteCampaignCta {
-    grid-column: 1 / -1;
     justify-self: stretch;
   }
 
@@ -5528,10 +5801,11 @@ a.metricCard {
     display: none;
   }
 
-  .bulkQuoteCampaign {
-    gap: 12px;
-    min-height: 0;
-    padding: 18px;
+  .bulkQuoteCampaign,
+  .bulkQuoteCampaign.catalog {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+    padding: 20px 18px 20px 22px;
   }
 
   .bulkQuoteCampaign.home,
@@ -5543,22 +5817,36 @@ a.metricCard {
     margin-bottom: 16px;
   }
 
-  .bulkQuoteCampaignIcon {
-    width: 50px;
-    height: 50px;
+  .bulkQuoteCampaignCopy > strong,
+  .bulkQuoteCampaign.catalog .bulkQuoteCampaignCopy > strong {
+    max-width: none;
+    font-size: 19px;
   }
 
-  .bulkQuoteCampaignCopy > strong {
-    font-size: 18px;
+  .bulkQuoteCampaignGlow {
+    right: -170px;
   }
 
-  .bulkQuoteCampaign::after {
-    right: -4px;
-    top: 24px;
-    width: 74px;
-    height: 74px;
-    border-width: 16px;
-    transform: none;
+  /* dar ekranda raylar tam genislige yayilir, aciklama notu gizlenir */
+  .bulkQuoteCampaignTiers {
+    gap: 10px;
+    padding: 13px 14px 11px;
+  }
+
+  .bulkQuoteCampaignTiers > li {
+    flex: 1;
+  }
+
+  .bulkQuoteCampaignTierBar {
+    width: 100%;
+  }
+
+  .bulkQuoteCampaignTiers > li.bulkQuoteCampaignTierNote {
+    display: none;
+  }
+
+  .bulkQuoteCampaignCta {
+    justify-self: stretch;
   }
 
   .quickCategories {
