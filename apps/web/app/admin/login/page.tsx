@@ -35,10 +35,12 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: P
             Şifre
             <input name="password" type="password" autoComplete="current-password" required />
           </label>
-          <label>
-            Doğrulama kodu
-            <input name="totp" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} placeholder="000000" required={process.env.NODE_ENV === "production" || Boolean(process.env.ADMIN_TOTP_SECRET)} />
-          </label>
+          {process.env.ADMIN_TOTP_SECRET ? (
+            <label>
+              Doğrulama kodu
+              <input name="totp" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} placeholder="000000" required />
+            </label>
+          ) : null}
           <button className="btn btnPrimary" type="submit">
             <ShieldCheck size={18} aria-hidden="true" />
             Admin Girişi

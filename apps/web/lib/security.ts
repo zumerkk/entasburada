@@ -174,9 +174,11 @@ export function assertProductionSecurityConfiguration(): void {
   const passwordHash = process.env.ADMIN_PASSWORD_HASH?.trim() ?? "";
   if (!passwordHash && password.length < 16) throw new Error("Production admin parolası güvenlik politikasını karşılamıyor.");
   if (passwordHash && !passwordHash.startsWith("scrypt$")) throw new Error("ADMIN_PASSWORD_HASH biçimi geçersiz.");
+  // TOTP opsiyoneldir: secret tanımlıysa biçimi doğrulanır ve ikinci faktör zorunlu olur,
+  // tanımlı değilse giriş yalnızca e-posta + parola + hız sınırı ile korunur.
   const totpSecret = process.env.ADMIN_TOTP_SECRET?.trim() ?? "";
-  if (totpSecret.replace(/[\s=-]/g, "").length < 32 || /[^A-Z2-7\s=-]/i.test(totpSecret)) {
-    throw new Error("ADMIN_TOTP_SECRET production ortamında en az 160 bit geçerli base32 anahtar olmalıdır.");
+  if (totpSecret && (totpSecret.replace(/[\s=-]/g, "").length < 32 || /[^A-Z2-7\s=-]/i.test(totpSecret))) {
+    throw new Error("ADMIN_TOTP_SECRET tanımlandıysa en az 160 bit geçerli base32 anahtar olmalıdır.");
   }
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim() ?? "";
   try {

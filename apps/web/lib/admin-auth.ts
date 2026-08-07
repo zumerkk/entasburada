@@ -30,7 +30,7 @@ export function verifyAdminCredentials(email: string, password: string, totpCode
     ? verifyPassword(password, configuredHash)
     : constantTimeEqual(password, configuredPassword);
   const totpSecret = process.env.ADMIN_TOTP_SECRET?.trim() ?? "";
-  const totpMatches = totpSecret ? verifyTotp(totpCode, totpSecret) : process.env.NODE_ENV !== "production";
+  const totpMatches = totpSecret ? verifyTotp(totpCode, totpSecret) : true;
   return emailMatches && passwordMatches && totpMatches;
 }
 
