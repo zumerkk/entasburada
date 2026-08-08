@@ -48,7 +48,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
         <div>
           <span className="eyebrow dark">Ürün kataloğu</span>
           <h1>Tüm kategoriler ve teknik ürün listesi</h1>
-          <p>{products.total.toLocaleString("tr-TR")} ürün listeleniyor. {customer ? `${customer.companyName} için özel bayi fiyatları uygulanıyor.` : "Fiyat, indirim, sepet ve ödeme aksiyonları yalnızca onaylı bayi hesaplarında açılır."}</p>
+          <p>{products.total.toLocaleString("tr-TR")} ürün listeleniyor. {customer ? `${customer.companyName} hesabında herkes için geçerli ortak marka fiyatları gösteriliyor.` : "Fiyat, sepet ve ödeme aksiyonları yalnızca onaylı bayi hesaplarında açılır."}</p>
         </div>
         <a className="btn btnSecondary" href="/dealer-application">
           Bayi Başvurusu
@@ -138,7 +138,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
           </div>
           <div className="activeFilters">
             <StatusPill tone="info">Stok görünümü: durum bazlı</StatusPill>
-            <StatusPill tone={customer ? "success" : "warning"}>{customer ? `Fiyat görünümü: ${customer.segment} bayi` : "Fiyat görünümü: bayi girişi gerekli"}</StatusPill>
+            <StatusPill tone={customer ? "success" : "warning"}>{customer ? "Fiyat görünümü: ortak, KDV dahil" : "Fiyat görünümü: bayi girişi gerekli"}</StatusPill>
             {q ? <StatusPill tone="neutral">Arama: {q}</StatusPill> : null}
             {category ? <StatusPill tone="neutral">Kategori: {category}</StatusPill> : null}
             {group ? <StatusPill tone="neutral">Grup: {products.appliedCategoryLabel ?? group}</StatusPill> : null}
@@ -162,6 +162,8 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
                   price={product.price}
                   listPrice={product.listPrice}
                   discountRate={product.discountRate}
+                  priceLabel={product.priceLabel}
+                  priceUnavailableMessage={product.priceUnavailableMessage}
                   cartAction={
                     <AddToCartControl
                       slug={product.slug}

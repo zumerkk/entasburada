@@ -20,16 +20,20 @@ export interface PriceGateProps {
   price?: string | undefined;
   listPrice?: string | undefined;
   discountRate?: string | undefined;
+  priceLabel?: string | undefined;
+  unavailableMessage?: string | undefined;
   compact?: boolean | undefined;
 }
 
-export function PriceGate({ isApprovedDealer, price, listPrice, discountRate, compact = false }: PriceGateProps) {
+export function PriceGate({ isApprovedDealer, price, listPrice, discountRate, priceLabel, unavailableMessage, compact = false }: PriceGateProps) {
   if (isApprovedDealer && price) {
     return (
       <div className={compact ? "priceBlock compact" : "priceBlock"}>
         {listPrice ? <span className="listPrice">{listPrice}</span> : null}
         <strong>{price}</strong>
         {discountRate ? <span className="discount">{discountRate} iskonto</span> : null}
+        {!discountRate && priceLabel ? <span className="priceQualifier">{priceLabel}</span> : null}
+        <small className="taxIncluded">KDV dahil</small>
       </div>
     );
   }
@@ -39,7 +43,7 @@ export function PriceGate({ isApprovedDealer, price, listPrice, discountRate, co
       <div className={compact ? "priceGate compact" : "priceGate"}>
         <div className="priceGateTitle">
           <FileText size={16} aria-hidden="true" />
-          <span>Fiyat için temsilcinizle iletişime geçin.</span>
+          <span>{unavailableMessage || "Fiyat için temsilcinizle iletişime geçin."}</span>
         </div>
       </div>
     );
@@ -95,6 +99,8 @@ export interface ProductCardProps {
   price?: string | undefined;
   listPrice?: string | undefined;
   discountRate?: string | undefined;
+  priceLabel?: string | undefined;
+  priceUnavailableMessage?: string | undefined;
   cartAction?: ReactNode | undefined;
 }
 
@@ -128,6 +134,8 @@ export function ProductCard(props: ProductCardProps) {
           price={props.price}
           listPrice={props.listPrice}
           discountRate={props.discountRate}
+          priceLabel={props.priceLabel}
+          unavailableMessage={props.priceUnavailableMessage}
           compact
         />
         <div className="productActions">

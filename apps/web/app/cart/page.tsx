@@ -1,4 +1,4 @@
-import { AlertTriangle, ArrowLeft, CreditCard, FileText, RotateCcw, ShoppingCart, Trash2 } from "lucide-react";
+import { AlertTriangle, ArrowLeft, CreditCard, FileText, RotateCcw, ShoppingCart, Trash2, Truck } from "lucide-react";
 import { EmptyState, StatusPill } from "@entas/ui";
 import { CartQuantityField } from "../../components/CartQuantityField";
 import { loadPricedCart } from "../../lib/cart-repository";
@@ -38,7 +38,7 @@ export default async function CartPage({ searchParams }: { searchParams: Promise
         <div>
           <span className="eyebrow dark">Bayi sepeti</span>
           <h1>{customer.companyName}</h1>
-          <p>Sepetteki ürünler müşteri özel fiyat kurallarınızla hesaplanır.</p>
+          <p>Sepetteki ürünler herkes için geçerli ortak marka fiyatlarıyla, KDV dahil hesaplanır.</p>
         </div>
         <div className="pageIntroActions">
           <a className="btn btnGhost dark" href="/catalog">
@@ -57,16 +57,16 @@ export default async function CartPage({ searchParams }: { searchParams: Promise
               <div className="panelHeader">
                 <div>
                   <h2>{cart.items.length.toLocaleString("tr-TR")} sepet satırı</h2>
-                  <p>Toplam: {cart.displayTotal}</p>
+                  <p>KDV dahil toplam: {cart.displayTotal}</p>
                 </div>
-                <StatusPill tone="success">{customer.segment} bayi fiyatı</StatusPill>
+                <StatusPill tone="success">Ortak marka fiyatı</StatusPill>
               </div>
               <div className="commercialTable">
                 <div className="commercialTableHead cartItemRows">
                   <span>Ürün</span>
                   <span>Adet</span>
                   <span>Birim fiyat</span>
-                  <span>İskonto</span>
+                  <span>Fiyat kuralı</span>
                   <span>Tutar</span>
                   <span>İşlem</span>
                 </div>
@@ -86,8 +86,11 @@ export default async function CartPage({ searchParams }: { searchParams: Promise
                       <input type="hidden" name="itemId" value={item.id} />
                       <CartQuantityField name={`quantity:${item.id}`} initialValue={item.quantity} minOrder={item.minOrder} unit={item.unit} />
                     </span>
-                    <span>{item.priceAvailable ? item.displayUnitPrice : <strong className="pricePending">Fiyat teyidi</strong>}</span>
-                    <span>{item.discountRate ?? "-"}</span>
+                    <span>
+                      {item.priceAvailable ? item.displayUnitPrice : <strong className="pricePending">{item.priceUnavailableMessage ? "Fiyat bilgisi verilmiyor" : "Fiyat teyidi"}</strong>}
+                      {item.priceAvailable ? <small>KDV dahil</small> : item.priceUnavailableMessage ? <small>{item.priceUnavailableMessage}</small> : null}
+                    </span>
+                    <span>{item.discountRate ? `${item.discountRate} iskonto` : item.priceLabel ?? "-"}</span>
                     <span>{item.priceAvailable ? item.displayLineTotal : "-"}</span>
                     <span>
                       <button className="cartRemoveButton" type="submit" formAction={removeCartItemAction.bind(null, item.id)}>
@@ -114,10 +117,20 @@ export default async function CartPage({ searchParams }: { searchParams: Promise
               <div className="cartCurrencyTotals">
                 {cart.totals.map((total) => (
                   <div key={total.currency}>
-                    <span>{total.currency} toplamı</span>
+                    <span>{total.currency} KDV dahil toplamı</span>
                     <strong>{total.displayTotal}</strong>
+                    <small>
+                      Dahil KDV: {cart.includedTaxTotals.find((tax) => tax.currency === total.currency)?.displayTotal ?? "-"}
+                    </small>
                   </div>
                 ))}
+              </div>
+              <div className={`cartAlert ${cart.qualifiesForFreeShipping ? "success" : "info"}`}>
+                <Truck size={18} aria-hidden="true" />
+                <span>
+                  <strong>{cart.shippingMessage}</strong>
+                  {!cart.qualifiesForFreeShipping ? ` ${cart.displayFreeShippingThreshold} üzeri kargo bizden.` : null}
+                </span>
               </div>
               {cart.orderBlockReason ? (
                 <div className="cartAlert warning">

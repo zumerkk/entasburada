@@ -24,7 +24,7 @@ export default async function DealerApplicationPage({ searchParams }: { searchPa
             <h1>Bayi başvurunuz bize ulaştı</h1>
             <p>
               Başvuru numaranız <strong>{submittedReference}</strong>. Ekibimiz firma bilgilerinizi inceledikten sonra
-              bayi kodu, fiyat grubu, iskonto grubu, vade ve satış temsilcisi ataması yaparak sizinle iletişime geçer.
+              bayi kodu, vade ve satış temsilcisi ataması yaparak sizinle iletişime geçer. Fiyatlar bütün onaylı hesaplarda aynıdır.
             </p>
           </div>
           <div className="introChecklist">
@@ -60,8 +60,8 @@ export default async function DealerApplicationPage({ searchParams }: { searchPa
           <span className="eyebrow dark">Bayi başvurusu</span>
           <h1>Onaylı bayi hesabı oluşturun</h1>
           <p>
-            Başvurunuz incelendikten sonra bayi kodu, fiyat grubu, iskonto grubu, vade ve satış temsilcisi
-            ataması yapılır.
+            Başvurunuz incelendikten sonra bayi kodu, vade ve satış temsilcisi ataması yapılır. Bütün onaylı
+            hesaplarda aynı KDV dahil marka fiyatları uygulanır.
           </p>
         </div>
         <div className="introChecklist">

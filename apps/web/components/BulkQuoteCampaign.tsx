@@ -1,4 +1,4 @@
-import { ArrowRight, BadgePercent, Boxes, Layers, Truck } from "lucide-react";
+import { ArrowRight, Boxes, FileText, Layers, Truck } from "lucide-react";
 
 interface BulkQuoteCampaignProps {
   variant: "home" | "catalog" | "product";
@@ -9,9 +9,8 @@ interface BulkQuoteCampaignProps {
   };
 }
 
-// Hacim basamaklari: yuzde oranlari kasitli olarak yok — gercek indirim orani
-// teklife gore belirlendigi icin sayi yazmak yaniltici olurdu. Bunun yerine
-// "hacim arttikca fiyat duser" iliskisi gorsel olarak anlatiliyor.
+// Teklif akışı fiyatı kişiselleştirmez; toplu ürünlerin stok, paketleme ve
+// sevkiyat planını tek talepte netleştirir.
 const TIERS = [
   { id: "koli", label: "Koli", Icon: Boxes },
   { id: "palet", label: "Palet", Icon: Layers },
@@ -33,22 +32,22 @@ export function BulkQuoteCampaign({ variant, product }: BulkQuoteCampaignProps) 
 
       <div className="bulkQuoteCampaignCopy">
         <span className="bulkQuoteCampaignEyebrow">
-          <BadgePercent size={14} aria-hidden="true" />
-          Toplu alıma özel fiyat
+          <FileText size={14} aria-hidden="true" />
+          Toplu alım teklifi
         </span>
         <strong>
-          Toplu alımlarda teklif oluşturun,{" "}
-          <em>indirimli fiyatlarla</em> alışveriş yapın
+          Toplu alımlarda ürünleri tek teklifte toplayın,{" "}
+          <em>sevkiyatı birlikte planlayın</em>
         </strong>
         <p>
           {product
-            ? "Bu ürünü koli, palet veya proje adediyle alacaksanız teklif oluşturun; miktarınıza özel fiyatı birlikte belirleyelim."
-            : "Koli, palet veya proje ihtiyaçlarınızı tek teklifte toplayın; alım miktarınıza özel fiyatı birlikte belirleyelim."}
+            ? "Bu ürünü koli, palet veya proje adediyle alacaksanız ortak fiyatla teklif oluşturun; stok ve sevkiyat koşullarını netleştirelim."
+            : "Koli, palet veya proje ihtiyaçlarınızı ortak fiyatlarla tek teklifte toplayın; stok ve sevkiyat koşullarını netleştirelim."}
         </p>
       </div>
 
       {variant === "product" ? null : (
-        <ol className="bulkQuoteCampaignTiers" aria-label="Alım hacmi arttıkça fiyat avantajı artar">
+        <ol className="bulkQuoteCampaignTiers" aria-label="Koli, palet ve proje teklif seçenekleri">
           {TIERS.map((tier, index) => (
             <li key={tier.id} style={{ "--tier-index": index } as React.CSSProperties}>
               <span className="bulkQuoteCampaignTierBar" aria-hidden="true" />
@@ -60,7 +59,7 @@ export function BulkQuoteCampaign({ variant, product }: BulkQuoteCampaignProps) 
           ))}
           <li className="bulkQuoteCampaignTierNote" aria-hidden="true">
             hacim arttıkça
-            <strong>fiyat düşer</strong>
+            <strong>planlama kolaylaşır</strong>
           </li>
         </ol>
       )}

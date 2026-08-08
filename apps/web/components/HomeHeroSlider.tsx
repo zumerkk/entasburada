@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
-  BadgePercent,
   ChevronLeft,
   ChevronRight,
   Droplets,
@@ -27,16 +26,16 @@ interface HomeHeroSliderProps {
 const SLIDES = [
   {
     id: "bulk-quote-campaign",
-    eyebrow: "Toplu alıma özel indirim fırsatı",
-    title: "Toplu alımlarda teklif oluşturun, indirimli fiyatlarla alışveriş yapın",
-    body: "Koli, palet ve proje ihtiyaçlarınızı tek teklifte toplayın; alım miktarınıza özel avantajlı fiyatımızı alın.",
+    eyebrow: "Toplu alım ve sevkiyat planı",
+    title: "Toplu alımlarda ürünleri tek teklifte toplayın",
+    body: "Koli, palet ve proje ihtiyaçlarınızı ortak fiyatlarla tek teklifte toplayın; stok ve sevkiyat koşullarını netleştirin.",
     image: "/images/industrial-hero.png",
     href: "/quote",
     cta: "Teklif Oluştur",
     secondaryHref: "/catalog",
     secondaryCta: "Ürünleri İncele",
     accent: "campaign",
-    Icon: BadgePercent,
+    Icon: FileText,
     ActionIcon: FileText,
     SecondaryIcon: PackageSearch
   },
@@ -44,7 +43,7 @@ const SLIDES = [
     id: "professional-supply",
     eyebrow: "B2B hırdavat ve endüstriyel tedarik",
     title: "Profesyonellerin tedarik merkezi",
-    body: "Binlerce teknik ürünü, bayi fiyatını, stok durumunu ve teklif akışını tek ekranda yönetin.",
+    body: "Binlerce teknik ürünü, ortak KDV dahil fiyatları, stok durumunu ve teklif akışını tek ekranda yönetin.",
     image: "/images/hero-tools-v2.webp",
     href: "/catalog",
     cta: "Ana kataloğu aç",
@@ -171,7 +170,7 @@ export function HomeHeroSlider({ metrics }: HomeHeroSliderProps) {
                   </div>
                   <div className="homeHeroMetrics" aria-label="Platform göstergeleri">
                     <span><strong>{metrics.activeProducts}</strong> aktif ürün</span>
-                    <span><strong>{metrics.pricedProducts}</strong> bayi fiyatı</span>
+                    <span><strong>{metrics.pricedProducts}</strong> ortak fiyat</span>
                     <span><strong>{metrics.stockedProducts}</strong> stok görünümü</span>
                   </div>
                 </article>

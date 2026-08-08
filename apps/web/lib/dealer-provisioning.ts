@@ -21,7 +21,6 @@ export interface DirectDealerAccountInput {
   city: string;
   deliveryAddress: string;
   segment?: CustomerAccount["segment"] | undefined;
-  baseDiscountRate?: number | undefined;
   temporaryPassword?: string | undefined;
   sendWelcomeEmail?: boolean | undefined;
 }
@@ -61,6 +60,7 @@ export async function provisionDealerAccount(application: DealerApplication): Pr
     deliveryAddress: application.deliveryAddress,
     status: "approved",
     segment: "standard",
+    ...dealerProfile("standard"),
     baseDiscountRate: 0,
     brandDiscounts: {},
     categoryDiscounts: {},
@@ -100,7 +100,7 @@ export async function provisionDirectDealerAccount(input: DirectDealerAccountInp
     status: "approved",
     segment,
     ...profile,
-    baseDiscountRate: input.baseDiscountRate ?? profile.baseDiscountRate,
+    baseDiscountRate: 0,
     brandDiscounts: {},
     categoryDiscounts: {},
     specialNetPrices: {},
@@ -129,7 +129,7 @@ function buildWelcomeEmail(application: DealerApplication, tempPassword: string)
       <tr><td style="padding:6px 12px;background:#f3f7f5">Geçici şifre</td><td style="padding:6px 12px"><code>${escapeHtml(tempPassword)}</code></td></tr>
     </table>
     <p>Güvenliğiniz için ilk girişten sonra <strong>Hesabım</strong> sayfasından şifrenizi değiştirmenizi öneririz.</p>
-    <p>Bayi fiyatlarınız, iskonto grubunuz ve satış temsilciniz hesabınıza tanımlanmıştır. Sorularınız için: ${COMPANY_CONTACT.technicalSupportPhone}</p>
+    <p>Tüm onaylı hesaplarda aynı marka fiyatları uygulanır; fiyatlar KDV dahildir. 10.000 TL ve üzeri siparişlerde kargo bizden. Sorularınız için: ${COMPANY_CONTACT.technicalSupportPhone}</p>
     <p style="color:#6b7c76;font-size:13px">ENTAŞBURADA — Türkiye'nin Yapı Marketi</p>
   </div>`;
 }
@@ -146,6 +146,7 @@ function buildDirectWelcomeEmail(account: CustomerAccount, tempPassword: string)
       <tr><td style="padding:6px 12px;background:#f3f7f5">Geçici şifre</td><td style="padding:6px 12px"><code>${escapeHtml(tempPassword)}</code></td></tr>
     </table>
     <p>Güvenliğiniz için ilk girişten sonra <strong>Hesabım</strong> sayfasından şifrenizi değiştirmenizi öneririz.</p>
+    <p>Tüm onaylı hesaplarda aynı marka fiyatları uygulanır; fiyatlar KDV dahildir. 10.000 TL ve üzeri siparişlerde kargo bizden.</p>
     <p>Sorularınız için: ${COMPANY_CONTACT.technicalSupportPhone}</p>
     <p style="color:#6b7c76;font-size:13px">ENTAŞBURADA — Türkiye'nin Yapı Marketi</p>
   </div>`;
@@ -174,10 +175,10 @@ export function dealerProfile(segment: CustomerAccount["segment"]): Pick<
       paymentTermDays: 21,
       creditLimit: "250000",
       approvalLimit: "100000",
-      freeShippingThreshold: "7500",
+      freeShippingThreshold: "10000",
       priorityLevel: 2,
       perks: ["Öncelikli teklif dönüşü", "Kısmi sevkiyat planlama", "Stok ayırma önceliği"],
-      baseDiscountRate: 18
+      baseDiscountRate: 0
     };
   }
   if (segment === "project") {
@@ -189,10 +190,10 @@ export function dealerProfile(segment: CustomerAccount["segment"]): Pick<
       paymentTermDays: 45,
       creditLimit: "750000",
       approvalLimit: "300000",
-      freeShippingThreshold: "0",
+      freeShippingThreshold: "10000",
       priorityLevel: 3,
       perks: ["Proje bazlı vade", "Ayrılmış stok planı", "Hızlandırılmış sevkiyat"],
-      baseDiscountRate: 22
+      baseDiscountRate: 0
     };
   }
   return {
@@ -203,10 +204,10 @@ export function dealerProfile(segment: CustomerAccount["segment"]): Pick<
     paymentTermDays: 7,
     creditLimit: "75000",
     approvalLimit: "25000",
-    freeShippingThreshold: "15000",
+    freeShippingThreshold: "10000",
     priorityLevel: 1,
     perks: ["Bayi fiyatları", "CSV hızlı sipariş", "Teklif takibi", "Standart sevkiyat planı"],
-    baseDiscountRate: 12
+    baseDiscountRate: 0
   };
 }
 

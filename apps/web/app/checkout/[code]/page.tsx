@@ -9,6 +9,7 @@ import { installmentOptions } from "../../../lib/installments";
 import { isDirectPostEnabled } from "../../../lib/payment/ziraatpay";
 import { InstallmentSelector } from "../../../components/InstallmentSelector";
 import { PayNowButton } from "../../../components/PayNowButton";
+import { FREE_SHIPPING_THRESHOLD_TRY } from "../../../lib/commercial-policy";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +36,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ code:
   }
 
   const orderCurrency = normalizeCurrencyCode(order.currency);
+  const hasFreeShipping = orderCurrency === "TRY" && parseAmount(order.totalAmount) >= FREE_SHIPPING_THRESHOLD_TRY;
   const alreadyPaid = order.paymentStatus?.toLowerCase().includes("ödendi");
   // DirectPost açıkken taksit seçimi (vade farkıyla) burada yapılır ve kilitlenir.
   // Kapalıyken tek ekran: ana tutar onaylanır, taksidi müşteri ZiraatPay'de seçer.
@@ -110,7 +112,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ code:
 
           <div className="checkoutSummaryRows">
             <div>
-              <span>Sipariş tutarı</span>
+              <span>Sipariş tutarı (KDV dahil)</span>
               <strong>
                 {order.totalAmount} {orderCurrency}
               </strong>
@@ -128,6 +130,10 @@ export default async function CheckoutPage({ params }: { params: Promise<{ code:
               </>
             ) : null}
             <div>
+              <span>Kargo</span>
+              <strong>{hasFreeShipping ? "Bizden" : "Sipariş onayında belirlenir"}</strong>
+            </div>
+            <div>
               <span>Ürün sayısı</span>
               <strong>{order.items.length}</strong>
             </div>
@@ -144,6 +150,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ code:
                 </span>
                 <span>
                   {item.lineTotal} {item.currency}
+                  <small>KDV dahil</small>
                 </span>
               </div>
             ))}

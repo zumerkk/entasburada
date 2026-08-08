@@ -8,6 +8,7 @@ import { convertToTry, normalizeCurrencyCode } from "../../../lib/fx";
 import { installmentOptions } from "../../../lib/installments";
 import { getCurrentCustomer } from "../../../lib/customer-auth";
 import { canAccessCommercialRecord } from "../../../lib/commercial-access";
+import { FREE_SHIPPING_THRESHOLD_TRY } from "../../../lib/commercial-policy";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +36,7 @@ export default async function OrderTrackingPage({
 
   const trackingUrl = buildTrackingUrl(order.carrier, order.trackingNumber);
   const carrierLabel = getCarrier(order.carrier)?.label;
+  const hasFreeShipping = normalizeCurrencyCode(order.currency) === "TRY" && parseAmount(order.totalAmount) >= FREE_SHIPPING_THRESHOLD_TRY;
 
   // Tahsilat TRY yapılır. USD/EUR sipariş için TCMB kuruyla çevrilen tutarı ve
   // taksit seçeneklerini hazırla. Kur alınamazsa ödeme gösterilmez (yanlış tutar riski).
@@ -100,10 +102,14 @@ export default async function OrderTrackingPage({
               <strong>{order.shipmentStatus}</strong>
             </div>
             <div>
-              <span>Toplam</span>
+              <span>KDV dahil toplam</span>
               <strong>
                 {order.totalAmount} {order.currency}
               </strong>
+            </div>
+            <div>
+              <span>Kargo</span>
+              <strong>{hasFreeShipping ? "Bizden" : "Sipariş onayında belirlenir"}</strong>
             </div>
             {order.trackingNumber ? (
               <div className="spanTwo">
@@ -169,6 +175,7 @@ export default async function OrderTrackingPage({
                 </span>
                 <span>
                   {item.unitPrice} {item.currency}
+                  <small>KDV dahil</small>
                 </span>
                 <span>
                   {item.lineTotal} {item.currency}

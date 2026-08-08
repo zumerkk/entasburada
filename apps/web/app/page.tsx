@@ -8,7 +8,7 @@ import { getCurrentCustomer } from "../lib/customer-auth";
 import { sectors } from "../data/catalog";
 
 const trustItems = [
-  { title: "Bayiye özel fiyat", body: "Fiyatlar yalnızca onaylı hesaplarda açılır." },
+  { title: "Herkese aynı fiyat", body: "Onaylı hesaplarda ortak marka fiyatları uygulanır." },
   { title: "Hızlı sipariş", body: "SKU, barkod veya Excel ile toplu sipariş altyapısı." },
   { title: "Teknik destek", body: "Ürün, alternatif ve doküman desteği tek merkezde." },
   { title: "Sevkiyat takibi", body: "Depo, teslimat ve sipariş durumu izlenebilir." }
@@ -69,8 +69,8 @@ export default async function HomePage() {
           <span className="eyebrow dark">Bayi kampanyaları</span>
           <h2>Koli, palet ve proje bazlı teklif akışları hazır</h2>
           <p>
-            Ürün fiyatı görünmeden de teknik detay, stok durumu ve teklif talebi çalışır. Fiyatlandırma onaylı
-            bayi hesabına göre açılır.
+            Ürün fiyatı görünmeden de teknik detay, stok durumu ve teklif talebi çalışır. Ortak marka fiyatları
+            onaylı bayi hesabında açılır ve KDV dahildir.
           </p>
         </div>
         <a className="btn btnPrimary" href="/quote">
@@ -107,6 +107,8 @@ export default async function HomePage() {
               price={product.price}
               listPrice={product.listPrice}
               discountRate={product.discountRate}
+              priceLabel={product.priceLabel}
+              priceUnavailableMessage={product.priceUnavailableMessage}
               cartAction={
                 <AddToCartControl
                   slug={product.slug}
@@ -148,7 +150,7 @@ export default async function HomePage() {
         <div className="opItem">
           <Gauge size={22} aria-hidden="true" />
           <strong>Fiyat motoru</strong>
-          <span>Müşteri, segment, marka, kategori, miktar ve teklif önceliği testlenebilir yapıdadır.</span>
+          <span>Bütün müşterilerde aynı marka kuralı uygulanır; müşteriye özel iskonto yoktur.</span>
         </div>
         <div className="opItem">
           <Truck size={22} aria-hidden="true" />

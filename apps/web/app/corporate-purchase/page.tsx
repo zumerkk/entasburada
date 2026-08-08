@@ -17,8 +17,8 @@ export default function CorporatePurchasePage() {
           bullets: ["Satır bazlı adet ve birim", "Hedef fiyat notu", "Proje kodu ve teslimat şehri"]
         },
         {
-          title: "Müşteriye özel fiyat",
-          description: "Bayi segmenti, marka, kategori, miktar ve proje koşullarına göre fiyat kuralları uygulanır."
+          title: "Ortak marka fiyatı",
+          description: "Bayi segmentinden bağımsız aynı KDV dahil marka fiyatları uygulanır; müşteriye özel iskonto yoktur."
         },
         {
           title: "Onay ve takip",

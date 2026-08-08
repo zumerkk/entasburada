@@ -16,6 +16,10 @@ export default function DeliveryPage() {
           description: "Onaylanan sipariş için stok ayrılır, depo hazırlığı başlatılır ve sevkiyat planı oluşturulur."
         },
         {
+          title: "Ücretsiz kargo baremi",
+          description: "KDV dahil ürün toplamı 10.000 TL ve üzeri olan siparişlerde kargo ücreti ENTAŞBURADA tarafından karşılanır."
+        },
+        {
           title: "Kısmi sevkiyat",
           description: "Çok kalemli siparişlerde stok durumuna göre kısmi teslimat planı satış ekibiyle netleştirilebilir."
         },
@@ -28,7 +32,7 @@ export default function DeliveryPage() {
           description: "Teslimat sırasında koli ve ürünleri kontrol edin; hasar veya eksikliği sipariş numarasıyla destek ekibine bildirin."
         }
       ]}
-      notice="Kargo firması, ücret ve tahmini teslim süresi ürün hacmi, depo ve teslimat adresine göre sipariş onayında kesinleşir."
+      notice="10.000 TL altındaki siparişlerin kargo ücreti; ürün hacmi, depo ve teslimat adresine göre sipariş onayında kesinleşir."
     />
   );
 }

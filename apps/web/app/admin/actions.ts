@@ -426,7 +426,7 @@ const DEALER_SEGMENTS: CustomerSegment[] = ["standard", "industrial", "project"]
 
 /**
  * Mevcut bir bayinin firma adı / yetkili / segment (kademe) bilgisini günceller.
- * Segment değişince tam tier profili (iskonto, kredi, perks...) otomatik uygulanır.
+ * Segment değişince fiyatı etkilemeyen bayi hizmet profili otomatik uygulanır.
  */
 export async function updateDealerAccountAction(formData: FormData): Promise<void> {
   await requireAdmin();
@@ -444,7 +444,7 @@ export async function updateDealerAccountAction(formData: FormData): Promise<voi
     ...(companyName ? { companyName } : {}),
     ...(authorizedPerson ? { authorizedPerson } : {}),
     segment,
-    // Segmentin tam kademe profili (tierName/tierRank/iskonto/kredi/perks...) tutarlı uygulanır.
+    // Segment hizmet/vade profilini değiştirir; ortak marka fiyatı bütün müşterilerde aynıdır.
     ...dealerProfile(segment)
   });
 

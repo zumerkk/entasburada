@@ -5,9 +5,9 @@ import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { toPublicProduct, type CatalogProductRecord } from "@entas/catalog";
 import { loadCatalogStore } from "./catalog-repository";
-import { MAX_CART_LINES, normalizeCartQuantity, summarizeCartPricing, type CartCurrencyTotal } from "./cart-policy";
+import { MAX_CART_LINES, normalizeCartQuantity, summarizeCartPricing, type CartPricingPolicy } from "./cart-policy";
 import type { CustomerAccount } from "./customer-auth";
-import { formatMoney, money, parseMoney, priceProductForCustomer } from "./customer-pricing";
+import { formatMoney, money, parseMoney, priceProductForCustomer, priceUnavailableMessage } from "./customer-pricing";
 
 export interface CartItemInput {
   productSlug?: string | undefined;
@@ -48,21 +48,21 @@ export interface PricedCartItem extends CartItem {
   priceAvailable: boolean;
   discountRate?: string;
   priceRuleLabel?: string;
+  priceLabel?: string;
+  priceUnavailableMessage?: string;
+  taxRate: number;
+  includedTaxAmount: string;
+  displayIncludedTax: string;
   currency: string;
 }
 
-export interface CartSummary {
+export interface CartSummary extends CartPricingPolicy {
   customerId: string;
   updatedAt: string;
   items: PricedCartItem[];
   totalAmount: string;
   displayTotal: string;
   currency: string;
-  totals: CartCurrencyTotal[];
-  currencies: string[];
-  unpricedItemCount: number;
-  canCreateOrder: boolean;
-  orderBlockReason?: string;
 }
 
 const rootDir = findWorkspaceRoot(process.cwd());
@@ -240,6 +240,7 @@ function priceCartItem(item: CartItem, customer: CustomerAccount, products: Cata
   const price = product ? priceProductForCustomer(product, customer) : null;
   const unitPrice = price ? parseMoney(price.unitNetPrice) : 0;
   const lineTotal = unitPrice * item.quantity;
+  const includedTaxAmount = price ? parseMoney(price.includedTaxAmount) * item.quantity : 0;
 
   return stripUndefined({
     ...item,
@@ -259,6 +260,11 @@ function priceCartItem(item: CartItem, customer: CustomerAccount, products: Cata
     priceAvailable: Boolean(price && unitPrice > 0),
     discountRate: price?.discountRate,
     priceRuleLabel: price?.ruleLabel,
+    priceLabel: price?.priceLabel,
+    priceUnavailableMessage: product ? priceUnavailableMessage(product) : undefined,
+    taxRate: Number(product?.taxRate.replace(",", ".")) || 0,
+    includedTaxAmount: money(includedTaxAmount),
+    displayIncludedTax: formatMoney(includedTaxAmount, currency),
     currency
   }) as PricedCartItem;
 }

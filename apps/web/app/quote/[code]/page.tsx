@@ -56,7 +56,7 @@ export default async function QuoteTrackingPage({ params, searchParams }: { para
               <strong>{quote.authorizedPerson}</strong>
             </div>
             <div>
-              <span>Toplam</span>
+              <span>KDV dahil toplam</span>
               <strong>
                 {quote.totalAmount} {quote.currency}
               </strong>
@@ -84,7 +84,10 @@ export default async function QuoteTrackingPage({ params, searchParams }: { para
                   {item.quantity} {item.unit}
                 </span>
                 <span>{item.targetPrice ? `${item.targetPrice} ${item.currency}` : "-"}</span>
-                <span>{item.quotedUnitPrice ? `${item.quotedUnitPrice} ${item.currency}` : "Fiyat bekleniyor"}</span>
+                <span>
+                  {item.quotedUnitPrice ? `${item.quotedUnitPrice} ${item.currency}` : "Fiyat bekleniyor"}
+                  {item.quotedUnitPrice ? <small>KDV dahil</small> : null}
+                </span>
               </div>
             ))}
           </div>

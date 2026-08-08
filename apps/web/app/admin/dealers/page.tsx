@@ -79,7 +79,7 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
         <div className="panelHeader compact">
           <div>
             <h2>{visibleCustomers.length.toLocaleString("tr-TR")} bayi hesabı</h2>
-            <small>Onaylı hesaplar, fiyat segmentleri ve iletişim bilgileri</small>
+            <small>Onaylı hesaplar, ortak fiyat politikası ve iletişim bilgileri</small>
           </div>
         </div>
         {visibleCustomers.length === 0 ? (
@@ -91,7 +91,7 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
               <span>İletişim</span>
               <span>Konum</span>
               <span>Segment</span>
-              <span>İskonto</span>
+              <span>Fiyat</span>
               <span>Durum</span>
             </div>
             {visibleCustomers.map((customer) => (
@@ -113,7 +113,10 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
                     <strong>{customer.tierName ?? segmentLabel(customer.segment)}</strong>
                     <small>{customer.tierRank ?? segmentLabel(customer.segment)}</small>
                   </span>
-                  <strong>%{customer.baseDiscountRate}</strong>
+                  <span>
+                    <strong>Ortak</strong>
+                    <small>Müşteri iskontosu %0</small>
+                  </span>
                   <StatusPill tone={customer.status === "approved" ? "success" : customer.status === "suspended" ? "danger" : "warning"}>
                     {customer.status === "approved" ? "Aktif" : customer.status === "suspended" ? "Askıda" : "Beklemede"}
                   </StatusPill>

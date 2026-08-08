@@ -14,12 +14,12 @@ export default function ContactPage() {
       sections={[
         {
           title: "Satış ve teklif",
-          description: "Proje listeleri, toplu satın alma ve müşteriye özel fiyat talepleri için teklif akışını kullanın.",
+          description: "Proje listeleri ve toplu satın alma ihtiyaçlarında ortak fiyatlı teklif akışını kullanın; stok ve sevkiyat koşullarını netleştirin.",
           bullets: [COMPANY_CONTACT.supportEmail, "Pazartesi-Cuma 09.00-18.00", "Teklif taleplerinde ürün kodu ve adet bilgisi"]
         },
         {
           title: "Bayi operasyonu",
-          description: "Hesap onayı, fiyat grubu, teslimat adresi ve kullanıcı erişimi konularında bayi bilgilerinizi iletin.",
+          description: "Hesap onayı, ortak marka fiyatları, teslimat adresi ve kullanıcı erişimi konularında bayi bilgilerinizi iletin.",
           bullets: ["Firma unvanı ve vergi numarası", "Yetkili kişi ve telefon", "Bayi kodu varsa başvuruya ekleyin"]
         },
         {

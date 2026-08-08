@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { CatalogProductRecord } from "@entas/catalog";
 import type { CustomerAccount } from "./customer-auth";
-import { priceProductForCustomer } from "./customer-pricing";
+import { priceProductForCustomer, priceUnavailableMessage } from "./customer-pricing";
 
 const product: CatalogProductRecord = {
   id: "product-1",
@@ -10,10 +10,10 @@ const product: CatalogProductRecord = {
   externalId: "1",
   sku: "JL4304A",
   slug: "test-product",
-  name: "Test Matkap",
+  name: "Test Ürün",
   brand: "EUROMIX",
-  categoryPath: ["Elektrikli El Aletleri"],
-  category: "Elektrikli El Aletleri",
+  categoryPath: ["Test"],
+  category: "Test",
   unitType: "Adet",
   taxRate: "20",
   currency: "TRY",
@@ -36,32 +36,79 @@ const customer: CustomerAccount = {
   companyName: "Test",
   authorizedPerson: "Test",
   phone: "05550000000",
-  city: "Istanbul",
+  city: "İstanbul",
   deliveryAddress: "Test",
   status: "approved",
   segment: "project",
-  baseDiscountRate: 12,
-  brandDiscounts: { EUROMIX: 18 },
-  categoryDiscounts: { Elektrikli: 26 },
-  specialNetPrices: {}
+  baseDiscountRate: 49,
+  brandDiscounts: { EUROMIX: 48 },
+  categoryDiscounts: { Test: 47 },
+  specialNetPrices: { JL4304A: "1.00" }
 };
 
-describe("customer pricing", () => {
-  it("applies the strongest matching discount", () => {
-    const price = priceProductForCustomer(product, customer);
+function withBrand(brand: string): CatalogProductRecord {
+  return { ...product, brand };
+}
 
-    expect(price?.unitNetPrice).toBe("148.00");
-    expect(price?.discountRate).toBe("26%");
-    expect(price?.ruleLabel).toBe("Elektrikli kategori iskontosu");
+describe("common brand pricing", () => {
+  it.each([
+    ["ARC BANYO", "168.00", "16%"],
+    ["Doğal Plastik", "162.00", "19%"],
+    ["EUROMIX", "275.40", undefined],
+    ["FORZA", "162.00", "19%"],
+    ["IBELTECH", "178.00", "11%"],
+    ["MESEM", "156.00", "22%"],
+    ["MRSMAX", "200.00", undefined],
+    ["MIRSAN", "200.00", undefined],
+    ["ONAY", "182.00", "9%"],
+    ["PİMTAŞ", "178.00", "11%"],
+    ["SAYIM", "130.00", "35%"],
+    ["SGS PLUS", "162.00", "19%"],
+    ["TRICRAFT", "156.00", "22%"]
+  ])("applies the configured %s rule", (brand, expectedPrice, expectedDiscount) => {
+    const price = priceProductForCustomer(withBrand(brand), customer);
+
+    expect(price?.unitNetPrice).toBe(expectedPrice);
+    expect(price?.discountRate).toBe(expectedDiscount);
+    expect(price?.taxIncluded).toBe(true);
   });
 
-  it("uses special net price before discount rules", () => {
-    const price = priceProductForCustomer(product, {
-      ...customer,
-      specialNetPrices: { JL4304A: "95.00" }
-    });
+  it("increases Euromix by 37.70% and separates the included VAT without adding it again", () => {
+    const price = priceProductForCustomer(product, customer);
 
-    expect(price?.unitNetPrice).toBe("95.00");
-    expect(price?.ruleLabel).toBe("Ozel net fiyat");
+    expect(price?.unitNetPrice).toBe("275.40");
+    expect(price?.includedTaxAmount).toBe("45.90");
+    expect(price?.listPrice).toBeUndefined();
+  });
+
+  it("does not disclose Floran/Floorpan and Jamindar/Lamindoor prices", () => {
+    for (const brand of ["FLORAN", "FLOORPAN", "JAMINDAR", "LAMINDOOR"]) {
+      const hiddenProduct = withBrand(brand);
+      expect(priceProductForCustomer(hiddenProduct, customer)).toBeNull();
+      expect(priceUnavailableMessage(hiddenProduct)).toContain("fiyat bilgisi verilmiyor");
+    }
+  });
+
+  it("returns the same price for every approved customer and ignores legacy customer overrides", () => {
+    const otherCustomer: CustomerAccount = {
+      ...customer,
+      id: "customer-2",
+      segment: "standard",
+      baseDiscountRate: 0,
+      brandDiscounts: {},
+      categoryDiscounts: {},
+      specialNetPrices: {}
+    };
+
+    expect(priceProductForCustomer(product, customer)).toEqual(priceProductForCustomer(product, otherCustomer));
+  });
+
+  it("uses the list price as Net for MRS Max/Mırsan and unspecified brands", () => {
+    expect(priceProductForCustomer(withBrand("MRSMAX"), customer)).toMatchObject({ unitNetPrice: "200.00", priceLabel: "Net", ruleLabel: "Net" });
+    expect(priceProductForCustomer(withBrand("ENTAŞ"), customer)).toMatchObject({ unitNetPrice: "200.00", priceLabel: "Net" });
+  });
+
+  it("keeps prices closed for non-approved accounts", () => {
+    expect(priceProductForCustomer(product, { ...customer, status: "suspended" })).toBeNull();
   });
 });

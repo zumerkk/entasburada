@@ -36,7 +36,7 @@ async function createQuoteFromCart(customer: CustomerAccount, cart: CartSummary)
     deliveryCity: customer.city,
     deliveryAddress: customer.deliveryAddress,
     paymentPreference: "Cari hesap",
-    notes: `${customer.segment} segmenti sepet akisi${cart.canCreateOrder ? "" : ` · ${cart.orderBlockReason ?? "Fiyat teyidi gerekli"}`}`,
+    notes: `KDV dahil ortak marka fiyatı · ${cart.shippingMessage}${cart.canCreateOrder ? "" : ` · ${cart.orderBlockReason ?? "Fiyat teyidi gerekli"}`}`,
     items: cart.items.map((item) => ({
       sku: item.sku,
       productName: item.productName,
@@ -55,7 +55,7 @@ async function createQuoteFromCart(customer: CustomerAccount, cart: CartSummary)
     {
       quoteId: quote.id,
       salesRepresentative: "Bayi fiyat motoru",
-      internalNote: "Sepet/hizli siparis akisi otomatik fiyatlandirdi.",
+      internalNote: `Sepet/hızlı sipariş akışı ortak marka fiyatıyla otomatik fiyatlandırıldı. Fiyatlar KDV dahildir. ${cart.shippingMessage}`,
       prices: quote.items.map((item) => ({
         itemId: item.id,
         quotedUnitPrice: priceBySku.get(item.sku) ?? item.targetPrice ?? "0"

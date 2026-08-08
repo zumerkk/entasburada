@@ -33,7 +33,7 @@ import {
   type PublicCatalogProduct
 } from "@entas/catalog";
 import type { CustomerAccount } from "./customer-auth";
-import { priceProductForCustomer } from "./customer-pricing";
+import { priceProductForCustomer, priceUnavailableMessage } from "./customer-pricing";
 import { notifyRestockedProducts } from "./stock-notify-repository";
 
 interface ImportReport {
@@ -83,6 +83,8 @@ export interface PricedPublicCatalogProduct extends PublicCatalogProduct {
   listPrice?: string;
   discountRate?: string;
   priceRuleLabel?: string;
+  priceLabel?: string;
+  priceUnavailableMessage?: string;
 }
 
 const rootDir = findWorkspaceRoot(process.cwd());
@@ -491,11 +493,15 @@ export async function getFeaturedPublicProducts(
         ? {
             ...publicProduct,
             price: price.displayPrice,
-            listPrice: price.listPrice,
-            discountRate: price.discountRate,
-            priceRuleLabel: price.ruleLabel
+            priceRuleLabel: price.ruleLabel,
+            ...(price.listPrice ? { listPrice: price.listPrice } : {}),
+            ...(price.discountRate ? { discountRate: price.discountRate } : {}),
+            ...(price.priceLabel ? { priceLabel: price.priceLabel } : {})
           }
-        : publicProduct;
+        : {
+            ...publicProduct,
+            ...(customer && priceUnavailableMessage(product) ? { priceUnavailableMessage: priceUnavailableMessage(product)! } : {})
+          };
     })
   };
 }
@@ -515,15 +521,19 @@ export async function getPricedPublicProducts(
       const publicProduct: PricedPublicCatalogProduct = toPublicProduct(product);
       const price = customer ? priceProductForCustomer(product, customer) : null;
       if (!price) {
-        return publicProduct;
+        return {
+          ...publicProduct,
+          ...(customer && priceUnavailableMessage(product) ? { priceUnavailableMessage: priceUnavailableMessage(product)! } : {})
+        };
       }
 
       return {
         ...publicProduct,
         price: price.displayPrice,
-        listPrice: price.listPrice,
-        discountRate: price.discountRate,
-        priceRuleLabel: price.ruleLabel
+        priceRuleLabel: price.ruleLabel,
+        ...(price.listPrice ? { listPrice: price.listPrice } : {}),
+        ...(price.discountRate ? { discountRate: price.discountRate } : {}),
+        ...(price.priceLabel ? { priceLabel: price.priceLabel } : {})
       };
     })
   };
@@ -551,15 +561,19 @@ export async function getPricedPublicProductBySlug(slug: string, customer: Custo
   const publicProduct: PricedPublicCatalogProduct = toPublicProduct(product);
   const price = customer ? priceProductForCustomer(product, customer) : null;
   if (!price) {
-    return publicProduct;
+    return {
+      ...publicProduct,
+      ...(customer && priceUnavailableMessage(product) ? { priceUnavailableMessage: priceUnavailableMessage(product)! } : {})
+    };
   }
 
   return {
     ...publicProduct,
     price: price.displayPrice,
-    listPrice: price.listPrice,
-    discountRate: price.discountRate,
-    priceRuleLabel: price.ruleLabel
+    priceRuleLabel: price.ruleLabel,
+    ...(price.listPrice ? { listPrice: price.listPrice } : {}),
+    ...(price.discountRate ? { discountRate: price.discountRate } : {}),
+    ...(price.priceLabel ? { priceLabel: price.priceLabel } : {})
   };
 }
 

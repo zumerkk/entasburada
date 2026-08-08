@@ -90,7 +90,7 @@ export default function AdminDashboardPage() {
             <div className="panelHeader">
               <div>
                 <h2>Bayi başvuru kuyruğu</h2>
-                <p>Onay, ek belge, segment ve fiyat grubu ataması tek akışta izlenir.</p>
+                <p>Onay, ek belge ve segment ataması tek akışta izlenir; fiyat politikası bütün müşterilerde ortaktır.</p>
               </div>
               <button type="button">Tüm başvurular</button>
             </div>
@@ -114,19 +114,14 @@ export default function AdminDashboardPage() {
 
           <div className="panel">
             <div className="panelHeader compact">
-              <h2>Fiyat önceliği</h2>
+              <h2>Ortak fiyat politikası</h2>
               <Tags size={20} aria-hidden="true" />
             </div>
             <ol className="priorityList">
-              <li>Müşteriye özel manuel fiyat</li>
-              <li>Müşteriye özel iskonto</li>
-              <li>Tekliften gelen onaylı fiyat</li>
-              <li>Müşteri grubu fiyatı</li>
-              <li>Ürün kampanya fiyatı</li>
-              <li>Marka/kategori kampanyası</li>
-              <li>Miktar-koli-palet fiyatı</li>
-              <li>Bayi standart fiyatı</li>
-              <li>Liste fiyatı</li>
+              <li>Müşteriye özel iskonto %0</li>
+              <li>Marka bazlı ortak fiyat kuralı</li>
+              <li>KDV dahil gösterim</li>
+              <li>10.000 TL üzeri ücretsiz kargo</li>
             </ol>
           </div>
 

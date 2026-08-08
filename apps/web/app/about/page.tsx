@@ -19,7 +19,7 @@ export default function AboutPage() {
         {
           title: "Nasıl çalışıyoruz?",
           description: "Tedarikçi katalogları doğrulama ve yayın akışından geçer. Fiyat ve stok görünürlüğü müşteri yetkisine göre kontrollü biçimde açılır.",
-          bullets: ["Kaynak bazlı XML izleme", "Müşteriye özel fiyat kuralları", "Tekliften siparişe izlenebilir operasyon"]
+          bullets: ["Kaynak bazlı XML izleme", "Herkes için ortak marka fiyatları", "Tekliften siparişe izlenebilir operasyon"]
         },
         {
           title: "Operasyon yaklaşımımız",

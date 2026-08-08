@@ -11,6 +11,7 @@ import { listFavorites } from "../../lib/favorites-repository";
 import { listStockSubscriptions } from "../../lib/stock-notify-repository";
 import { customerLogoutAction } from "../login/actions";
 import { changePasswordAction, toggleFavoriteAction, unsubscribeStockAction } from "./actions";
+import { FREE_SHIPPING_THRESHOLD_TRY } from "../../lib/commercial-policy";
 
 export const dynamic = "force-dynamic";
 
@@ -39,7 +40,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const activeQuotes = quotes.items.filter((quote) => !["REJECTED", "EXPIRED", "CONVERTED"].includes(quote.status)).length;
   const creditLimit = formatMoney(parseMoney(customer.creditLimit ?? "0"), "TRY");
   const approvalLimit = formatMoney(parseMoney(customer.approvalLimit ?? "0"), "TRY");
-  const freeShippingThreshold = parseMoney(customer.freeShippingThreshold ?? "0");
+  const freeShippingThreshold = parseMoney(customer.freeShippingThreshold ?? String(FREE_SHIPPING_THRESHOLD_TRY));
 
   return (
     <main className="accountPage">
@@ -54,7 +55,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
               <span>{tierRank}</span>
             </div>
             <div className="accountHeroBadges">
-              <StatusPill tone="success">%{customer.baseDiscountRate} baz iskonto</StatusPill>
+              <StatusPill tone="success">Herkese aynı fiyat</StatusPill>
               <StatusPill tone={customer.segment === "project" ? "warning" : "info"}>{customer.supportLevel ?? "Bayi destek"}</StatusPill>
               <StatusPill tone="neutral">{customer.paymentTermDays ?? 0} gün vade</StatusPill>
             </div>
@@ -282,35 +283,31 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
               {(customer.perks ?? []).map((perk) => (
                 <span key={perk}>{perk}</span>
               ))}
-              {freeShippingThreshold === 0 ? <span>Kargo baremi yok</span> : <span>{formatMoney(freeShippingThreshold, "TRY")} üzeri sevkiyat avantajı</span>}
+              <span>{formatMoney(freeShippingThreshold, "TRY")} ve üzeri kargo bizden</span>
             </div>
           </section>
 
           <section className="accountPanel">
             <div className="accountSectionHeader compact">
               <div>
-                <span>Fiyat motoru</span>
-                <h2>İskonto öncelikleri</h2>
+                <span>Fiyat politikası</span>
+                <h2>Ortak marka fiyatı</h2>
               </div>
               <BadgePercent size={20} aria-hidden="true" />
             </div>
             <div className="discountStack">
               <div>
-                <span>Baz</span>
-                <strong>%{customer.baseDiscountRate}</strong>
+                <span>Müşteriye özel iskonto</span>
+                <strong>%0</strong>
               </div>
-              {Object.entries(customer.brandDiscounts).slice(0, 2).map(([brand, rate]) => (
-                <div key={brand}>
-                  <span>{brand}</span>
-                  <strong>%{rate}</strong>
-                </div>
-              ))}
-              {Object.entries(customer.categoryDiscounts).slice(0, 2).map(([category, rate]) => (
-                <div key={category}>
-                  <span>{category}</span>
-                  <strong>%{rate}</strong>
-                </div>
-              ))}
+              <div>
+                <span>KDV</span>
+                <strong>Dahil</strong>
+              </div>
+              <div>
+                <span>Kargo</span>
+                <strong>10.000 TL üzeri bizden</strong>
+              </div>
             </div>
           </section>
 

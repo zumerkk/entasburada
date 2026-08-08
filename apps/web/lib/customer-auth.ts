@@ -8,6 +8,7 @@ import { redirect } from "next/navigation";
 import { hashPassword, verifyPassword } from "./password-hash";
 import { createSessionToken, verifySessionToken } from "./session-token";
 import { validatePasswordStrength } from "./security";
+import { FREE_SHIPPING_THRESHOLD_TRY } from "./commercial-policy";
 
 export { hashPassword, verifyPassword };
 
@@ -58,7 +59,8 @@ function enqueueCustomerMutation<T>(mutation: () => Promise<T>): Promise<T> {
 
 export async function getCustomers(): Promise<CustomerAccount[]> {
   await ensureCustomersFile();
-  return readJson<CustomerAccount[]>(customersPath, []);
+  const customers = await readJson<CustomerAccount[]>(customersPath, []);
+  return customers.map(enforceUniformCommercialTerms);
 }
 
 export async function authenticateCustomer(email: string, password: string): Promise<CustomerAccount | null> {
@@ -120,7 +122,7 @@ async function createCustomerAccountUnlocked(account: Omit<CustomerAccount, "pas
 
   const passwordError = validatePasswordStrength(plainPassword);
   if (passwordError) throw new Error(passwordError);
-  const record: CustomerAccount = { ...rest, email: normalizeEmail(rest.email), password: hashPassword(plainPassword) };
+  const record = enforceUniformCommercialTerms({ ...rest, email: normalizeEmail(rest.email), password: hashPassword(plainPassword) });
   const customers = await getCustomers();
   await saveCustomers([...customers, record]);
   return record;
@@ -144,7 +146,7 @@ async function updateCustomerAccountUnlocked(
     throw new Error("Hesap bulunamadı.");
   }
   const current = customers[index]!;
-  const updated: CustomerAccount = { ...current, ...patch, id: current.id, password: current.password };
+  const updated = enforceUniformCommercialTerms({ ...current, ...patch, id: current.id, password: current.password });
   customers[index] = updated;
   await saveCustomers(customers);
   return updated;
@@ -174,8 +176,19 @@ async function changeCustomerPasswordUnlocked(customerId: string, currentPasswor
 
 async function saveCustomers(customers: CustomerAccount[]): Promise<void> {
   const tmpPath = `${customersPath}.${process.pid}.${randomUUID()}.tmp`;
-  await writeFile(tmpPath, `${JSON.stringify(customers, null, 2)}\n`, { mode: 0o600 });
+  await writeFile(tmpPath, `${JSON.stringify(customers.map(enforceUniformCommercialTerms), null, 2)}\n`, { mode: 0o600 });
   await rename(tmpPath, customersPath);
+}
+
+function enforceUniformCommercialTerms(customer: CustomerAccount): CustomerAccount {
+  return {
+    ...customer,
+    baseDiscountRate: 0,
+    brandDiscounts: {},
+    categoryDiscounts: {},
+    specialNetPrices: {},
+    freeShippingThreshold: String(FREE_SHIPPING_THRESHOLD_TRY)
+  };
 }
 
 export const CUSTOMER_SESSION_MAX_AGE_SECONDS = 60 * 60 * 8;

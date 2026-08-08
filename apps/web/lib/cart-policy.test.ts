@@ -31,4 +31,15 @@ describe("cart policy", () => {
     expect(policy.unpricedItemCount).toBe(1);
     expect(policy.canCreateOrder).toBe(false);
   });
+
+  it("applies free shipping at the KDV-included 10,000 TL threshold", () => {
+    const below = summarizeCartPricing([{ currency: "TRY", lineTotal: "9999.99", includedTaxAmount: "1666.67", priceAvailable: true }]);
+    const eligible = summarizeCartPricing([{ currency: "TRY", lineTotal: "10000.00", includedTaxAmount: "1666.67", priceAvailable: true }]);
+
+    expect(below.qualifiesForFreeShipping).toBe(false);
+    expect(below.amountUntilFreeShipping).toBe("0.01");
+    expect(eligible.qualifiesForFreeShipping).toBe(true);
+    expect(eligible.shippingMessage).toBe("Kargo bizden.");
+    expect(eligible.includedTaxTotals[0]?.totalAmount).toBe("1666.67");
+  });
 });

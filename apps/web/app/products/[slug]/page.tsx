@@ -100,7 +100,14 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
           <StockBadge tone={product.stockTone} label={product.stockLabel} />
 
-          <PriceGate isApprovedDealer={Boolean(customer)} price={product.price} listPrice={product.listPrice} discountRate={product.discountRate} />
+          <PriceGate
+            isApprovedDealer={Boolean(customer)}
+            price={product.price}
+            listPrice={product.listPrice}
+            discountRate={product.discountRate}
+            priceLabel={product.priceLabel}
+            unavailableMessage={product.priceUnavailableMessage}
+          />
 
           <div className="purchaseRules">
             <div>
@@ -123,7 +130,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             <div>
               <Scale size={18} aria-hidden="true" />
               <span>KDV</span>
-              <strong>%{product.taxRate}</strong>
+              <strong>Dahil (%{product.taxRate})</strong>
             </div>
           </div>
 

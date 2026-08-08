@@ -18,7 +18,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <span className="eyebrow dark">Bayi girişi</span>
           <h1>Onaylı bayi hesabınızla devam edin</h1>
           <p>
-            Fiyatlar, iskonto, sepet, vadeli ödeme ve teslimat avantajları yalnızca onaylı bayi oturumunda görünür.
+            KDV dahil ortak marka fiyatları, sepet, vadeli ödeme ve teslimat avantajları yalnızca onaylı bayi oturumunda görünür.
           </p>
           {showTestAccounts ? (
             <div className="testAccountList">

@@ -14,7 +14,7 @@ const schema = z.object({
   city: z.string().trim().min(2).max(80),
   deliveryAddress: z.string().trim().min(10).max(500),
   segment: z.enum(["standard", "industrial", "project"]).default("standard"),
-  baseDiscountRate: z.number().min(0).max(50).optional(),
+  baseDiscountRate: z.literal(0).optional(),
   temporaryPassword: z.string().trim().min(12).max(128).regex(/^\S+$/).optional(),
   sendWelcomeEmail: z.boolean().default(true)
 }).strict();
