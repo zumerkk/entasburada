@@ -164,6 +164,22 @@ export async function bulkDeleteProductsAction(formData: FormData): Promise<void
     redirectWith(returnTo, "error", "Kalıcı silme için önce onay kutusunu işaretleyin.");
   }
 
+  // "Filtreye uyan hepsi" + bos filtre = tum katalog. Tek yanlis tikla 9.000'den
+  // fazla urunun silinmesini engellemek icin en az bir daraltici filtre sart.
+  if (getString(formData, "scope") === "filtered") {
+    const hasNarrowingFilter = ["f_q", "f_brand", "f_sourceKey"].some((key) => getString(formData, key)) ||
+      toProductStatusFilter(getString(formData, "f_status")) !== "all" ||
+      toStockStatusFilter(getString(formData, "f_stockStatus")) !== "all";
+
+    if (!hasNarrowingFilter) {
+      redirectWith(
+        returnTo,
+        "error",
+        "Tüm katalogu birden silemezsiniz. Önce kaynak, marka, durum veya arama filtresiyle daraltın; ya da satırları tek tek seçin."
+      );
+    }
+  }
+
   const ids = await resolveBulkTargetIds(formData);
   if (ids.length === 0) redirectWith(returnTo, "error", "Ürün seçilmedi.");
 
