@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { Save } from "lucide-react";
+import { FileDown, Save } from "lucide-react";
 import { StatusPill } from "@entas/ui";
 import { requireAdmin } from "../../../../lib/admin-auth";
 import { ORDER_STATUS_OPTIONS, orderStatusLabel } from "../../../../lib/commercial-labels";
@@ -32,6 +32,10 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
           <h1>{order.orderNo}</h1>
         </div>
         <div className="adminTopActions">
+          <a className="btn btnPrimary" href={`/admin/orders/${order.id}/irsaliye`}>
+            <FileDown size={17} aria-hidden="true" />
+            Sevk fişi (yazdır / PDF)
+          </a>
           <a className="btn btnGhost dark" href={`/orders/${encodeURIComponent(order.trackingCode)}`}>
             Müşteri Görünümü
           </a>

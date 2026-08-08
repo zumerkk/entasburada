@@ -429,6 +429,27 @@ describe("@entas/catalog", () => {
     expect(searchCatalogRecords(result.store, { publicOnly: true }).total).toBe(0);
   });
 
+  it("veri kalitesi süzgeçleri fiyatsız ve görselsiz ürünleri ayırır", () => {
+    const store = mergeImportedProducts(
+      createEmptyCatalogStore(),
+      [
+        { ...imported, externalId: "F-1", sku: "F-1", listPrice: "100.00", imageUrl: "https://cdn.example.com/a.png" },
+        { ...imported, externalId: "F-2", sku: "F-2", listPrice: "0", imageUrl: "https://cdn.example.com/b.png" },
+        { ...imported, externalId: "F-3", sku: "F-3", listPrice: "50.00", imageUrl: "" }
+      ],
+      "2026-07-07T01:00:00.000Z"
+    );
+
+    expect(searchCatalogRecords(store, { priceState: "zero" }).items.map((p) => p.sku)).toEqual(["F-2"]);
+    expect(searchCatalogRecords(store, { priceState: "priced" }).total).toBe(2);
+    expect(searchCatalogRecords(store, { imageState: "without" }).items.map((p) => p.sku)).toEqual(["F-3"]);
+    expect(searchCatalogRecords(store, { imageState: "with" }).total).toBe(2);
+    // Suzgecler birlikte calisir: hem fiyatsiz hem gorselli
+    expect(searchCatalogRecords(store, { priceState: "zero", imageState: "with" }).total).toBe(1);
+    // "all" hicbir seyi elemez
+    expect(searchCatalogRecords(store, { priceState: "all", imageState: "all" }).total).toBe(3);
+  });
+
   it("keeps every built-in catalog group countable", () => {
     const store = publishProducts(mergeImportedProducts(createEmptyCatalogStore(), [imported], "2026-07-07T01:00:00.000Z"), ["supplier:euromix-stock:rbt-007"], "admin").store;
     const allGroup = CATALOG_GROUPS.find((group) => group.slug === "tum-urunler");

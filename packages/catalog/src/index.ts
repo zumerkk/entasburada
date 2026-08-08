@@ -204,6 +204,10 @@ export interface CatalogSearchFilters {
   sourceKey?: string;
   stockStatus?: StockStatus | "all";
   status?: ProductStatus | "all";
+  /** Veri kalitesi suzgeci: fiyati girilmemis urunleri bulmak icin. */
+  priceState?: "all" | "priced" | "zero";
+  /** Veri kalitesi suzgeci: gorseli olmayan urunleri bulmak icin. */
+  imageState?: "all" | "with" | "without";
   publicOnly?: boolean;
   allowCategoryFallback?: boolean;
   limit?: number;
@@ -645,6 +649,18 @@ export function searchCatalogRecords(store: CatalogStore, filters: CatalogSearch
 
     if (brand && normalizeSearch(product.brand) !== brand) {
       return false;
+    }
+
+    if (filters.priceState && filters.priceState !== "all") {
+      const hasPrice = toNumber(product.listPrice) > 0;
+      if (filters.priceState === "priced" && !hasPrice) return false;
+      if (filters.priceState === "zero" && hasPrice) return false;
+    }
+
+    if (filters.imageState && filters.imageState !== "all") {
+      const hasImage = Boolean(product.imageUrl && product.imageUrl.trim());
+      if (filters.imageState === "with" && !hasImage) return false;
+      if (filters.imageState === "without" && hasImage) return false;
     }
 
     if (!term) {

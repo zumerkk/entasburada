@@ -2474,6 +2474,292 @@ a.metricCard {
   grid-template-columns: repeat(auto-fit, minmax(142px, 1fr));
 }
 
+/* ---------- Sevk fisi (kargo kutusuna konulan cikti) ---------- */
+.packingSlipPage {
+  min-height: 100vh;
+  padding: 24px 16px 56px;
+  background: #eef2f4;
+}
+
+.packingSlipToolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  width: min(210mm, 100%);
+  margin: 0 auto 16px;
+}
+
+.packingSlip {
+  width: min(210mm, 100%);
+  min-height: 297mm;
+  margin: 0 auto;
+  padding: 16mm 14mm;
+  color: #111827;
+  background: var(--white);
+  box-shadow: 0 12px 40px rgba(15, 35, 48, 0.14);
+  font-size: 11.5pt;
+  line-height: 1.45;
+}
+
+.packingSlipHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #111827;
+}
+
+.packingSlipBrand {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.packingSlipBrand img {
+  width: 54px;
+  height: 54px;
+  object-fit: contain;
+}
+
+.packingSlipBrand > div {
+  display: grid;
+  gap: 2px;
+}
+
+.packingSlipBrand strong {
+  font-size: 14pt;
+}
+
+.packingSlipBrand span {
+  color: #4b5563;
+  font-size: 9pt;
+}
+
+.packingSlipMeta {
+  text-align: right;
+}
+
+.packingSlipMeta h1 {
+  margin: 0 0 6px;
+  font-size: 18pt;
+  letter-spacing: 0.06em;
+}
+
+.packingSlipMeta dl {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+}
+
+.packingSlipMeta dl > div {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.packingSlipMeta dt {
+  color: #6b7280;
+  font-size: 9pt;
+}
+
+.packingSlipMeta dd {
+  margin: 0;
+  font-size: 10pt;
+  font-weight: 800;
+}
+
+.packingSlipLabel {
+  display: block;
+  margin-bottom: 3px;
+  color: #6b7280;
+  font-size: 8.5pt;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.packingSlipParties {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin: 14px 0;
+}
+
+.packingSlipParties > div {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+}
+
+.packingSlipParties strong {
+  display: block;
+  font-size: 11.5pt;
+}
+
+.packingSlipParties p {
+  margin: 2px 0 0;
+  color: #374151;
+  font-size: 9.5pt;
+}
+
+.packingSlipTable {
+  width: 100%;
+  margin-top: 6px;
+  border-collapse: collapse;
+}
+
+.packingSlipTable th,
+.packingSlipTable td {
+  padding: 7px 8px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+  vertical-align: top;
+}
+
+.packingSlipTable thead th {
+  background: #f3f4f6;
+  border-bottom: 1.5px solid #9ca3af;
+  font-size: 9pt;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.packingSlipTable td strong {
+  display: block;
+  font-size: 10.5pt;
+}
+
+.packingSlipTable td small {
+  color: #6b7280;
+  font-size: 8.5pt;
+}
+
+.packingSlipTable .colIndex {
+  width: 28px;
+  color: #6b7280;
+}
+
+.packingSlipTable .colNum {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.packingSlipTable tfoot td,
+.packingSlipTable tfoot th {
+  border-bottom: 0;
+  border-top: 1.5px solid #9ca3af;
+  padding-top: 9px;
+}
+
+.packingSlipTotal {
+  font-size: 13pt;
+  font-weight: 900;
+}
+
+.packingSlipInfoGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.packingSlipInfoGrid p {
+  margin: 0;
+  color: #374151;
+  font-size: 9.5pt;
+}
+
+.packingSlipNote {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border: 1px dashed #9ca3af;
+  border-radius: 4px;
+}
+
+.packingSlipNote p {
+  margin: 0;
+  font-size: 10pt;
+}
+
+.packingSlipSignatures {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  margin-top: 30px;
+}
+
+.packingSlipSignatures > div {
+  padding-top: 8px;
+}
+
+.packingSlipSignatures span {
+  display: block;
+  font-size: 9.5pt;
+  font-weight: 800;
+}
+
+.packingSlipSignatures em {
+  display: block;
+  margin-top: 34px;
+  padding-top: 5px;
+  border-top: 1px solid #9ca3af;
+  color: #6b7280;
+  font-size: 8.5pt;
+  font-style: normal;
+}
+
+.packingSlipFoot {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  padding-top: 8px;
+  border-top: 1px solid #e5e7eb;
+  color: #6b7280;
+  font-size: 8.5pt;
+}
+
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
+@media print {
+  /* Cikti kagida gitsin: ekran kromu, golge ve arka plan kaldirilir. */
+  .packingSlipPage {
+    min-height: 0;
+    padding: 0;
+    background: none;
+  }
+
+  .packingSlipToolbar {
+    display: none;
+  }
+
+  .packingSlip {
+    width: auto;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+
+  /* Urun satiri sayfa sonunda ikiye bolunmesin. */
+  .packingSlipTable tr {
+    break-inside: avoid;
+  }
+
+  .packingSlipTable thead {
+    display: table-header-group;
+  }
+
+  .packingSlipSignatures,
+  .packingSlipInfoGrid {
+    break-inside: avoid;
+  }
+}
+
 /* Durum rozetinin altindaki kisa aciklama: "Finans onayi bekliyor" rozetinin
    ne anlama geldigini musteri de admin de tek bakista gorsun. */
 .detailStatusHint {
@@ -2482,6 +2768,87 @@ a.metricCard {
   color: var(--muted);
   font-size: 0.74rem;
   line-height: 1.35;
+}
+
+/* ---------- Urun listesi: hizli filtreler, kucuk gorsel, satir aksiyonlari ---------- */
+.adminQuickFilters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0 0;
+}
+
+.adminQuickFilters > span {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.adminQuickFilters a {
+  padding: 7px 13px;
+  color: var(--green-900);
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 850;
+}
+
+.adminQuickFilters a:hover {
+  border-color: var(--green-800);
+}
+
+.adminQuickFilters a.active {
+  color: var(--white);
+  background: var(--green-900);
+  border-color: var(--green-900);
+}
+
+.adminQuickFilters a.reset {
+  color: var(--orange-700);
+  background: transparent;
+  border-style: dashed;
+}
+
+.adminProductCell {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+}
+
+.adminProductThumb {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.adminProductThumb.empty {
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  background: #f1f5f6;
+}
+
+.productEditActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--line);
+}
+
+.productEditActions small {
+  color: var(--muted);
+  font-size: 0.75rem;
 }
 
 /* ---------- Toplu urun islemleri cubugu ---------- */

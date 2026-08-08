@@ -1,4 +1,4 @@
-import { Search } from "lucide-react";
+import { ImageOff, Search, Trash2 } from "lucide-react";
 import { StatusPill } from "@entas/ui";
 import type { ProductStatus, StockStatus } from "@entas/catalog";
 import { requireAdmin } from "../../../lib/admin-auth";
@@ -12,6 +12,7 @@ import {
   bulkDeleteProductsAction,
   bulkPriceMarkupAction,
   bulkSetStatusAction,
+  deleteSingleProductAction,
   publishAllDraftAction,
   publishSelectedAction,
   updateProductAction
@@ -36,6 +37,58 @@ const stockOptions: Array<{ value: StockStatus | "all"; label: string }> = [
   { value: "out_of_stock", label: "Stok yok" }
 ];
 
+interface QuickFilterState {
+  status: ProductStatus | "all";
+  stockStatus: StockStatus | "all";
+  priceState: "all" | "priced" | "zero";
+  imageState: "all" | "with" | "without";
+}
+
+/**
+ * Tek tikla acilan gunluk is kisayollari.
+ *
+ * `apply` adres cubugunda hangi parametrelerin yazilacagini, `matches` ise
+ * kisayolun su an etkin olup olmadigini soyler. Bos deger ("") parametreyi
+ * adresten tamamen kaldirir.
+ */
+const QUICK_FILTERS: Array<{
+  id: string;
+  label: string;
+  apply: Record<string, string>;
+  matches: (state: QuickFilterState) => boolean;
+}> = [
+  {
+    id: "zero-price",
+    label: "Fiyatı girilmemiş",
+    apply: { priceState: "zero", imageState: "", status: "all", stockStatus: "all" },
+    matches: (state) => state.priceState === "zero"
+  },
+  {
+    id: "no-image",
+    label: "Görseli olmayan",
+    apply: { imageState: "without", priceState: "", status: "all", stockStatus: "all" },
+    matches: (state) => state.imageState === "without"
+  },
+  {
+    id: "draft",
+    label: "Yayına alınmamış",
+    apply: { status: "DRAFT", priceState: "", imageState: "", stockStatus: "all" },
+    matches: (state) => state.status === "DRAFT"
+  },
+  {
+    id: "out-of-stock",
+    label: "Stok yok",
+    apply: { stockStatus: "out_of_stock", status: "all", priceState: "", imageState: "" },
+    matches: (state) => state.stockStatus === "out_of_stock"
+  },
+  {
+    id: "passive",
+    label: "Pasif",
+    apply: { status: "PASSIVE", priceState: "", imageState: "", stockStatus: "all" },
+    matches: (state) => state.status === "PASSIVE"
+  }
+];
+
 /** Depolama enum'u ekranda ham gosterilmesin; siparis durumlariyla ayni yaklasim. */
 function productStatusLabel(status: ProductStatus): string {
   return status === "ACTIVE" ? "Yayında" : status === "DRAFT" ? "Taslak" : "Pasif";
@@ -51,11 +104,13 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
   const stockStatus = toStockStatus(getParam(params, "stockStatus"));
   const sourceKey = getParam(params, "sourceKey");
   const brand = getParam(params, "brand");
+  const priceState = toPriceState(getParam(params, "priceState"));
+  const imageState = toImageState(getParam(params, "imageState"));
   const page = Math.max(1, Number(getParam(params, "page") || "1"));
   const limit = 50;
   const [facets, products] = await Promise.all([
     getCatalogFacets(false),
-    getAdminProducts({ q, status, stockStatus, sourceKey, brand, limit, offset: (page - 1) * limit })
+    getAdminProducts({ q, status, stockStatus, sourceKey, brand, priceState, imageState, limit, offset: (page - 1) * limit })
   ]);
   // Kaynak secilmediyse secim XML'li kaynagi kapsiyor olabilir; secildiyse kesin bilinir.
   const filterTouchesSyncedSource = sourceKey ? XML_SYNCED_SOURCE_KEYS.has(sourceKey) : true;
@@ -64,6 +119,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
   const errorMessage = getParam(params, "error");
   // Düzenleme sonrası aynı filtre/sayfaya dönebilmek için mevcut adres taşınır.
   const returnTo = pageHref(params, page);
+  const hasAnyFilter = Boolean(q || brand || sourceKey) || status !== "all" || stockStatus !== "all" || priceState !== "all" || imageState !== "all";
 
   return (
     <AdminFrame active="products">
@@ -128,12 +184,38 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
               ))}
             </select>
           </label>
+          <input type="hidden" name="priceState" value={priceState} />
+          <input type="hidden" name="imageState" value={imageState} />
           <button className="btn btnGhost dark" type="submit">
             <Search size={17} aria-hidden="true" />
             Filtrele
           </button>
         </form>
       </section>
+
+      {/* Gunluk isleri tek tikla acan kisayollar: veri kalitesi bosluklarini
+          aramak icin her seferinde suzgec doldurmak gerekmesin. */}
+      <nav className="adminQuickFilters" aria-label="Hızlı filtreler">
+        <span>Hızlı filtreler</span>
+        {QUICK_FILTERS.map((filter) => {
+          const active = filter.matches({ status, stockStatus, priceState, imageState });
+          return (
+            <a
+              className={active ? "active" : ""}
+              href={quickFilterHref(params, filter.apply)}
+              key={filter.id}
+              aria-current={active ? "true" : undefined}
+            >
+              {filter.label}
+            </a>
+          );
+        })}
+        {hasAnyFilter ? (
+          <a className="reset" href="/admin/products">
+            Filtreleri temizle
+          </a>
+        ) : null}
+      </nav>
 
       <form className="panel" action={publishSelectedAction}>
         {/* Toplu islem sunucu tarafinda ayni kumeyi yeniden hesaplayabilsin diye
@@ -144,6 +226,8 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
         <input type="hidden" name="f_sourceKey" value={sourceKey} />
         <input type="hidden" name="f_status" value={status} />
         <input type="hidden" name="f_stockStatus" value={stockStatus} />
+        <input type="hidden" name="f_priceState" value={priceState} />
+        <input type="hidden" name="f_imageState" value={imageState} />
 
         <div className="panelHeader">
           <div>
@@ -178,13 +262,24 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
                 <span>
                   <input name="productId" type="checkbox" value={product.id} />
                 </span>
-                <span>
-                  <strong>{product.name}</strong>
-                  <small>
-                    {product.sku}
-                    {product.brand ? ` · ${product.brand}` : ""}
-                    {product.category ? ` · ${product.category}` : ""}
-                  </small>
+                <span className="adminProductCell">
+                  {/* Kucuk gorsel: 9.208 urunluk katalogda dogru satiri bulmanin
+                      en hizli yolu isim okumak degil, gorsele bakmak. */}
+                  {product.image ? (
+                    <img className="adminProductThumb" src={product.image} alt="" loading="lazy" width={44} height={44} />
+                  ) : (
+                    <span className="adminProductThumb empty" aria-label="Görsel yok" title="Görsel yok">
+                      <ImageOff size={16} aria-hidden="true" />
+                    </span>
+                  )}
+                  <span>
+                    <strong>{product.name}</strong>
+                    <small>
+                      {product.sku}
+                      {product.brand ? ` · ${product.brand}` : ""}
+                      {product.category ? ` · ${product.category}` : ""}
+                    </small>
+                  </span>
                 </span>
                 <span>
                   {product.sourceName}
@@ -291,9 +386,18 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
                     <input type="checkbox" name="isVisible" defaultChecked={product.isVisible} form={`edit-${product.id}`} />
                     Vitrinde görünsün
                   </label>
-                  <button className="btn btnPrimary" type="submit" form={`edit-${product.id}`}>
-                    Kaydet
-                  </button>
+                  <div className="productEditActions spanTwo">
+                    <button className="btn btnPrimary" type="submit" form={`edit-${product.id}`}>
+                      Kaydet
+                    </button>
+                    {/* Tekil silme ayri bir forma bagli: kaydet dugmesiyle ayni
+                        formda olsa yanlislikla silme riski dogar. */}
+                    <button className="btn btnDanger" type="submit" form={`delete-${product.id}`}>
+                      <Trash2 size={16} aria-hidden="true" />
+                      Bu ürünü sil
+                    </button>
+                    <small>Silinen ürün geçmiş siparişleri etkilemez; geri getirmek için kaynağı yeniden içe aktarın.</small>
+                  </div>
                 </div>
               </details>
             </div>
@@ -318,6 +422,14 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
       {products.items.map((product) => (
         <form key={`form-${product.id}`} id={`edit-${product.id}`} action={updateProductAction} hidden />
       ))}
+
+      {/* Tekil silme formlari: satirdaki dugme bunlara form="delete-{id}" ile baglanir. */}
+      {products.items.map((product) => (
+        <form key={`delete-${product.id}`} id={`delete-${product.id}`} action={deleteSingleProductAction} hidden>
+          <input type="hidden" name="productId" value={product.id} />
+          <input type="hidden" name="returnTo" value={returnTo} />
+        </form>
+      ))}
     </AdminFrame>
   );
 }
@@ -327,12 +439,35 @@ function getParam(params: SearchParams, key: string): string {
   return Array.isArray(value) ? value[0] ?? "" : value ?? "";
 }
 
+function toPriceState(value: string): "all" | "priced" | "zero" {
+  return value === "priced" || value === "zero" ? value : "all";
+}
+
+function toImageState(value: string): "all" | "with" | "without" {
+  return value === "with" || value === "without" ? value : "all";
+}
+
 function toStatus(value: string): ProductStatus | "all" {
   return value === "DRAFT" || value === "ACTIVE" || value === "PASSIVE" ? value : "all";
 }
 
 function toStockStatus(value: string): StockStatus | "all" {
   return value === "in_stock" || value === "low_stock" || value === "incoming" || value === "out_of_stock" ? value : "all";
+}
+
+/** Mevcut adresi koruyup yalnizca kisayolun parametrelerini degistirir; bos deger parametreyi siler. */
+function quickFilterHref(params: SearchParams, apply: Record<string, string>): string {
+  const next = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    const scalar = Array.isArray(value) ? value[0] : value;
+    if (scalar && key !== "page" && key !== "ok" && key !== "error") next.set(key, scalar);
+  }
+  for (const [key, value] of Object.entries(apply)) {
+    if (value && value !== "all") next.set(key, value);
+    else next.delete(key);
+  }
+  const query = next.toString();
+  return query ? `/admin/products?${query}` : "/admin/products";
 }
 
 function pageHref(params: SearchParams, page: number): string {

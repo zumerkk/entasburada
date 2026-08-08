@@ -77,12 +77,17 @@ async function resolveBulkTargetIds(formData: FormData): Promise<string[]> {
     const brand = getString(formData, "f_brand");
     const sourceKey = getString(formData, "f_sourceKey");
 
+    const priceState = getString(formData, "f_priceState");
+    const imageState = getString(formData, "f_imageState");
+
     return getAdminProductIdsByFilter({
       ...(q ? { q } : {}),
       ...(brand ? { brand } : {}),
       ...(sourceKey ? { sourceKey } : {}),
       status: toProductStatusFilter(getString(formData, "f_status")),
-      stockStatus: toStockStatusFilter(getString(formData, "f_stockStatus"))
+      stockStatus: toStockStatusFilter(getString(formData, "f_stockStatus")),
+      priceState: priceState === "priced" || priceState === "zero" ? priceState : "all",
+      imageState: imageState === "with" || imageState === "without" ? imageState : "all"
     });
   }
 
@@ -169,7 +174,9 @@ export async function bulkDeleteProductsAction(formData: FormData): Promise<void
   if (getString(formData, "scope") === "filtered") {
     const hasNarrowingFilter = ["f_q", "f_brand", "f_sourceKey"].some((key) => getString(formData, key)) ||
       toProductStatusFilter(getString(formData, "f_status")) !== "all" ||
-      toStockStatusFilter(getString(formData, "f_stockStatus")) !== "all";
+      toStockStatusFilter(getString(formData, "f_stockStatus")) !== "all" ||
+      ["priced", "zero"].includes(getString(formData, "f_priceState")) ||
+      ["with", "without"].includes(getString(formData, "f_imageState"));
 
     if (!hasNarrowingFilter) {
       redirectWith(
@@ -189,6 +196,23 @@ export async function bulkDeleteProductsAction(formData: FormData): Promise<void
     returnTo,
     "ok",
     `${deleted.toLocaleString("tr-TR")} ürün kalıcı olarak silindi. Geri getirmek için ilgili kaynağı yeniden içe aktarmanız gerekir.`
+  );
+}
+
+/** Satir icinden tek urun silme. Toplu silmeden ayri: onay kutusu yerine
+ *  satirdaki dugme zaten tek bir urunu hedefler ve geri donusu nettir. */
+export async function deleteSingleProductAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+  const returnTo = bulkReturnTo(formData);
+  const productId = getString(formData, "productId");
+  if (!productId) redirectWith(returnTo, "error", "Ürün seçilmedi.");
+
+  const deleted = await bulkDeleteProducts([productId], getAdminEmail());
+  revalidateCatalogPaths();
+  redirectWith(
+    returnTo,
+    deleted > 0 ? "ok" : "error",
+    deleted > 0 ? "Ürün katalogdan silindi." : "Ürün bulunamadı; silinmiş olabilir."
   );
 }
 
