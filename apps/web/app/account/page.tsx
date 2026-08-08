@@ -1,4 +1,5 @@
 import { ArrowRight, BadgePercent, Bell, BellRing, Clock3, FileSpreadsheet, FileText, Gauge, Heart, PackageCheck, ShieldCheck, ShoppingCart, TrendingDown, TrendingUp, Truck, WalletCards } from "lucide-react";
+import { orderStatusLabel, quoteStatusLabel } from "../../lib/commercial-labels";
 import { StatusPill } from "@entas/ui";
 import { loadPricedCart } from "../../lib/cart-repository";
 import { requireCustomer } from "../../lib/customer-auth";
@@ -164,7 +165,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
                       <small>{formatDate(quote.requestedAt)}</small>
                     </span>
                     <span>{quote.totalAmount} {quote.currency}</span>
-                    <StatusPill tone={quote.status === "REJECTED" ? "danger" : quote.status === "CONVERTED" ? "success" : "info"}>{quote.status}</StatusPill>
+                    <StatusPill tone={quoteStatusLabel(quote.status).tone}>{quoteStatusLabel(quote.status).label}</StatusPill>
                   </a>
                 ))}
                 {quotes.items.length === 0 ? (
@@ -190,7 +191,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
                       <small>{formatDate(order.orderedAt)}</small>
                     </span>
                     <span>{order.totalAmount} {order.currency}</span>
-                    <StatusPill tone={order.status === "CANCELLED" ? "danger" : order.status === "COMPLETED" ? "success" : "info"}>{order.status}</StatusPill>
+                    <StatusPill tone={orderStatusLabel(order.status).tone}>{orderStatusLabel(order.status).label}</StatusPill>
                   </a>
                 ))}
                 {orders.items.length === 0 ? (

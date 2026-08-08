@@ -1,6 +1,7 @@
 import { ClipboardList, Search } from "lucide-react";
 import { EmptyState, StatusPill } from "@entas/ui";
 import { requireAdmin } from "../../../lib/admin-auth";
+import { orderStatusLabel } from "../../../lib/commercial-labels";
 import { searchAdminOrders } from "../../../lib/commercial-repository";
 import { updateOrderOperationAction } from "../actions";
 import { AdminFrame } from "../AdminFrame";
@@ -53,7 +54,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
             <select name="status" defaultValue={status}>
               {orderStatuses.map((item) => (
                 <option value={item} key={item}>
-                  {item === "all" ? "Tüm durumlar" : item}
+                  {item === "all" ? "Tüm durumlar" : orderStatusLabel(item).label}
                 </option>
               ))}
             </select>
@@ -129,7 +130,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
                 </span>
                 <span>{formatDate(order.orderedAt)}</span>
                 <span>
-                  <StatusPill tone={order.status === "DELIVERED" || order.status === "COMPLETED" ? "success" : order.status === "CANCELLED" ? "danger" : "info"}>{order.status}</StatusPill>
+                  <StatusPill tone={orderStatusLabel(order.status).tone}>{orderStatusLabel(order.status).label}</StatusPill>
                 </span>
                 <span>
                   <strong>{order.paymentStatus}</strong>

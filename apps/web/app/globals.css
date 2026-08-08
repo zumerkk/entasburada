@@ -2474,6 +2474,16 @@ a.metricCard {
   grid-template-columns: repeat(auto-fit, minmax(142px, 1fr));
 }
 
+/* Durum rozetinin altindaki kisa aciklama: "Finans onayi bekliyor" rozetinin
+   ne anlama geldigini musteri de admin de tek bakista gorsun. */
+.detailStatusHint {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 0.74rem;
+  line-height: 1.35;
+}
+
 /* ---------- Toplu urun islemleri cubugu ---------- */
 .adminBulkBar {
   display: grid;

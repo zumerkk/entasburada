@@ -1,4 +1,5 @@
 import { FileText, Search } from "lucide-react";
+import { quoteStatusLabel } from "../../../lib/commercial-labels";
 import { EmptyState, StatusPill } from "@entas/ui";
 import { requireAdmin } from "../../../lib/admin-auth";
 import { searchAdminQuotes } from "../../../lib/commercial-repository";
@@ -50,7 +51,7 @@ export default async function AdminQuotesPage({ searchParams }: { searchParams: 
             <select name="status" defaultValue={status}>
               {quoteStatuses.map((item) => (
                 <option value={item} key={item}>
-                  {item === "all" ? "Tüm durumlar" : item}
+                  {item === "all" ? "Tüm durumlar" : quoteStatusLabel(item).label}
                 </option>
               ))}
             </select>
@@ -109,7 +110,7 @@ export default async function AdminQuotesPage({ searchParams }: { searchParams: 
                 </span>
                 <span>{formatDate(quote.requestedAt)}</span>
                 <span>
-                  <StatusPill tone={quote.status === "APPROVED" ? "success" : quote.status === "REJECTED" ? "danger" : "info"}>{quote.status}</StatusPill>
+                  <StatusPill tone={quoteStatusLabel(quote.status).tone}>{quoteStatusLabel(quote.status).label}</StatusPill>
                 </span>
                 <span>
                   {quote.totalAmount} {quote.currency}

@@ -1,4 +1,5 @@
 import { FileText, Search, Truck } from "lucide-react";
+import { orderStatusLabel, quoteStatusLabel } from "../../lib/commercial-labels";
 import { EmptyState, StatusPill } from "@entas/ui";
 import { getOrderByTrackingCode, getQuoteByTrackingCode } from "../../lib/commercial-repository";
 import { getCurrentCustomer } from "../../lib/customer-auth";
@@ -46,7 +47,7 @@ export default async function OrderLookupPage({ searchParams }: { searchParams: 
               <span>Sipariş bulundu</span>
               <h2>{order.orderNo}</h2>
               <p>
-                {order.companyName} · <StatusPill tone="info">{order.status}</StatusPill>
+                {order.companyName} · <StatusPill tone={orderStatusLabel(order.status).tone}>{orderStatusLabel(order.status).label}</StatusPill>
               </p>
             </div>
             <a className="btn btnPrimary" href={`/orders/${encodeURIComponent(order.trackingCode)}`}>
@@ -60,7 +61,7 @@ export default async function OrderLookupPage({ searchParams }: { searchParams: 
               <span>Teklif bulundu</span>
               <h2>{quote.quoteNo}</h2>
               <p>
-                {quote.companyName} · <StatusPill tone="info">{quote.status}</StatusPill>
+                {quote.companyName} · <StatusPill tone={quoteStatusLabel(quote.status).tone}>{quoteStatusLabel(quote.status).label}</StatusPill>
               </p>
             </div>
             <a className="btn btnPrimary" href={`/quote/${encodeURIComponent(quote.trackingCode)}`}>

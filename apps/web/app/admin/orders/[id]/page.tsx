@@ -2,24 +2,12 @@ import { notFound } from "next/navigation";
 import { Save } from "lucide-react";
 import { StatusPill } from "@entas/ui";
 import { requireAdmin } from "../../../../lib/admin-auth";
+import { ORDER_STATUS_OPTIONS, orderStatusLabel } from "../../../../lib/commercial-labels";
 import { getAdminOrderById } from "../../../../lib/commercial-repository";
 import { SHIPPING_CARRIERS } from "../../../../lib/shipping-carriers";
 import { updateOrderOperationAction } from "../../actions";
 import { AdminFrame } from "../../AdminFrame";
 
-const orderStatuses = [
-  "DRAFT",
-  "PAYMENT_PENDING",
-  "APPROVAL_PENDING",
-  "FINANCE_APPROVAL_PENDING",
-  "STOCK_WAITING",
-  "PREPARING",
-  "READY_TO_SHIP",
-  "SHIPPED",
-  "DELIVERED",
-  "CANCELLED",
-  "COMPLETED"
-];
 const financeStatuses = ["Bekliyor", "Onaylandı", "Reddedildi"];
 const stockStatuses = ["Kontrol bekliyor", "Ayrıldı", "Kısmi", "Tedarik bekliyor", "Stok yok"];
 const shipmentStatuses = ["Planlanmadi", "Sevkiyata hazır", "Kargoya verildi", "Teslim edildi"];
@@ -64,9 +52,8 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
         </div>
         <div>
           <span>Durum</span>
-          <StatusPill tone={order.status === "DELIVERED" || order.status === "COMPLETED" ? "success" : order.status === "CANCELLED" ? "danger" : "info"}>
-            {order.status}
-          </StatusPill>
+          <StatusPill tone={orderStatusLabel(order.status).tone}>{orderStatusLabel(order.status).label}</StatusPill>
+          <small className="detailStatusHint">{orderStatusLabel(order.status).hint}</small>
         </div>
         <div>
           <span>Finans</span>
@@ -100,6 +87,37 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
 
       <section className="panel">
         <div className="panelHeader compact">
+          <h2>Ürün satırları</h2>
+        </div>
+        <div className="commercialTable">
+          <div className="commercialTableHead orderItemRows">
+            <span>Ürün</span>
+            <span>Adet</span>
+            <span>Birim fiyat</span>
+            <span>Tutar</span>
+          </div>
+          {order.items.map((item) => (
+            <div className="commercialTableRow orderItemRows" key={item.id}>
+              <span>
+                <strong>{item.productName}</strong>
+                <small>{item.sku}</small>
+              </span>
+              <span>
+                {item.quantity} {item.unit}
+              </span>
+              <span>
+                {item.unitPrice} {item.currency}
+              </span>
+              <span>
+                {item.lineTotal} {item.currency}
+              </span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="panel">
+        <div className="panelHeader compact">
           <h2>Operasyon güncelle</h2>
         </div>
         <form className="adminFilterForm inlineCommercialForm" action={updateOrderOperationAction}>
@@ -107,9 +125,9 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
           <label>
             Durum
             <select name="status" defaultValue={order.status}>
-              {orderStatuses.map((status) => (
-                <option value={status} key={status}>
-                  {status}
+              {ORDER_STATUS_OPTIONS.map((option) => (
+                <option value={option.value} key={option.value}>
+                  {option.label}
                 </option>
               ))}
             </select>
@@ -182,37 +200,6 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
             Güncelle
           </button>
         </form>
-      </section>
-
-      <section className="panel">
-        <div className="panelHeader compact">
-          <h2>Ürün satırları</h2>
-        </div>
-        <div className="commercialTable">
-          <div className="commercialTableHead orderItemRows">
-            <span>Ürün</span>
-            <span>Adet</span>
-            <span>Birim fiyat</span>
-            <span>Tutar</span>
-          </div>
-          {order.items.map((item) => (
-            <div className="commercialTableRow orderItemRows" key={item.id}>
-              <span>
-                <strong>{item.productName}</strong>
-                <small>{item.sku}</small>
-              </span>
-              <span>
-                {item.quantity} {item.unit}
-              </span>
-              <span>
-                {item.unitPrice} {item.currency}
-              </span>
-              <span>
-                {item.lineTotal} {item.currency}
-              </span>
-            </div>
-          ))}
-        </div>
       </section>
 
       <section className="panel">

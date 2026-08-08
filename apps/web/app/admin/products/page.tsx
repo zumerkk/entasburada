@@ -36,6 +36,11 @@ const stockOptions: Array<{ value: StockStatus | "all"; label: string }> = [
   { value: "out_of_stock", label: "Stok yok" }
 ];
 
+/** Depolama enum'u ekranda ham gosterilmesin; siparis durumlariyla ayni yaklasim. */
+function productStatusLabel(status: ProductStatus): string {
+  return status === "ACTIVE" ? "Yayında" : status === "DRAFT" ? "Taslak" : "Pasif";
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function AdminProductsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
@@ -175,15 +180,24 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
                 </span>
                 <span>
                   <strong>{product.name}</strong>
-                  <small>{product.sku}</small>
+                  <small>
+                    {product.sku}
+                    {product.brand ? ` · ${product.brand}` : ""}
+                    {product.category ? ` · ${product.category}` : ""}
+                  </small>
                 </span>
-                <span>{product.sourceName}</span>
+                <span>
+                  {product.sourceName}
+                  {XML_SYNCED_SOURCE_KEYS.has(product.sourceKey) ? <small>XML senkron</small> : null}
+                </span>
                 <span>{formatCatalogMoney(product.listPrice, product.currency)}</span>
                 <span>
                   {product.stockQuantity.toLocaleString("tr-TR")} {product.unitType}
                 </span>
                 <span>
-                  <StatusPill tone={product.status === "ACTIVE" ? "success" : product.status === "DRAFT" ? "warning" : "neutral"}>{product.status}</StatusPill>
+                  <StatusPill tone={product.status === "ACTIVE" ? "success" : product.status === "DRAFT" ? "warning" : "neutral"}>
+                    {productStatusLabel(product.status)}
+                  </StatusPill>
                 </span>
                 <span>
                   {product.isVisible ? (
@@ -236,14 +250,42 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
                   <label>
                     Durum
                     <select name="status" defaultValue={product.status} form={`edit-${product.id}`}>
-                      <option value="ACTIVE">ACTIVE</option>
-                      <option value="DRAFT">DRAFT</option>
-                      <option value="PASSIVE">PASSIVE</option>
+                      <option value="ACTIVE">Yayında</option>
+                      <option value="DRAFT">Taslak</option>
+                      <option value="PASSIVE">Pasif</option>
                     </select>
+                  </label>
+                  <label>
+                    Barkod
+                    <input name="barcode" defaultValue={product.barcode ?? ""} form={`edit-${product.id}`} />
+                  </label>
+                  <label>
+                    Üretici kodu
+                    <input name="manufacturerCode" defaultValue={product.manufacturerCode ?? ""} form={`edit-${product.id}`} />
+                  </label>
+                  <label>
+                    KDV oranı (%)
+                    <input name="taxRate" inputMode="decimal" defaultValue={product.taxRate > 0 ? String(product.taxRate) : ""} form={`edit-${product.id}`} />
+                  </label>
+                  <label>
+                    Min. sipariş adedi
+                    <input name="minOrder" type="number" min={0} defaultValue={product.minOrder > 0 ? product.minOrder : ""} form={`edit-${product.id}`} />
+                  </label>
+                  <label>
+                    Paket adedi
+                    <input name="packageQuantity" type="number" min={0} defaultValue={product.packageQuantity > 0 ? product.packageQuantity : ""} form={`edit-${product.id}`} />
+                  </label>
+                  <label>
+                    Koli adedi
+                    <input name="cartonQuantity" type="number" min={0} defaultValue={product.cartonQuantity > 0 ? product.cartonQuantity : ""} form={`edit-${product.id}`} />
                   </label>
                   <label className="spanTwo">
                     Görsel adresi
                     <input name="imageUrl" defaultValue={product.image ?? ""} form={`edit-${product.id}`} />
+                  </label>
+                  <label className="spanTwo">
+                    Açıklama
+                    <textarea name="description" rows={3} defaultValue={product.description ?? ""} form={`edit-${product.id}`} />
                   </label>
                   <label className="checkboxLabel spanTwo">
                     <input type="checkbox" name="isVisible" defaultChecked={product.isVisible} form={`edit-${product.id}`} />

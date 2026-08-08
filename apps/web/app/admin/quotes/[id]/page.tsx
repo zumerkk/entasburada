@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { quoteStatusLabel } from "../../../../lib/commercial-labels";
 import { CheckCircle2, FileText, ShoppingCart, XCircle } from "lucide-react";
 import { StatusPill } from "@entas/ui";
 import { requireAdmin } from "../../../../lib/admin-auth";
@@ -45,9 +46,8 @@ export default async function AdminQuoteDetailPage({ params }: { params: Promise
         </div>
         <div>
           <span>Durum</span>
-          <StatusPill tone={quote.status === "APPROVED" || quote.status === "CONVERTED" ? "success" : quote.status === "REJECTED" ? "danger" : "info"}>
-            {quote.status}
-          </StatusPill>
+          <StatusPill tone={quoteStatusLabel(quote.status).tone}>{quoteStatusLabel(quote.status).label}</StatusPill>
+          <small className="detailStatusHint">{quoteStatusLabel(quote.status).hint}</small>
         </div>
         <div>
           <span>Tutar</span>

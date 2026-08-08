@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { orderStatusLabel } from "../../../lib/commercial-labels";
 import { ArrowLeft } from "lucide-react";
 import { StatusPill } from "@entas/ui";
 import { getOrderByTrackingCode } from "../../../lib/commercial-repository";
@@ -104,7 +105,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ code:
         <aside className="panel checkoutSummary">
           <div className="cartSummaryHeading">
             <span>Sipariş özeti</span>
-            <StatusPill tone="info">{order.status}</StatusPill>
+            <StatusPill tone={orderStatusLabel(order.status).tone}>{orderStatusLabel(order.status).label}</StatusPill>
           </div>
 
           <div className="checkoutSummaryRows">

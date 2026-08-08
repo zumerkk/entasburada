@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { quoteStatusLabel } from "../../../lib/commercial-labels";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { StatusPill } from "@entas/ui";
 import { getAdminOrderById, getQuoteByTrackingCode } from "../../../lib/commercial-repository";
@@ -44,7 +45,7 @@ export default async function QuoteTrackingPage({ params, searchParams }: { para
             </div>
             <div>
               <span>Durum</span>
-              <StatusPill tone={quote.status === "REJECTED" ? "danger" : quote.status === "CONVERTED" ? "success" : "info"}>{quote.status}</StatusPill>
+              <StatusPill tone={quoteStatusLabel(quote.status).tone}>{quoteStatusLabel(quote.status).label}</StatusPill>
             </div>
             <div>
               <span>Firma</span>

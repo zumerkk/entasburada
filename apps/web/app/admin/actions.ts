@@ -216,6 +216,13 @@ export async function updateProductAction(formData: FormData): Promise<void> {
         stockQuantity: Number(getString(formData, "stockQuantity")),
         unitType: getString(formData, "unitType"),
         imageUrl: getString(formData, "imageUrl"),
+        description: getString(formData, "description"),
+        barcode: getString(formData, "barcode"),
+        manufacturerCode: getString(formData, "manufacturerCode"),
+        taxRate: getString(formData, "taxRate"),
+        minOrder: Number(getString(formData, "minOrder")),
+        packageQuantity: Number(getString(formData, "packageQuantity")),
+        cartonQuantity: Number(getString(formData, "cartonQuantity")),
         status: toProductStatus(getString(formData, "status")),
         isVisible: getString(formData, "isVisible") === "on"
       },

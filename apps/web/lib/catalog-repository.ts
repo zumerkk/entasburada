@@ -195,6 +195,12 @@ export interface UpdateCatalogProductInput {
   unitType?: string;
   imageUrl?: string;
   description?: string;
+  barcode?: string;
+  manufacturerCode?: string;
+  taxRate?: string;
+  minOrder?: number;
+  packageQuantity?: number;
+  cartonQuantity?: number;
   status?: "ACTIVE" | "DRAFT" | "PASSIVE" | undefined;
   isVisible?: boolean | undefined;
 }
@@ -224,10 +230,22 @@ export async function updateCatalogProduct(
   const changes: string[] = [];
   const next = { ...current };
 
-  const setText = (field: "name" | "brand" | "category" | "unitType" | "imageUrl" | "description", label: string) => {
+  const setText = (
+    field: "name" | "brand" | "category" | "unitType" | "imageUrl" | "description" | "barcode" | "manufacturerCode",
+    label: string
+  ) => {
     const value = input[field];
     if (value === undefined) return;
-    const limits = { name: 300, brand: 160, category: 160, unitType: 40, imageUrl: 2_048, description: 10_000 } as const;
+    const limits = {
+      name: 300,
+      brand: 160,
+      category: 160,
+      unitType: 40,
+      imageUrl: 2_048,
+      description: 10_000,
+      barcode: 64,
+      manufacturerCode: 120
+    } as const;
     const trimmed = field === "imageUrl" ? normalizeProductImageUrl(value) : value.trim().slice(0, limits[field]);
     if (field === "name" && trimmed.length < 2) throw new Error("Ürün adı en az 2 karakter olmalıdır.");
     if (trimmed === (current[field] ?? "")) return;
@@ -241,6 +259,38 @@ export async function updateCatalogProduct(
   setText("unitType", "birim");
   setText("imageUrl", "görsel");
   setText("description", "açıklama");
+  setText("barcode", "barkod");
+  setText("manufacturerCode", "üretici kodu");
+
+  if (input.taxRate !== undefined) {
+    const raw = input.taxRate.trim().replace(",", ".");
+    const parsed = Number(raw);
+    if (raw && (!Number.isFinite(parsed) || parsed < 0 || parsed > 100)) {
+      throw new Error("KDV oranı 0 ile 100 arasında olmalıdır.");
+    }
+    const normalized = raw ? parsed.toFixed(2) : "";
+    if (normalized && normalized !== current.taxRate) {
+      next.taxRate = normalized;
+      changes.push(`KDV ${current.taxRate} → ${normalized}`);
+    }
+  }
+
+  // Koli/paket adetleri teklif ve toplu alim akislarinda kullanildigi icin
+  // 0 girildiginde alan tamamen kaldirilir; "0 koli" anlamsiz bir deger olurdu.
+  const setQuantity = (field: "minOrder" | "packageQuantity" | "cartonQuantity", label: string) => {
+    const value = input[field];
+    if (value === undefined || !Number.isFinite(value)) return;
+    const quantity = Math.min(1_000_000, Math.max(0, Math.trunc(value)));
+    const nextValue = quantity > 0 ? quantity : undefined;
+    if (nextValue === current[field]) return;
+    if (nextValue === undefined) delete (next as Record<string, unknown>)[field];
+    else (next as Record<string, unknown>)[field] = nextValue;
+    changes.push(`${label} ${current[field] ?? "-"} → ${nextValue ?? "-"}`);
+  };
+
+  setQuantity("minOrder", "min. sipariş");
+  setQuantity("packageQuantity", "paket adedi");
+  setQuantity("cartonQuantity", "koli adedi");
 
   if (input.listPrice !== undefined) {
     const price = input.listPrice.trim().replace(",", ".");

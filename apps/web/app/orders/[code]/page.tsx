@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { orderStatusLabel } from "../../../lib/commercial-labels";
 import { StatusPill } from "@entas/ui";
 import { getOrderByTrackingCode } from "../../../lib/commercial-repository";
 import { reorderAction } from "../../cart/actions";
@@ -83,9 +84,8 @@ export default async function OrderTrackingPage({
             </div>
             <div>
               <span>Durum</span>
-              <StatusPill tone={order.status === "CANCELLED" ? "danger" : order.status === "COMPLETED" || order.status === "DELIVERED" ? "success" : "info"}>
-                {order.status}
-              </StatusPill>
+              <StatusPill tone={orderStatusLabel(order.status).tone}>{orderStatusLabel(order.status).label}</StatusPill>
+              <small className="detailStatusHint">{orderStatusLabel(order.status).hint}</small>
             </div>
             <div>
               <span>Finans</span>
