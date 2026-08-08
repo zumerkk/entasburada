@@ -127,7 +127,14 @@ export interface CatalogStore {
   importSummary: CatalogSummary;
 }
 
-export type AuditAction = "IMPORT_SYNC" | "PRODUCT_BULK_PUBLISH" | "PRODUCT_PUBLISH" | "PRODUCT_UNPUBLISH";
+export type AuditAction =
+  | "IMPORT_SYNC"
+  | "PRODUCT_BULK_PUBLISH"
+  | "PRODUCT_PUBLISH"
+  | "PRODUCT_UNPUBLISH"
+  | "PRODUCT_BULK_PRICE"
+  | "PRODUCT_BULK_STATUS"
+  | "PRODUCT_BULK_DELETE";
 
 export interface AuditLogEntry {
   id: string;
@@ -444,6 +451,169 @@ export function publishProducts(store: CatalogStore, ids: string[], actor: strin
         metadata: { requestedCount: ids.length, changedCount: changed }
       }
     ]
+  };
+}
+
+export type PriceRounding = "none" | "integer";
+
+export interface BulkPriceResult {
+  store: CatalogStore;
+  auditLogs: AuditLogEntry[];
+  /** Fiyati gercekten degisen urun sayisi. */
+  updated: number;
+  /** Fiyati 0 oldugu icin atlanan urun sayisi (0 x carpan = 0). */
+  skippedZeroPrice: number;
+}
+
+/**
+ * Secili urunlere kar carpani uygular.
+ *
+ * Fiyati 0 olan urunler kapsam disidir: carpan onlarda etkisiz kalir, ama
+ * "guncellendi" sayilirsa admin yanlis geri bildirim alir. Bu yuzden ayrica
+ * raporlanir.
+ *
+ * DIKKAT: Bu islem depoya dogrudan yazar. `mergeImportedProducts` ice aktarilan
+ * `listPrice` degerini kosulsuz uyguladigi icin, XML'den senkronize olan
+ * kaynaklarda (ornegin euromix-stock) bir sonraki senkron bu zammi siler.
+ * Cagiran taraf kullaniciyi uyarmalidir.
+ */
+export function applyPriceMarkup(
+  store: CatalogStore,
+  ids: string[],
+  options: { multiplier: number; rounding?: PriceRounding },
+  actor: string,
+  now = new Date().toISOString()
+): BulkPriceResult {
+  const multiplier = Number(options.multiplier);
+  if (!Number.isFinite(multiplier) || multiplier <= 0 || multiplier > 10) {
+    throw new Error("Fiyat çarpanı 0 ile 10 arasında olmalıdır.");
+  }
+
+  const idSet = new Set(ids);
+  const rounding = options.rounding ?? "none";
+  let updated = 0;
+  let skippedZeroPrice = 0;
+
+  const products = store.products.map((product) => {
+    if (!idSet.has(product.id)) return product;
+
+    const current = toNumber(product.listPrice);
+    if (current <= 0) {
+      skippedZeroPrice += 1;
+      return product;
+    }
+
+    const raw = current * multiplier;
+    const next = rounding === "integer" ? String(Math.round(raw)) : raw.toFixed(2);
+    if (next === product.listPrice) return product;
+
+    updated += 1;
+    return { ...product, listPrice: next, updatedAt: now };
+  });
+
+  const nextStore: CatalogStore = {
+    version: 1,
+    updatedAt: now,
+    products,
+    importSummary: createSummary(products)
+  };
+
+  if (updated === 0) {
+    return { store: nextStore, auditLogs: [], updated, skippedZeroPrice };
+  }
+
+  const percentLabel = `${multiplier >= 1 ? "+" : ""}${((multiplier - 1) * 100).toFixed(2).replace(/\.?0+$/, "")}%`;
+
+  return {
+    store: nextStore,
+    auditLogs: [
+      {
+        id: auditId("price", now, ids.length),
+        timestamp: now,
+        actor,
+        action: "PRODUCT_BULK_PRICE",
+        entityType: "catalog",
+        message: `${updated.toLocaleString("tr-TR")} ürüne ${percentLabel} fiyat güncellemesi uygulandı.`,
+        metadata: { requestedCount: ids.length, changedCount: updated, multiplier, rounding, skippedZeroPrice }
+      }
+    ],
+    updated,
+    skippedZeroPrice
+  };
+}
+
+/** Secili urunleri PASSIVE/ACTIVE yapar; pasife alinan urun vitrinden de kaldirilir. */
+export function setProductsStatus(
+  store: CatalogStore,
+  ids: string[],
+  status: ProductStatus,
+  actor: string,
+  now = new Date().toISOString()
+): { store: CatalogStore; auditLogs: AuditLogEntry[]; changed: number } {
+  const idSet = new Set(ids);
+  const isVisible = status === "ACTIVE";
+  let changed = 0;
+
+  const products = store.products.map((product) => {
+    if (!idSet.has(product.id)) return product;
+    if (product.status === status && product.isVisible === isVisible) return product;
+    changed += 1;
+    return { ...product, status, isVisible, updatedAt: now };
+  });
+
+  const nextStore: CatalogStore = { version: 1, updatedAt: now, products, importSummary: createSummary(products) };
+  if (changed === 0) return { store: nextStore, auditLogs: [], changed };
+
+  return {
+    store: nextStore,
+    auditLogs: [
+      {
+        id: auditId("status", now, ids.length),
+        timestamp: now,
+        actor,
+        action: "PRODUCT_BULK_STATUS",
+        entityType: "catalog",
+        message: `${changed.toLocaleString("tr-TR")} ürün ${status} durumuna alındı.`,
+        metadata: { requestedCount: ids.length, changedCount: changed, status }
+      }
+    ],
+    changed
+  };
+}
+
+/**
+ * Secili urunleri katalog deposundan kalici olarak siler.
+ *
+ * Gecmis siparis/teklif satirlari urun bilgisini olusturulma aninda kopyaladigi
+ * icin silme onlari bozmaz. Geri alma yolu ilgili kaynagi yeniden ice aktarmaktir.
+ */
+export function deleteProducts(
+  store: CatalogStore,
+  ids: string[],
+  actor: string,
+  now = new Date().toISOString()
+): { store: CatalogStore; auditLogs: AuditLogEntry[]; deleted: number } {
+  const idSet = new Set(ids);
+  const products = store.products.filter((product) => !idSet.has(product.id));
+  const deleted = store.products.length - products.length;
+
+  const nextStore: CatalogStore = { version: 1, updatedAt: now, products, importSummary: createSummary(products) };
+  if (deleted === 0) return { store: nextStore, auditLogs: [], deleted };
+
+  return {
+    store: nextStore,
+    auditLogs: [
+      {
+        id: auditId("delete", now, ids.length),
+        timestamp: now,
+        actor,
+        action: "PRODUCT_BULK_DELETE",
+        entityType: "catalog",
+        message: `${deleted.toLocaleString("tr-TR")} ürün katalogdan kalıcı olarak silindi.`,
+        metadata: { requestedCount: ids.length, deletedCount: deleted }
+      }
+    ],
+    deleted
   };
 }
 

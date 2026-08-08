@@ -3,7 +3,17 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getAdminEmail } from "../../lib/admin-auth";
-import { publishDraftProducts, publishProductIds, syncImportedProducts, updateCatalogProduct } from "../../lib/catalog-repository";
+import {
+  bulkApplyPriceMarkup,
+  bulkDeleteProducts,
+  bulkSetProductsStatus,
+  countSyncedSourceProducts,
+  getAdminProductIdsByFilter,
+  publishDraftProducts,
+  publishProductIds,
+  syncImportedProducts,
+  updateCatalogProduct
+} from "../../lib/catalog-repository";
 import { requireAdmin } from "../../lib/admin-auth";
 import {
   convertQuoteToOrder,
@@ -52,6 +62,120 @@ export async function publishSelectedAction(formData: FormData): Promise<void> {
   revalidateCatalogPaths();
 }
 
+/**
+ * Toplu islemin hedefini cozer.
+ *
+ * `scope=filtered` secildiginde sayfadaki kutucuklar degil, mevcut filtreye uyan
+ * TUM urunler hedeflenir; 9.208 urunluk katalogda 50'lik sayfalarla calismak
+ * pratik olmadigi icin bu secenek gerekli. Filtre degerleri formda gizli
+ * alanlarla tasinir ki sunucu tarafinda ayni kume yeniden hesaplanabilsin.
+ */
+async function resolveBulkTargetIds(formData: FormData): Promise<string[]> {
+  if (getString(formData, "scope") === "filtered") {
+    // exactOptionalPropertyTypes acik: bos alanlar hic eklenmemeli, undefined atanmamali.
+    const q = getString(formData, "f_q");
+    const brand = getString(formData, "f_brand");
+    const sourceKey = getString(formData, "f_sourceKey");
+
+    return getAdminProductIdsByFilter({
+      ...(q ? { q } : {}),
+      ...(brand ? { brand } : {}),
+      ...(sourceKey ? { sourceKey } : {}),
+      status: toProductStatusFilter(getString(formData, "f_status")),
+      stockStatus: toStockStatusFilter(getString(formData, "f_stockStatus"))
+    });
+  }
+
+  return formData
+    .getAll("productId")
+    .map((value) => String(value))
+    .filter(Boolean);
+}
+
+function bulkReturnTo(formData: FormData): string {
+  const raw = getString(formData, "returnTo");
+  return raw.startsWith("/admin/products") ? raw : "/admin/products";
+}
+
+function redirectWith(returnTo: string, key: "ok" | "error", message: string): never {
+  redirect(`${returnTo}${returnTo.includes("?") ? "&" : "?"}${key}=${encodeURIComponent(message)}`);
+}
+
+export async function bulkSetStatusAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+  const returnTo = bulkReturnTo(formData);
+  const status = getString(formData, "targetStatus") === "ACTIVE" ? "ACTIVE" : "PASSIVE";
+  const ids = await resolveBulkTargetIds(formData);
+  if (ids.length === 0) redirectWith(returnTo, "error", "Ürün seçilmedi.");
+
+  const changed = await bulkSetProductsStatus(ids, status, getAdminEmail());
+  revalidateCatalogPaths();
+  redirectWith(
+    returnTo,
+    "ok",
+    `${changed.toLocaleString("tr-TR")} ürün ${status === "ACTIVE" ? "yayına alındı" : "pasife alındı"}.`
+  );
+}
+
+export async function bulkPriceMarkupAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+  const returnTo = bulkReturnTo(formData);
+  const percent = Number(getString(formData, "markupPercent").replace(",", "."));
+  if (!Number.isFinite(percent) || percent === 0) {
+    redirectWith(returnTo, "error", "Geçerli bir yüzde girin (örnek: 30 veya -10).");
+  }
+  if (percent <= -100 || percent > 900) {
+    redirectWith(returnTo, "error", "Yüzde -100 ile 900 arasında olmalıdır.");
+  }
+
+  const ids = await resolveBulkTargetIds(formData);
+  if (ids.length === 0) redirectWith(returnTo, "error", "Ürün seçilmedi.");
+
+  // redirect() ozel bir hata firlattigi icin basari yolu try blogunun DISINDA
+  // kalmali; aksi halde yonlendirme kendi catch'imize takilir.
+  const outcome = await bulkApplyPriceMarkup(
+    ids,
+    { multiplier: 1 + percent / 100, rounding: getString(formData, "rounding") === "integer" ? "integer" : "none" },
+    getAdminEmail()
+  ).catch((error: unknown) => {
+    redirectWith(returnTo, "error", error instanceof Error ? error.message : "Fiyat güncellenemedi.");
+  });
+
+  const synced = await countSyncedSourceProducts(ids);
+  revalidateCatalogPaths();
+
+  const parts = [`${outcome.updated.toLocaleString("tr-TR")} ürünün fiyatı %${percent} güncellendi.`];
+  if (outcome.skippedZeroPrice > 0) {
+    parts.push(`${outcome.skippedZeroPrice.toLocaleString("tr-TR")} ürün fiyatsız olduğu için atlandı.`);
+  }
+  // XML'den senkronize olan kaynaklarda bu zam bir sonraki senkronda silinir.
+  if (synced > 0) {
+    parts.push(
+      `Dikkat: ${synced.toLocaleString("tr-TR")} ürün XML'den senkronize olan bir kaynaktan geliyor; sonraki senkronda bu fiyatlar tedarikçi fiyatına döner.`
+    );
+  }
+  redirectWith(returnTo, "ok", parts.join(" "));
+}
+
+export async function bulkDeleteProductsAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+  const returnTo = bulkReturnTo(formData);
+  if (getString(formData, "confirmDelete") !== "on") {
+    redirectWith(returnTo, "error", "Kalıcı silme için önce onay kutusunu işaretleyin.");
+  }
+
+  const ids = await resolveBulkTargetIds(formData);
+  if (ids.length === 0) redirectWith(returnTo, "error", "Ürün seçilmedi.");
+
+  const deleted = await bulkDeleteProducts(ids, getAdminEmail());
+  revalidateCatalogPaths();
+  redirectWith(
+    returnTo,
+    "ok",
+    `${deleted.toLocaleString("tr-TR")} ürün kalıcı olarak silindi. Geri getirmek için ilgili kaynağı yeniden içe aktarmanız gerekir.`
+  );
+}
+
 /** Admin panelinden tek ürün düzenleme (ad, fiyat, stok, durum, görsel...). */
 export async function updateProductAction(formData: FormData): Promise<void> {
   await requireAdmin();
@@ -93,6 +217,15 @@ export async function updateProductAction(formData: FormData): Promise<void> {
 
 function toProductStatus(value: string): "ACTIVE" | "DRAFT" | "PASSIVE" | undefined {
   return value === "ACTIVE" || value === "DRAFT" || value === "PASSIVE" ? value : undefined;
+}
+
+/** Filtre alanlari icin: gecersiz deger "tum kayitlar" anlamina gelir. */
+function toProductStatusFilter(value: string): "ACTIVE" | "DRAFT" | "PASSIVE" | "all" {
+  return toProductStatus(value) ?? "all";
+}
+
+function toStockStatusFilter(value: string): "in_stock" | "low_stock" | "incoming" | "out_of_stock" | "all" {
+  return value === "in_stock" || value === "low_stock" || value === "incoming" || value === "out_of_stock" ? value : "all";
 }
 
 export async function updateQuoteStatusAction(formData: FormData): Promise<void> {

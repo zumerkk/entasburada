@@ -2,9 +2,22 @@ import { Search } from "lucide-react";
 import { StatusPill } from "@entas/ui";
 import type { ProductStatus, StockStatus } from "@entas/catalog";
 import { requireAdmin } from "../../../lib/admin-auth";
-import { formatCatalogMoney, getAdminProducts, getCatalogFacets } from "../../../lib/catalog-repository";
-import { publishAllDraftAction, publishSelectedAction, updateProductAction } from "../actions";
+import {
+  XML_SYNCED_SOURCE_KEYS,
+  formatCatalogMoney,
+  getAdminProducts,
+  getCatalogFacets
+} from "../../../lib/catalog-repository";
+import {
+  bulkDeleteProductsAction,
+  bulkPriceMarkupAction,
+  bulkSetStatusAction,
+  publishAllDraftAction,
+  publishSelectedAction,
+  updateProductAction
+} from "../actions";
 import { AdminFrame } from "../AdminFrame";
+import { AdminBulkSelection } from "./AdminBulkSelection";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -32,12 +45,15 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
   const status = toStatus(getParam(params, "status"));
   const stockStatus = toStockStatus(getParam(params, "stockStatus"));
   const sourceKey = getParam(params, "sourceKey");
+  const brand = getParam(params, "brand");
   const page = Math.max(1, Number(getParam(params, "page") || "1"));
   const limit = 50;
   const [facets, products] = await Promise.all([
     getCatalogFacets(false),
-    getAdminProducts({ q, status, stockStatus, sourceKey, limit, offset: (page - 1) * limit })
+    getAdminProducts({ q, status, stockStatus, sourceKey, brand, limit, offset: (page - 1) * limit })
   ]);
+  // Kaynak secilmediyse secim XML'li kaynagi kapsiyor olabilir; secildiyse kesin bilinir.
+  const filterTouchesSyncedSource = sourceKey ? XML_SYNCED_SOURCE_KEYS.has(sourceKey) : true;
   const pageCount = Math.max(1, Math.ceil(products.total / products.limit));
   const okMessage = getParam(params, "ok");
   const errorMessage = getParam(params, "error");
@@ -65,12 +81,24 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
             <input name="q" defaultValue={q} placeholder="Ürün, SKU, barkod" />
           </label>
           <label>
-            Kaynak
+            Kaynak (PDF / XML)
             <select name="sourceKey" defaultValue={sourceKey}>
               <option value="">Tüm kaynaklar</option>
               {facets.sources.map((source) => (
                 <option value={source.key} key={source.key}>
-                  {source.name}
+                  {source.name} — {source.count.toLocaleString("tr-TR")} ürün
+                  {XML_SYNCED_SOURCE_KEYS.has(source.key) ? " (XML)" : ""}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Marka
+            <select name="brand" defaultValue={brand}>
+              <option value="">Tüm markalar</option>
+              {facets.brands.map((name) => (
+                <option value={name} key={name}>
+                  {name}
                 </option>
               ))}
             </select>
@@ -103,17 +131,32 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
       </section>
 
       <form className="panel" action={publishSelectedAction}>
+        {/* Toplu islem sunucu tarafinda ayni kumeyi yeniden hesaplayabilsin diye
+            mevcut filtre ve donus adresi formda tasinir. */}
+        <input type="hidden" name="returnTo" value={returnTo} />
+        <input type="hidden" name="f_q" value={q} />
+        <input type="hidden" name="f_brand" value={brand} />
+        <input type="hidden" name="f_sourceKey" value={sourceKey} />
+        <input type="hidden" name="f_status" value={status} />
+        <input type="hidden" name="f_stockStatus" value={stockStatus} />
+
         <div className="panelHeader">
           <div>
             <h2>{products.total.toLocaleString("tr-TR")} ürün</h2>
             <p>Admin görünümünde fiyat ve gerçek stok miktarı açıktır.</p>
           </div>
-          <button className="btn btnSecondary" type="submit">
-            Seçilileri yayına al
-          </button>
         </div>
         {okMessage ? <p className="formSuccess">{okMessage}</p> : null}
         {errorMessage ? <p className="formError">{errorMessage}</p> : null}
+
+        <AdminBulkSelection
+          filteredTotal={products.total}
+          pageCount={products.items.length}
+          filterTouchesSyncedSource={filterTouchesSyncedSource}
+          bulkSetStatusAction={bulkSetStatusAction}
+          bulkPriceMarkupAction={bulkPriceMarkupAction}
+          bulkDeleteProductsAction={bulkDeleteProductsAction}
+        />
         <div className="adminTable">
           <div className="adminTableHead productRows">
             <span>Seç</span>

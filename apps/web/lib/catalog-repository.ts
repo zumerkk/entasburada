@@ -5,15 +5,18 @@ import { mkdir, readFile, rename, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import {
   CATALOG_TREE,
+  applyPriceMarkup,
   brandsFromStore,
   categoriesFromStore,
   classifyCatalogProduct,
   createEmptyCatalogStore,
   createImportAudit,
+  deleteProducts,
   ensureUniqueCatalogProductIds,
   mergeImportedProducts,
   publishProducts,
   searchCatalogRecords,
+  setProductsStatus,
   sourcesFromStore,
   toAdminProduct,
   toPublicProduct,
@@ -25,6 +28,8 @@ import {
   type CatalogStore,
   type CatalogGroupDefinition,
   type ImportedSupplierProduct,
+  type PriceRounding,
+  type ProductStatus,
   type PublicCatalogProduct
 } from "@entas/catalog";
 import type { CustomerAccount } from "./customer-auth";
@@ -316,6 +321,79 @@ export async function publishProductIds(ids: string[], actor = "admin@entasburad
   await appendAuditLogs(result.auditLogs);
   return result.store;
 }
+
+/**
+ * Filtreye uyan TUM urun kimliklerini dondurur (sayfalama uygulanmaz).
+ *
+ * "Sayfadakileri sec" yerine "filtreye uyan hepsini sec" secenegi icin gerekli:
+ * 9.208 urunluk katalogda 50'lik sayfalarla toplu islem yapmak pratik degil.
+ */
+export async function getAdminProductIdsByFilter(filters: CatalogSearchFilters = {}): Promise<string[]> {
+  const store = await loadCatalogStore();
+  // searchCatalogRecords limit'i 200 ile sinirlar; tam kumeyi sayfalayarak toplariz.
+  const pageSize = 200;
+  const first = searchCatalogRecords(store, { ...filters, limit: pageSize, offset: 0 });
+  const ids = first.items.map((item) => item.id);
+
+  for (let offset = pageSize; offset < first.total; offset += pageSize) {
+    const page = searchCatalogRecords(store, { ...filters, limit: pageSize, offset });
+    if (page.items.length === 0) break;
+    ids.push(...page.items.map((item) => item.id));
+  }
+
+  return ids;
+}
+
+export interface BulkPriceOutcome {
+  updated: number;
+  skippedZeroPrice: number;
+}
+
+export async function bulkApplyPriceMarkup(
+  ids: string[],
+  options: { multiplier: number; rounding?: PriceRounding },
+  actor = "admin@entasburada.com"
+): Promise<BulkPriceOutcome> {
+  const store = await loadCatalogStore();
+  const result = applyPriceMarkup(store, ids, options, actor);
+  await saveCatalogStore(result.store);
+  await appendAuditLogs(result.auditLogs);
+  return { updated: result.updated, skippedZeroPrice: result.skippedZeroPrice };
+}
+
+export async function bulkSetProductsStatus(
+  ids: string[],
+  status: ProductStatus,
+  actor = "admin@entasburada.com"
+): Promise<number> {
+  const store = await loadCatalogStore();
+  const result = setProductsStatus(store, ids, status, actor);
+  await saveCatalogStore(result.store);
+  await appendAuditLogs(result.auditLogs);
+  return result.changed;
+}
+
+export async function bulkDeleteProducts(ids: string[], actor = "admin@entasburada.com"): Promise<number> {
+  const store = await loadCatalogStore();
+  const result = deleteProducts(store, ids, actor);
+  await saveCatalogStore(result.store);
+  await appendAuditLogs(result.auditLogs);
+  return result.deleted;
+}
+
+/** Secilen urunlerden kaci XML'den senkronize olan bir kaynaktan geliyor. */
+export async function countSyncedSourceProducts(ids: string[]): Promise<number> {
+  const store = await loadCatalogStore();
+  const idSet = new Set(ids);
+  return store.products.filter((product) => idSet.has(product.id) && XML_SYNCED_SOURCE_KEYS.has(product.sourceKey)).length;
+}
+
+/**
+ * XML'den otomatik senkronize olan kaynaklar. Bu kaynaklardaki urunlerde elle
+ * yapilan fiyat degisikligi bir sonraki senkronda silinir; cunku
+ * `mergeImportedProducts` ice aktarilan `listPrice` degerini kosulsuz uygular.
+ */
+export const XML_SYNCED_SOURCE_KEYS = new Set(["euromix-stock"]);
 
 export async function getPublicProducts(filters: PublicProductFilters = {}): Promise<CatalogSearchResult<PublicCatalogProduct>> {
   const startedAt = Date.now();

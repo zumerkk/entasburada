@@ -1,13 +1,16 @@
 import { describe, expect, it } from "vitest";
 import {
+  applyPriceMarkup,
   CATALOG_GROUPS,
   CATALOG_TREE,
   catalogTextMatchesPhrase,
   catalogGroupCount,
   classifyCatalogProduct,
   createEmptyCatalogStore,
+  deleteProducts,
   mergeImportedProducts,
   publishProducts,
+  setProductsStatus,
   resolveCatalogGroup,
   searchCatalogRecords,
   toAdminProduct,
@@ -356,6 +359,74 @@ describe("@entas/catalog", () => {
 
     expect(result.total).toBe(1);
     expect(result.offset).toBe(0);
+  });
+
+  it("applies a price markup and leaves zero-priced products untouched", () => {
+    const store = mergeImportedProducts(
+      createEmptyCatalogStore(),
+      [
+        { ...imported, externalId: "A-1", sku: "A-1", listPrice: "100.00" },
+        { ...imported, externalId: "A-2", sku: "A-2", listPrice: "0" }
+      ],
+      "2026-07-07T01:00:00.000Z"
+    );
+
+    const result = applyPriceMarkup(store, ["supplier:euromix-stock:a-1", "supplier:euromix-stock:a-2"], { multiplier: 1.3 }, "admin");
+
+    expect(result.updated).toBe(1);
+    expect(result.skippedZeroPrice).toBe(1);
+    expect(result.store.products.find((p) => p.sku === "A-1")?.listPrice).toBe("130.00");
+    expect(result.store.products.find((p) => p.sku === "A-2")?.listPrice).toBe("0");
+    expect(result.auditLogs[0]?.action).toBe("PRODUCT_BULK_PRICE");
+  });
+
+  it("rounds marked-up prices to whole numbers when asked", () => {
+    const store = mergeImportedProducts(createEmptyCatalogStore(), [{ ...imported, listPrice: "33.33" }], "2026-07-07T01:00:00.000Z");
+
+    const result = applyPriceMarkup(store, ["supplier:euromix-stock:rbt-007"], { multiplier: 1.15, rounding: "integer" }, "admin");
+
+    expect(result.store.products[0]?.listPrice).toBe("38");
+  });
+
+  it("rejects an out-of-range price multiplier instead of destroying prices", () => {
+    const store = mergeImportedProducts(createEmptyCatalogStore(), [imported], "2026-07-07T01:00:00.000Z");
+
+    for (const multiplier of [0, -1, 11, Number.NaN]) {
+      expect(() => applyPriceMarkup(store, ["supplier:euromix-stock:rbt-007"], { multiplier }, "admin")).toThrow();
+    }
+  });
+
+  it("deletes only the selected products and reports the count", () => {
+    const store = mergeImportedProducts(
+      createEmptyCatalogStore(),
+      [
+        { ...imported, externalId: "A-1", sku: "A-1" },
+        { ...imported, externalId: "A-2", sku: "A-2" }
+      ],
+      "2026-07-07T01:00:00.000Z"
+    );
+
+    const result = deleteProducts(store, ["supplier:euromix-stock:a-1"], "admin");
+
+    expect(result.deleted).toBe(1);
+    expect(result.store.products.map((p) => p.sku)).toEqual(["A-2"]);
+    expect(result.store.importSummary.importedRows).toBe(1);
+    expect(result.auditLogs[0]?.action).toBe("PRODUCT_BULK_DELETE");
+  });
+
+  it("hides a product from the storefront when it is set passive", () => {
+    const published = publishProducts(
+      mergeImportedProducts(createEmptyCatalogStore(), [imported], "2026-07-07T01:00:00.000Z"),
+      ["supplier:euromix-stock:rbt-007"],
+      "admin"
+    ).store;
+
+    const result = setProductsStatus(published, ["supplier:euromix-stock:rbt-007"], "PASSIVE", "admin");
+
+    expect(result.changed).toBe(1);
+    expect(result.store.products[0]?.status).toBe("PASSIVE");
+    expect(result.store.products[0]?.isVisible).toBe(false);
+    expect(searchCatalogRecords(result.store, { publicOnly: true }).total).toBe(0);
   });
 
   it("keeps every built-in catalog group countable", () => {

@@ -2474,6 +2474,144 @@ a.metricCard {
   grid-template-columns: repeat(auto-fit, minmax(142px, 1fr));
 }
 
+/* ---------- Toplu urun islemleri cubugu ---------- */
+.adminBulkBar {
+  display: grid;
+  gap: 14px;
+  margin: 14px 0 18px;
+  padding: 16px 18px;
+  background: #f7fafa;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.adminBulkScope {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+.adminBulkScopeChoice {
+  display: inline-flex;
+  padding: 3px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.adminBulkScopeChoice button {
+  padding: 7px 13px;
+  color: var(--muted);
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 850;
+}
+
+.adminBulkScopeChoice button.active {
+  color: var(--white);
+  background: var(--green-900);
+}
+
+.adminBulkTarget {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.adminBulkTarget strong {
+  color: var(--green-900);
+}
+
+.adminBulkGroup {
+  display: grid;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--line);
+}
+
+.adminBulkGroup.danger {
+  padding: 12px;
+  background: #fef4f2;
+  border: 1px solid #f3c8bf;
+  border-radius: 8px;
+}
+
+.adminBulkGroupTitle {
+  color: var(--green-900);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.adminBulkGroup small {
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.adminBulkActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.adminBulkActions .btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.adminBulkPercent {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px 0 0;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.adminBulkPercent input {
+  width: 88px;
+  min-height: 40px;
+  padding: 0 4px 0 12px;
+  border: 0;
+  background: transparent;
+  font-weight: 850;
+  text-align: right;
+}
+
+.adminBulkPercent input:focus {
+  outline: none;
+}
+
+.adminBulkPercent span {
+  color: var(--muted);
+  font-weight: 900;
+}
+
+.adminBulkWarning {
+  display: flex;
+  align-items: start;
+  gap: 8px;
+  margin: 2px 0 0;
+  padding: 9px 11px;
+  color: #8a4b12;
+  background: #fff6ec;
+  border: 1px solid #f2d3ab;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.adminBulkWarning svg {
+  flex: none;
+  margin-top: 1px;
+}
+
 .informationPage {
   padding-bottom: 64px;
 }
