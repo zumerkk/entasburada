@@ -12,6 +12,7 @@ import {
   Play,
   ShieldCheck,
   Sprout,
+  Truck,
   Wrench
 } from "lucide-react";
 
@@ -24,6 +25,21 @@ interface HomeHeroSliderProps {
 }
 
 const SLIDES = [
+  {
+    id: "free-shipping",
+    eyebrow: "Premium teslimat avantajı",
+    title: "10.000 TL ve üzeri sepetlerde kargo bizden",
+    body: "KDV dahil ürün toplamınız 10.000 TL'ye ulaştığında ücretsiz kargo avantajı kuponsuz ve otomatik olarak sepetinize uygulanır.",
+    image: "/images/hero-tools-v2.webp",
+    href: "/catalog",
+    cta: "Alışverişe Başla",
+    secondaryHref: "/delivery",
+    secondaryCta: "Kargo Koşulları",
+    accent: "shipping",
+    Icon: Truck,
+    ActionIcon: PackageSearch,
+    SecondaryIcon: Truck
+  },
   {
     id: "bulk-quote-campaign",
     eyebrow: "Toplu alım ve sevkiyat planı",
@@ -144,7 +160,7 @@ export function HomeHeroSlider({ metrics }: HomeHeroSliderProps) {
               const SecondaryIcon = slide.SecondaryIcon;
               return (
                 <article
-                  className={`homeHeroSlide${isActive ? " active" : ""}${slide.accent === "campaign" ? " campaign" : ""}`}
+                  className={`homeHeroSlide${isActive ? " active" : ""}${slide.accent === "campaign" ? " campaign" : ""}${slide.accent === "shipping" ? " shipping" : ""}`}
                   aria-hidden={!isActive}
                   key={slide.id}
                 >
@@ -171,7 +187,7 @@ export function HomeHeroSlider({ metrics }: HomeHeroSliderProps) {
                   <div className="homeHeroMetrics" aria-label="Platform göstergeleri">
                     <span><strong>{metrics.activeProducts}</strong> aktif ürün</span>
                     <span><strong>{metrics.pricedProducts}</strong> ortak fiyat</span>
-                    <span><strong>{metrics.stockedProducts}</strong> stok görünümü</span>
+                    <span><strong>{metrics.stockedProducts}</strong> stokta var</span>
                   </div>
                 </article>
               );

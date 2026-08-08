@@ -11,7 +11,7 @@ const trustItems = [
   { title: "Herkese aynı fiyat", body: "Onaylı hesaplarda ortak marka fiyatları uygulanır." },
   { title: "Hızlı sipariş", body: "SKU, barkod veya Excel ile toplu sipariş altyapısı." },
   { title: "Teknik destek", body: "Ürün, alternatif ve doküman desteği tek merkezde." },
-  { title: "Sevkiyat takibi", body: "Depo, teslimat ve sipariş durumu izlenebilir." }
+  { title: "Kargo bizden", body: "10.000 TL ve üzeri sepetlerde ücretsiz kargo." }
 ];
 
 export const dynamic = "force-dynamic";
@@ -31,7 +31,7 @@ export default async function HomePage() {
         metrics={{
           activeProducts: formatCount(overview.store.importSummary.active),
           pricedProducts: formatCount(overview.store.importSummary.priced),
-          stockedProducts: formatCount(overview.store.importSummary.inStock + overview.store.importSummary.lowStock)
+          stockedProducts: formatCount(overview.store.importSummary.active)
         }}
       />
       <BulkQuoteCampaign variant="home" />
@@ -155,7 +155,7 @@ export default async function HomePage() {
         <div className="opItem">
           <Truck size={22} aria-hidden="true" />
           <strong>Stok görünürlüğü</strong>
-          <span>Ziyaretçi yalnızca stok durumunu görür; admin gerçek stok miktarını yönetir.</span>
+          <span>Müşteri kataloğundaki bütün aktif ürünler “Stokta var” olarak gösterilir.</span>
         </div>
         <div className="opItem">
           <FileText size={22} aria-hidden="true" />

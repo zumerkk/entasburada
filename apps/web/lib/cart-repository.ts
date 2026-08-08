@@ -3,8 +3,8 @@ import { randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { toPublicProduct, type CatalogProductRecord } from "@entas/catalog";
-import { loadCatalogStore } from "./catalog-repository";
+import type { CatalogProductRecord } from "@entas/catalog";
+import { loadCatalogStore, toCustomerFacingProduct } from "./catalog-repository";
 import { MAX_CART_LINES, normalizeCartQuantity, summarizeCartPricing, type CartPricingPolicy } from "./cart-policy";
 import type { CustomerAccount } from "./customer-auth";
 import { formatMoney, money, parseMoney, priceProductForCustomer, priceUnavailableMessage } from "./customer-pricing";
@@ -235,7 +235,7 @@ async function ensureFile(): Promise<void> {
 
 function priceCartItem(item: CartItem, customer: CustomerAccount, products: CatalogProductRecord[]): PricedCartItem {
   const product = findCatalogProduct(products, item.productSlug ?? "", item.sku, item.productName);
-  const publicProduct = product ? toPublicProduct(product) : null;
+  const publicProduct = product ? toCustomerFacingProduct(product) : null;
   const currency = product?.currency === "TL" ? "TRY" : product?.currency || "TRY";
   const price = product ? priceProductForCustomer(product, customer) : null;
   const unitPrice = price ? parseMoney(price.unitNetPrice) : 0;
@@ -250,7 +250,7 @@ function priceCartItem(item: CartItem, customer: CustomerAccount, products: Cata
     image: publicProduct?.image,
     brand: product?.brand,
     category: publicProduct?.category,
-    stockStatus: product?.stockStatus,
+    stockStatus: publicProduct?.stockTone,
     stockLabel: publicProduct?.stockLabel,
     minOrder: publicProduct?.minOrder ?? 1,
     unitNetPrice: money(unitPrice),

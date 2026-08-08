@@ -5,12 +5,11 @@ import { AddToCartControl } from "../../../components/AddToCartControl";
 import { AddToQuoteButton } from "../../../components/AddToQuoteButton";
 import { BulkQuoteCampaign } from "../../../components/BulkQuoteCampaign";
 import { FavoriteButton } from "../../../components/FavoriteButton";
-import { StockAlertButton } from "../../../components/StockAlertButton";
 import { ProductViewTracker } from "../../../components/AnalyticsTracker";
+import { FreeShippingBanner } from "../../../components/FreeShippingBanner";
 import { getPricedPublicProductBySlug, getPublicProductBySlug } from "../../../lib/catalog-repository";
 import { getCurrentCustomer } from "../../../lib/customer-auth";
 import { isFavorite } from "../../../lib/favorites-repository";
-import { isSubscribedToStock } from "../../../lib/stock-notify-repository";
 
 export const dynamic = "force-dynamic";
 
@@ -34,8 +33,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   }
 
   const favorited = customer ? await isFavorite(customer.id, product.sku, product.slug) : false;
-  const outOfStock = product.stockTone === "out_of_stock";
-  const stockSubscribed = outOfStock && customer ? await isSubscribedToStock(customer.id, product.sku, product.slug) : false;
 
   return (
     <main className="productDetailPage">
@@ -109,6 +106,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             unavailableMessage={product.priceUnavailableMessage}
           />
 
+          <FreeShippingBanner variant="product" />
+
           <div className="purchaseRules">
             <div>
               <Box size={18} aria-hidden="true" />
@@ -125,7 +124,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             <div>
               <Truck size={18} aria-hidden="true" />
               <span>Teslimat</span>
-              <strong>Temsilci teyidi</strong>
+              <strong>10.000 TL üzeri kargo bizden</strong>
             </div>
             <div>
               <Scale size={18} aria-hidden="true" />
@@ -158,15 +157,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               isAuthenticated={Boolean(customer)}
               redirectTo={`/products/${product.slug}`}
             />
-            {outOfStock ? (
-              <StockAlertButton
-                sku={product.sku}
-                name={product.name}
-                slug={product.slug}
-                isSubscribed={stockSubscribed}
-                isAuthenticated={Boolean(customer)}
-              />
-            ) : null}
             <a
               className="btn btnSecondary"
               href={customer ? `/quick-order?sku=${encodeURIComponent(product.sku)}&name=${encodeURIComponent(product.name)}` : "/login?next=/quick-order"}

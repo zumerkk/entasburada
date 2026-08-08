@@ -10,6 +10,7 @@ import {
   Search,
   ShieldCheck,
   Sparkles,
+  Truck,
   TriangleAlert
 } from "lucide-react";
 
@@ -138,6 +139,10 @@ export function ProductCard(props: ProductCardProps) {
           unavailableMessage={props.priceUnavailableMessage}
           compact
         />
+        <div className="productShippingPerk">
+          <Truck size={14} aria-hidden="true" />
+          <span><strong>10.000 TL</strong> ve üzeri kargo bizden</span>
+        </div>
         <div className="productActions">
           <a className="productActionLink" href={props.href}>
             <Search size={17} aria-hidden="true" />

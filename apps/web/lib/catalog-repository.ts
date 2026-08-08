@@ -23,6 +23,7 @@ import {
   uncategorizedProductCount,
   type AdminCatalogProduct,
   type AuditLogEntry,
+  type CatalogProductRecord,
   type CatalogSearchFilters,
   type CatalogSearchResult,
   type CatalogStore,
@@ -35,6 +36,7 @@ import {
 import type { CustomerAccount } from "./customer-auth";
 import { priceProductForCustomer, priceUnavailableMessage } from "./customer-pricing";
 import { notifyRestockedProducts } from "./stock-notify-repository";
+import { applyCustomerStockPolicy } from "./customer-stock-policy";
 
 interface ImportReport {
   generatedAt: string;
@@ -450,9 +452,13 @@ export const XML_SYNCED_SOURCE_KEYS = new Set(["euromix-stock"]);
 export async function getPublicProducts(filters: PublicProductFilters = {}): Promise<CatalogSearchResult<PublicCatalogProduct>> {
   const startedAt = Date.now();
   const store = await loadCatalogStore();
-  const result = searchCatalogRecords(store, { ...filters, publicOnly: true, allowCategoryFallback: true });
+  const result = searchCatalogRecords(store, { ...filters, stockStatus: "all", publicOnly: true, allowCategoryFallback: true });
   logCatalogQuery(filters, result.total, Date.now() - startedAt);
-  return { ...result, items: result.items.map(toPublicProduct) };
+  return { ...result, items: result.items.map(toCustomerFacingProduct) };
+}
+
+export function toCustomerFacingProduct(product: CatalogProductRecord): PublicCatalogProduct {
+  return applyCustomerStockPolicy(toPublicProduct(product));
 }
 
 export async function getFeaturedPublicProducts(
@@ -487,7 +493,7 @@ export async function getFeaturedPublicProducts(
     limit,
     offset: 0,
     items: featured.map((product) => {
-      const publicProduct: PricedPublicCatalogProduct = toPublicProduct(product);
+      const publicProduct: PricedPublicCatalogProduct = toCustomerFacingProduct(product);
       const price = customer ? priceProductForCustomer(product, customer) : null;
       return price
         ? {
@@ -512,13 +518,13 @@ export async function getPricedPublicProducts(
 ): Promise<CatalogSearchResult<PricedPublicCatalogProduct>> {
   const startedAt = Date.now();
   const store = await loadCatalogStore();
-  const result = searchCatalogRecords(store, { ...filters, publicOnly: true, allowCategoryFallback: true });
+  const result = searchCatalogRecords(store, { ...filters, stockStatus: "all", publicOnly: true, allowCategoryFallback: true });
   logCatalogQuery(filters, result.total, Date.now() - startedAt);
 
   return {
     ...result,
     items: result.items.map((product) => {
-      const publicProduct: PricedPublicCatalogProduct = toPublicProduct(product);
+      const publicProduct: PricedPublicCatalogProduct = toCustomerFacingProduct(product);
       const price = customer ? priceProductForCustomer(product, customer) : null;
       if (!price) {
         return {
@@ -548,7 +554,7 @@ export async function getAdminProducts(filters: CatalogSearchFilters = {}): Prom
 export async function getPublicProductBySlug(slug: string): Promise<PublicCatalogProduct | null> {
   const store = await loadCatalogStore();
   const product = store.products.find((item) => item.slug === slug && item.status === "ACTIVE" && item.isVisible);
-  return product ? toPublicProduct(product) : null;
+  return product ? toCustomerFacingProduct(product) : null;
 }
 
 export async function getPricedPublicProductBySlug(slug: string, customer: CustomerAccount | null): Promise<PricedPublicCatalogProduct | null> {
@@ -558,7 +564,7 @@ export async function getPricedPublicProductBySlug(slug: string, customer: Custo
     return null;
   }
 
-  const publicProduct: PricedPublicCatalogProduct = toPublicProduct(product);
+  const publicProduct: PricedPublicCatalogProduct = toCustomerFacingProduct(product);
   const price = customer ? priceProductForCustomer(product, customer) : null;
   if (!price) {
     return {

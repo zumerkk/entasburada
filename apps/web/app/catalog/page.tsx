@@ -3,19 +3,11 @@ import { EmptyState, ProductCard, StatusPill } from "@entas/ui";
 import { AddToCartControl } from "../../components/AddToCartControl";
 import { CatalogSearchTracker } from "../../components/AnalyticsTracker";
 import { BulkQuoteCampaign } from "../../components/BulkQuoteCampaign";
+import { FreeShippingBanner } from "../../components/FreeShippingBanner";
 import { getCatalogFacets, getCatalogNavigation, getPricedPublicProducts } from "../../lib/catalog-repository";
 import { getCurrentCustomer } from "../../lib/customer-auth";
-import type { StockStatus } from "@entas/catalog";
 
 type SearchParams = Record<string, string | string[] | undefined>;
-
-const stockOptions: Array<{ value: StockStatus | "all"; label: string }> = [
-  { value: "all", label: "Tümü" },
-  { value: "in_stock", label: "Stokta" },
-  { value: "low_stock", label: "Az stok" },
-  { value: "incoming", label: "Tedarik sürecinde" },
-  { value: "out_of_stock", label: "Stok yok" }
-];
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +19,6 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
   const view = getParam(params, "view");
   const brand = getParam(params, "brand");
   const sourceKey = getParam(params, "sourceKey");
-  const stockStatus = toStockStatus(getParam(params, "stockStatus"));
   const page = Math.max(1, Number(getParam(params, "page") || "1"));
   const limit = 24;
   const offset = (page - 1) * limit;
@@ -36,7 +27,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
   const [facets, navigation, products] = await Promise.all([
     getCatalogFacets(true),
     getCatalogNavigation(),
-    getPricedPublicProducts({ q, category, categoryGroup: group, view, brand, sourceKey, stockStatus, limit, offset }, customer)
+    getPricedPublicProducts({ q, category, categoryGroup: group, view, brand, sourceKey, limit, offset }, customer)
   ]);
   const safePage = Math.floor(products.offset / products.limit) + 1;
   const pageCount = Math.max(1, Math.ceil(products.total / products.limit));
@@ -53,6 +44,10 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
         <a className="btn btnSecondary" href="/dealer-application">
           Bayi Başvurusu
         </a>
+      </section>
+
+      <section className="shell catalogShippingSection">
+        <FreeShippingBanner variant="catalog" />
       </section>
 
       <BulkQuoteCampaign variant="catalog" />
@@ -92,16 +87,6 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
                 ))}
               </select>
             </label>
-            <label>
-              Stok durumu
-              <select name="stockStatus" defaultValue={stockStatus}>
-                {stockOptions.map((option) => (
-                  <option value={option.value} key={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
             <button className="btn btnPrimary" type="submit">
               <Search size={17} aria-hidden="true" />
               Filtrele
@@ -137,7 +122,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
             </a>
           </div>
           <div className="activeFilters">
-            <StatusPill tone="info">Stok görünümü: durum bazlı</StatusPill>
+            <StatusPill tone="success">Tüm ürünler: Stokta var</StatusPill>
             <StatusPill tone={customer ? "success" : "warning"}>{customer ? "Fiyat görünümü: ortak, KDV dahil" : "Fiyat görünümü: bayi girişi gerekli"}</StatusPill>
             {q ? <StatusPill tone="neutral">Arama: {q}</StatusPill> : null}
             {category ? <StatusPill tone="neutral">Kategori: {category}</StatusPill> : null}
@@ -210,9 +195,6 @@ function getParam(params: SearchParams, key: string): string {
   return Array.isArray(value) ? value[0] ?? "" : value ?? "";
 }
 
-function toStockStatus(value: string): StockStatus | "all" {
-  return value === "in_stock" || value === "low_stock" || value === "incoming" || value === "out_of_stock" ? value : "all";
-}
 
 function pageHref(params: SearchParams, page: number): string {
   const next = new URLSearchParams();

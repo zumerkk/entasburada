@@ -67,7 +67,7 @@ export default async function AdminDashboardPage() {
             <div>
               <Truck size={20} aria-hidden="true" />
               <strong>Stok görünümü</strong>
-              <span>Müşteri sadece Stokta, Az stok veya Stok yok bilgisini görür.</span>
+              <span>Müşteri tarafındaki bütün aktif ürünler “Stokta var” olarak gösterilir.</span>
             </div>
           </div>
         </div>

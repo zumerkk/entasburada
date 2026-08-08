@@ -1,4 +1,4 @@
-import { Building2, FileText, Menu, PhoneCall, Search, ShieldCheck, ShoppingCart, UserRound } from "lucide-react";
+import { Building2, FileText, Menu, PhoneCall, Search, ShieldCheck, ShoppingCart, Truck, UserRound } from "lucide-react";
 import { loadCustomerCart } from "../lib/cart-repository";
 import { getBrandSettings } from "../lib/brand-settings";
 import { getCatalogTree } from "../lib/catalog-repository";
@@ -16,7 +16,10 @@ export async function Header() {
     <header className="siteHeader">
       <div className="topBar">
         <div className="shell topBarInner">
-          <span>Hızlı teslimat</span>
+          <a className="topBarShipping" href="/delivery">
+            <Truck size={15} aria-hidden="true" />
+            <strong>10.000 TL ve üzeri kargo bizden</strong>
+          </a>
           <span>Güvenli bayi alışverişi</span>
           <span>Teknik destek</span>
           <a href="/orders">Sipariş takibi</a>
