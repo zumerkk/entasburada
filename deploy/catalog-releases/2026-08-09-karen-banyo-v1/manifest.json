@@ -1,0 +1,13 @@
+{
+  "version": "2026-08-09-karen-banyo-v1",
+  "createdAt": "2026-08-08T21:29:00.034Z",
+  "sourceCounts": {
+    "catalog-pdf-karen-banyo-2026-1-revize": 63,
+    "catalog-pdf-karen-led-ayna-2026": 19
+  },
+  "productCount": 82,
+  "imageCount": 62,
+  "pricingPolicy": "KAREN liste fiyatı - %30; fiyatlar KDV dahil gösterilir",
+  "stockPolicy": "Stokta var; kaynak PDF gerçek adet vermediği için stockQuantityKnown=false",
+  "imagePolicy": "PDF gömülü orijinal görselleri, 1200x1200 WebP, Lanczos3 ve hafif keskinleştirme"
+}

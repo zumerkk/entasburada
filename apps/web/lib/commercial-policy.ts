@@ -26,6 +26,7 @@ const BRAND_PRICE_POLICIES: Array<BrandPricePolicy & { aliases: string[] }> = [
   { canonicalBrand: "Forza", aliases: ["FORZA"], action: "discount", rate: 19, ruleLabel: "Forza liste fiyatı - %19" },
   { canonicalBrand: "İbeltech", aliases: ["IBELTECH"], action: "discount", rate: 11, ruleLabel: "İbeltech liste fiyatı - %11" },
   { canonicalBrand: "Jamindar", aliases: ["JAMINDAR", "LAMINDOOR"], action: "hidden", rate: 0, ruleLabel: "Fiyat bilgisi verilmeyecek" },
+  { canonicalBrand: "Karen", aliases: ["KAREN"], action: "discount", rate: 30, ruleLabel: "Karen liste fiyatı - %30" },
   { canonicalBrand: "Mesem", aliases: ["MESEM"], action: "discount", rate: 22, ruleLabel: "Mesem liste fiyatı - %22" },
   { canonicalBrand: "MRS Max / Mırsan", aliases: ["MRSMAX", "MRS MAX", "MIRSAN"], action: "net", rate: 0, ruleLabel: "Net", priceLabel: "Net" },
   { canonicalBrand: "Onay Boya", aliases: ["ONAY", "ONAY BOYA"], action: "discount", rate: 9, ruleLabel: "Onay Boya liste fiyatı - %9" },

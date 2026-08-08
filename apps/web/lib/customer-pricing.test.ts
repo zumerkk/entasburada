@@ -57,6 +57,7 @@ describe("common brand pricing", () => {
     ["EUROMIX", "275.40", undefined],
     ["FORZA", "162.00", "19%"],
     ["IBELTECH", "178.00", "11%"],
+    ["KAREN", "140.00", "30%"],
     ["MESEM", "156.00", "22%"],
     ["MRSMAX", "200.00", undefined],
     ["MIRSAN", "200.00", undefined],
