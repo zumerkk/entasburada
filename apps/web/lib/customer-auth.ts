@@ -9,6 +9,7 @@ import { hashPassword, verifyPassword } from "./password-hash";
 import { createSessionToken, verifySessionToken } from "./session-token";
 import { validatePasswordStrength } from "./security";
 import { FREE_SHIPPING_THRESHOLD_TRY } from "./commercial-policy";
+import { clearApplicationTemporaryPasswordForAccount } from "./dealer-application-repository";
 
 export { hashPassword, verifyPassword };
 
@@ -172,6 +173,9 @@ async function changeCustomerPasswordUnlocked(customerId: string, currentPasswor
 
   customers[index] = { ...customers[index]!, password: hashPassword(newPassword), mustChangePassword: false };
   await saveCustomers(customers);
+  await clearApplicationTemporaryPasswordForAccount(customerId).catch((error: unknown) => {
+    console.warn(`[dealer-credential] Gecici sifre kaydi temizlenemedi: ${error instanceof Error ? error.message : error}`);
+  });
 }
 
 async function saveCustomers(customers: CustomerAccount[]): Promise<void> {

@@ -4,6 +4,7 @@ import { existsSync } from "node:fs";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { createNotification } from "./notification-repository";
+import { openTemporaryCredential, sealTemporaryCredential } from "./temporary-credential";
 
 export type DealerApplicationStatus = "pending" | "reviewing" | "approved" | "rejected";
 
@@ -53,6 +54,8 @@ export interface DealerApplication {
   // Hesap açma (onay sonrası)
   accountId?: string | undefined;
   accountEmail?: string | undefined;
+  temporaryPasswordEncrypted?: string | undefined;
+  temporaryPasswordConsumedAt?: string | undefined;
   provisionedAt?: string | undefined;
   welcomeMailSent?: boolean | undefined;
   history: DealerApplicationHistoryEntry[];
@@ -262,14 +265,14 @@ async function updateDealerApplicationStatusUnlocked(
 
 export async function recordApplicationProvisioning(
   id: string,
-  provisioning: { accountId: string; accountEmail: string; welcomeMailSent: boolean; note: string }
+  provisioning: { accountId: string; accountEmail: string; temporaryPassword?: string; welcomeMailSent: boolean; note: string }
 ): Promise<DealerApplication> {
   return enqueueApplicationMutation(() => recordApplicationProvisioningUnlocked(id, provisioning));
 }
 
 async function recordApplicationProvisioningUnlocked(
   id: string,
-  provisioning: { accountId: string; accountEmail: string; welcomeMailSent: boolean; note: string }
+  provisioning: { accountId: string; accountEmail: string; temporaryPassword?: string; welcomeMailSent: boolean; note: string }
 ): Promise<DealerApplication> {
   const rows = await loadApplications();
   const index = rows.findIndex((row) => row.id === id);
@@ -283,6 +286,9 @@ async function recordApplicationProvisioningUnlocked(
     ...current,
     accountId: provisioning.accountId,
     accountEmail: provisioning.accountEmail,
+    ...(provisioning.temporaryPassword
+      ? { temporaryPasswordEncrypted: sealTemporaryCredential(provisioning.temporaryPassword) }
+      : {}),
     provisionedAt: now,
     welcomeMailSent: provisioning.welcomeMailSent,
     updatedAt: now,
@@ -299,6 +305,43 @@ async function recordApplicationProvisioningUnlocked(
 
   await saveApplications(rows);
   return rows[index]!;
+}
+
+export function getApplicationTemporaryPassword(application: DealerApplication): string | null {
+  return openTemporaryCredential(application.temporaryPasswordEncrypted);
+}
+
+export function clearApplicationTemporaryPasswordForAccount(accountId: string): Promise<void> {
+  return enqueueApplicationMutation(() => clearApplicationTemporaryPasswordForAccountUnlocked(accountId));
+}
+
+async function clearApplicationTemporaryPasswordForAccountUnlocked(accountId: string): Promise<void> {
+  const rows = await loadApplications();
+  const now = new Date().toISOString();
+  let changed = false;
+
+  const nextRows = rows.map((application) => {
+    if (application.accountId !== accountId || !application.temporaryPasswordEncrypted) return application;
+
+    changed = true;
+    const { temporaryPasswordEncrypted: _removed, ...withoutTemporaryPassword } = application;
+    return {
+      ...withoutTemporaryPassword,
+      temporaryPasswordConsumedAt: now,
+      updatedAt: now,
+      history: [
+        {
+          id: `hist-${randomUUID()}`,
+          at: now,
+          actor: "system",
+          message: "Müşteri ilk giriş şifresini değiştirdi; geçici şifre kaydı temizlendi."
+        },
+        ...application.history
+      ].slice(0, 50)
+    };
+  });
+
+  if (changed) await saveApplications(nextRows);
 }
 
 const STATUS_LABELS: Record<DealerApplicationStatus, string> = {

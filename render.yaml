@@ -35,6 +35,19 @@ services:
         sync: false
       - key: ADMIN_TOTP_SECRET
         sync: false
+      # Yeni bayi onay e-postalari (SMTP birincil, Resend yedek):
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
       - key: OPENAI_API_KEY
         sync: false
       - key: GEMINI_API_KEY

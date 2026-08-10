@@ -346,6 +346,7 @@ export async function updateDealerApplicationStatusAction(formData: FormData): P
       await recordApplicationProvisioning(applicationId, {
         accountId: result.accountId,
         accountEmail: result.email,
+        ...(result.temporaryPassword ? { temporaryPassword: result.temporaryPassword } : {}),
         welcomeMailSent: result.mailSent,
         note:
           result.status === "created"

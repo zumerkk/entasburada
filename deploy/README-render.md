@@ -34,6 +34,7 @@ Plan: **Standard**, Disk ekle: mount path `/var/data`, 10 GB.
 
 Render panel → entasburada → Environment. `.env.production.local` dosyasındaki değerleri gir:
 `ADMIN_SESSION_SECRET`, `AUTH_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`,
+`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`, `RESEND_API_KEY`,
 `OPENAI_API_KEY`, `GEMINI_API_KEY`.
 
 İlk deploy başlar; bittiğinde site `entasburada.onrender.com`'da açılır
@@ -81,6 +82,6 @@ ssh SERVICE_SSH "tar czf - -C /var/data ." > yedek-$(date +%Y%m%d).tar.gz
 ## Bilinçli sınırlar (Aşama 2'de çözülecek)
 
 - Tek instance; yatay ölçekleme yok (disk tek servise bağlanır).
-- E-posta bildirimi yok; siparişleri admin panelden takip edin.
+- Sipariş bildirimleri henüz e-posta ile gönderilmez; siparişleri admin panelden takip edin.
 - Canlıya gerçek bayi almadan önce 3 test hesabını kapatın
   (`/var/data/data/customer-accounts.json` → status: suspended).

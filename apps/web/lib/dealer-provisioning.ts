@@ -9,6 +9,7 @@ export interface ProvisionResult {
   status: "created" | "already-exists";
   accountId: string;
   email: string;
+  temporaryPassword?: string | undefined;
   mailSent: boolean;
   passwordChangeRequired: boolean;
 }
@@ -75,7 +76,14 @@ export async function provisionDealerAccount(application: DealerApplication): Pr
     html: buildWelcomeEmail(application, tempPassword)
   });
 
-  return { status: "created", accountId: record.id, email: record.email, mailSent, passwordChangeRequired: true };
+  return {
+    status: "created",
+    accountId: record.id,
+    email: record.email,
+    temporaryPassword: tempPassword,
+    mailSent,
+    passwordChangeRequired: true
+  };
 }
 
 export async function provisionDirectDealerAccount(input: DirectDealerAccountInput): Promise<ProvisionResult> {
@@ -114,7 +122,31 @@ export async function provisionDirectDealerAccount(input: DirectDealerAccountInp
         html: buildDirectWelcomeEmail(record, tempPassword)
       });
 
-  return { status: "created", accountId: record.id, email: record.email, mailSent, passwordChangeRequired: true };
+  return {
+    status: "created",
+    accountId: record.id,
+    email: record.email,
+    temporaryPassword: tempPassword,
+    mailSent,
+    passwordChangeRequired: true
+  };
+}
+
+export function buildCredentialsWhatsappHref(application: DealerApplication, email: string, temporaryPassword: string): string {
+  const phone = (application.whatsapp || application.phone || "").replace(/\D+/g, "");
+  const international = phone.startsWith("0") ? `9${phone}` : phone.startsWith("5") ? `90${phone}` : phone;
+  const message = [
+    `${application.authorizedPerson} merhaba,`,
+    "ENTAŞBURADA bayi hesabınız açıldı.",
+    "",
+    "Giriş: https://entasburada.com/login",
+    `Kullanıcı: ${email}`,
+    `Geçici şifre: ${temporaryPassword}`,
+    "",
+    "İlk girişten sonra Hesabım sayfasından şifrenizi değiştirmeniz gerekmektedir."
+  ].join("\n");
+  const text = `?text=${encodeURIComponent(message)}`;
+  return international.length >= 12 ? `https://wa.me/${international}${text}` : `https://wa.me/${text}`;
 }
 
 function buildWelcomeEmail(application: DealerApplication, tempPassword: string): string {
@@ -128,7 +160,7 @@ function buildWelcomeEmail(application: DealerApplication, tempPassword: string)
       <tr><td style="padding:6px 12px;background:#f3f7f5">Kullanıcı</td><td style="padding:6px 12px">${escapeHtml(application.email)}</td></tr>
       <tr><td style="padding:6px 12px;background:#f3f7f5">Geçici şifre</td><td style="padding:6px 12px"><code>${escapeHtml(tempPassword)}</code></td></tr>
     </table>
-    <p>Güvenliğiniz için ilk girişten sonra <strong>Hesabım</strong> sayfasından şifrenizi değiştirmenizi öneririz.</p>
+    <p>Güvenliğiniz için ilk girişten sonra <strong>Hesabım</strong> sayfasından şifrenizi değiştirmeniz zorunludur.</p>
     <p>Tüm onaylı hesaplarda aynı marka fiyatları uygulanır; fiyatlar KDV dahildir. 10.000 TL ve üzeri siparişlerde kargo bizden. Sorularınız için: ${COMPANY_CONTACT.technicalSupportPhone}</p>
     <p style="color:#6b7c76;font-size:13px">ENTAŞBURADA — Türkiye'nin Yapı Marketi</p>
   </div>`;
@@ -145,7 +177,7 @@ function buildDirectWelcomeEmail(account: CustomerAccount, tempPassword: string)
       <tr><td style="padding:6px 12px;background:#f3f7f5">Kullanıcı</td><td style="padding:6px 12px">${escapeHtml(account.email)}</td></tr>
       <tr><td style="padding:6px 12px;background:#f3f7f5">Geçici şifre</td><td style="padding:6px 12px"><code>${escapeHtml(tempPassword)}</code></td></tr>
     </table>
-    <p>Güvenliğiniz için ilk girişten sonra <strong>Hesabım</strong> sayfasından şifrenizi değiştirmenizi öneririz.</p>
+    <p>Güvenliğiniz için ilk girişten sonra <strong>Hesabım</strong> sayfasından şifrenizi değiştirmeniz zorunludur.</p>
     <p>Tüm onaylı hesaplarda aynı marka fiyatları uygulanır; fiyatlar KDV dahildir. 10.000 TL ve üzeri siparişlerde kargo bizden.</p>
     <p>Sorularınız için: ${COMPANY_CONTACT.technicalSupportPhone}</p>
     <p style="color:#6b7c76;font-size:13px">ENTAŞBURADA — Türkiye'nin Yapı Marketi</p>

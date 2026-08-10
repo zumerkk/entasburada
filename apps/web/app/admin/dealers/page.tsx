@@ -1,11 +1,13 @@
-import { Building2, KeyRound, Mail, MapPin, PhoneCall } from "lucide-react";
+import { Building2, KeyRound, Mail, MapPin, MessageCircle, PhoneCall } from "lucide-react";
 import { EmptyState, StatusPill } from "@entas/ui";
 import { requireAdmin } from "../../../lib/admin-auth";
 import {
   dealerApplicationStatusLabel,
+  getApplicationTemporaryPassword,
   listDealerApplications,
   type DealerApplicationStatus
 } from "../../../lib/dealer-application-repository";
+import { buildCredentialsWhatsappHref } from "../../../lib/dealer-provisioning";
 import { getCustomers, type CustomerSegment } from "../../../lib/customer-auth";
 import {
   createManualDealerApplicationAction,
@@ -250,11 +252,13 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
           />
         ) : (
           <div className="dealerApplicationList">
-            {applications.map((application) => (
-              <article
-                className={`dealerApplicationCard${highlight === application.id ? " highlight" : ""}`}
-                key={application.id}
-              >
+            {applications.map((application) => {
+              const temporaryPassword = getApplicationTemporaryPassword(application);
+              return (
+                <article
+                  className={`dealerApplicationCard${highlight === application.id ? " highlight" : ""}`}
+                  key={application.id}
+                >
                 <div className="dealerApplicationHead">
                   <div>
                     <h3>{application.companyTitle}</h3>
@@ -315,16 +319,34 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
 
                 {application.reviewNote ? <p className="dealerApplicationNote">Not: {application.reviewNote}</p> : null}
 
-                {application.accountId ? (
+                {application.accountId && temporaryPassword ? (
                   <div className="dealerCredentials">
                     <div className="dealerCredentialsHead">
                       <KeyRound size={15} aria-hidden="true" />
-                      Bayi hesabı hazır
+                      Giriş bilgileri hazır — firmaya iletin
                       {application.welcomeMailSent ? <StatusPill tone="success">E-posta gönderildi</StatusPill> : <StatusPill tone="warning">E-posta gönderilmedi</StatusPill>}
                     </div>
-                    <code>Kullanıcı: {application.accountEmail}</code>
-                    <p>Geçici parola güvenlik nedeniyle panelde saklanmaz veya gösterilmez. Kullanıcı ilk girişte parolasını değiştirmek zorundadır.</p>
+                    <code>
+                      Kullanıcı: {application.accountEmail}
+                      {"\n"}Geçici şifre: {temporaryPassword}
+                    </code>
+                    <a
+                      className="btn btnPrimary"
+                      href={buildCredentialsWhatsappHref(application, application.accountEmail ?? application.email, temporaryPassword)}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <MessageCircle size={16} aria-hidden="true" />
+                      WhatsApp ile Gönder
+                    </a>
                   </div>
+                ) : null}
+                {application.accountId && !temporaryPassword ? (
+                  <p className="dealerApplicationNote">
+                    {application.temporaryPasswordConsumedAt
+                      ? "Müşteri şifresini değiştirdi; geçici şifre güvenli biçimde temizlendi."
+                      : "Bu hesap için gösterilebilir bir geçici şifre yok. Daha önce açılmış veya mevcut bir hesap olabilir."}
+                  </p>
                 ) : null}
 
                 <form className="dealerApplicationActions" action={updateDealerApplicationStatusAction}>
@@ -342,8 +364,9 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
                     </button>
                   </div>
                 </form>
-              </article>
-            ))}
+                </article>
+              );
+            })}
           </div>
         )}
       </section>
