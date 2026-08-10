@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  applyPriceMarkup,
+  applyPriceOperation,
   CATALOG_GROUPS,
   CATALOG_TREE,
   catalogTextMatchesPhrase,
@@ -15,6 +15,7 @@ import {
   searchCatalogRecords,
   toAdminProduct,
   toPublicProduct,
+  type CatalogStore,
   type ImportedSupplierProduct
 } from "./index";
 
@@ -361,38 +362,98 @@ describe("@entas/catalog", () => {
     expect(result.offset).toBe(0);
   });
 
-  it("applies a price markup and leaves zero-priced products untouched", () => {
-    const store = mergeImportedProducts(
+  const priceStore = () =>
+    mergeImportedProducts(
       createEmptyCatalogStore(),
       [
-        { ...imported, externalId: "A-1", sku: "A-1", listPrice: "100.00" },
-        { ...imported, externalId: "A-2", sku: "A-2", listPrice: "0" }
+        { ...imported, externalId: "A-1", sku: "A-1", listPrice: "100.00", currency: "TRY" },
+        { ...imported, externalId: "A-2", sku: "A-2", listPrice: "0", currency: "TRY" }
       ],
       "2026-07-07T01:00:00.000Z"
     );
+  const priceIds = ["supplier:euromix-stock:a-1", "supplier:euromix-stock:a-2"];
+  const priceOf = (result: { store: CatalogStore }, sku: string) => result.store.products.find((p) => p.sku === sku)?.listPrice;
 
-    const result = applyPriceMarkup(store, ["supplier:euromix-stock:a-1", "supplier:euromix-stock:a-2"], { multiplier: 1.3 }, "admin");
+  it("yüzde zam uygular ve fiyatsız ürüne dokunmaz", () => {
+    const result = applyPriceOperation(priceStore(), priceIds, { mode: "percent", value: 30 }, {}, "admin");
 
     expect(result.updated).toBe(1);
     expect(result.skippedZeroPrice).toBe(1);
-    expect(result.store.products.find((p) => p.sku === "A-1")?.listPrice).toBe("130.00");
-    expect(result.store.products.find((p) => p.sku === "A-2")?.listPrice).toBe("0");
+    expect(priceOf(result, "A-1")).toBe("130.00");
+    expect(priceOf(result, "A-2")).toBe("0");
     expect(result.auditLogs[0]?.action).toBe("PRODUCT_BULK_PRICE");
   });
 
-  it("rounds marked-up prices to whole numbers when asked", () => {
+  it("yüzde iskonto negatif değerle çalışır", () => {
+    const result = applyPriceOperation(priceStore(), priceIds, { mode: "percent", value: -16 }, {}, "admin");
+    expect(priceOf(result, "A-1")).toBe("84.00");
+  });
+
+  it("sabit tutar ekler ve düşer", () => {
+    expect(priceOf(applyPriceOperation(priceStore(), priceIds, { mode: "amount", value: 25 }, {}, "admin"), "A-1")).toBe("125.00");
+    expect(priceOf(applyPriceOperation(priceStore(), priceIds, { mode: "amount", value: -25 }, {}, "admin"), "A-1")).toBe("75.00");
+  });
+
+  it("sonucu negatife düşürecek tutarı uygulamaz, atlar", () => {
+    const result = applyPriceOperation(priceStore(), priceIds, { mode: "amount", value: -500 }, {}, "admin");
+    expect(result.updated).toBe(0);
+    expect(result.skippedNegative).toBe(1);
+    expect(priceOf(result, "A-1")).toBe("100.00");
+  });
+
+  it("sabit fiyat atar; fiyatsız ürüne de yazar", () => {
+    const result = applyPriceOperation(priceStore(), priceIds, { mode: "set", value: 49.9 }, {}, "admin");
+    expect(result.updated).toBe(2);
+    expect(priceOf(result, "A-1")).toBe("49.90");
+    expect(priceOf(result, "A-2")).toBe("49.90");
+    // Fiyatsizken "fiyat sorunuz" olan urun fiyat verilince normal gosterime doner.
+    const revived = result.store.products.find((p) => p.sku === "A-2")!;
+    expect(revived.priceDisplayMode).toBe("HIDDEN_UNTIL_DEALER");
+    expect(revived.priceApprovalStatus).toBe("APPROVED");
+  });
+
+  it("fiyatı kaldırır; ürün fiyat sorunuz durumuna döner", () => {
+    const result = applyPriceOperation(priceStore(), priceIds, { mode: "clear" }, {}, "admin");
+    expect(result.updated).toBe(1);
+    expect(priceOf(result, "A-1")).toBe("0");
+    expect(toPublicProduct(result.store.products.find((p) => p.sku === "A-1")!).priceDisplayMode).toBe("CONTACT_REP");
+  });
+
+  it("karışık para biriminde sabit tutar işlemini reddeder", () => {
+    const store = mergeImportedProducts(
+      createEmptyCatalogStore(),
+      [
+        { ...imported, externalId: "C-1", sku: "C-1", listPrice: "100.00", currency: "TRY" },
+        { ...imported, externalId: "C-2", sku: "C-2", listPrice: "100.00", currency: "USD" }
+      ],
+      "2026-07-07T01:00:00.000Z"
+    );
+    const ids = ["supplier:euromix-stock:c-1", "supplier:euromix-stock:c-2"];
+
+    expect(() => applyPriceOperation(store, ids, { mode: "amount", value: -50 }, {}, "admin")).toThrow(/tek para birimi/);
+    expect(() => applyPriceOperation(store, ids, { mode: "set", value: 50 }, {}, "admin")).toThrow(/tek para birimi/);
+    // Yuzde islemi para biriminden bagimsizdir, engellenmez.
+    expect(() => applyPriceOperation(store, ids, { mode: "percent", value: 10 }, {}, "admin")).not.toThrow();
+  });
+
+  it("tam sayıya yuvarlar", () => {
     const store = mergeImportedProducts(createEmptyCatalogStore(), [{ ...imported, listPrice: "33.33" }], "2026-07-07T01:00:00.000Z");
-
-    const result = applyPriceMarkup(store, ["supplier:euromix-stock:rbt-007"], { multiplier: 1.15, rounding: "integer" }, "admin");
-
+    const result = applyPriceOperation(store, ["supplier:euromix-stock:rbt-007"], { mode: "percent", value: 15 }, { rounding: "integer" }, "admin");
     expect(result.store.products[0]?.listPrice).toBe("38");
   });
 
-  it("rejects an out-of-range price multiplier instead of destroying prices", () => {
-    const store = mergeImportedProducts(createEmptyCatalogStore(), [imported], "2026-07-07T01:00:00.000Z");
-
-    for (const multiplier of [0, -1, 11, Number.NaN]) {
-      expect(() => applyPriceMarkup(store, ["supplier:euromix-stock:rbt-007"], { multiplier }, "admin")).toThrow();
+  it("aralık dışı değerleri reddeder, fiyatları bozmaz", () => {
+    const store = priceStore();
+    const bad: Array<Parameters<typeof applyPriceOperation>[2]> = [
+      { mode: "percent", value: 0 },
+      { mode: "percent", value: -100 },
+      { mode: "percent", value: 901 },
+      { mode: "percent", value: Number.NaN },
+      { mode: "amount", value: 0 },
+      { mode: "set", value: -1 }
+    ];
+    for (const operation of bad) {
+      expect(() => applyPriceOperation(store, priceIds, operation, {}, "admin"), JSON.stringify(operation)).toThrow();
     }
   });
 

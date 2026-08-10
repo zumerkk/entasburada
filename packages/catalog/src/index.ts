@@ -460,6 +460,20 @@ export function publishProducts(store: CatalogStore, ids: string[], actor: strin
 
 export type PriceRounding = "none" | "integer";
 
+/**
+ * Toplu fiyat islemi turleri.
+ *
+ * - percent: yuzde zam (+30) veya iskonto (-16)
+ * - amount:  sabit tutar ekle (+50) veya dus (-50)
+ * - set:     tum secime ayni fiyati yaz
+ * - clear:   fiyati kaldir (0 yazilir; urun "fiyat sorunuz" olarak gorunur)
+ */
+export type PriceOperation =
+  | { mode: "percent"; value: number }
+  | { mode: "amount"; value: number }
+  | { mode: "set"; value: number }
+  | { mode: "clear" };
+
 export interface BulkPriceResult {
   store: CatalogStore;
   auditLogs: AuditLogEntry[];
@@ -467,6 +481,10 @@ export interface BulkPriceResult {
   updated: number;
   /** Fiyati 0 oldugu icin atlanan urun sayisi (0 x carpan = 0). */
   skippedZeroPrice: number;
+  /** Sonuc negatife duseceği icin atlanan urun sayisi. */
+  skippedNegative: number;
+  /** Secimde bulunan para birimleri; sabit tutar islemlerinde tek olmali. */
+  currencies: string[];
 }
 
 /**
@@ -481,38 +499,72 @@ export interface BulkPriceResult {
  * kaynaklarda (ornegin euromix-stock) bir sonraki senkron bu zammi siler.
  * Cagiran taraf kullaniciyi uyarmalidir.
  */
-export function applyPriceMarkup(
+export function applyPriceOperation(
   store: CatalogStore,
   ids: string[],
-  options: { multiplier: number; rounding?: PriceRounding },
-  actor: string,
+  operation: PriceOperation,
+  options: { rounding?: PriceRounding } = {},
+  actor: string = "admin",
   now = new Date().toISOString()
 ): BulkPriceResult {
-  const multiplier = Number(options.multiplier);
-  if (!Number.isFinite(multiplier) || multiplier <= 0 || multiplier > 10) {
-    throw new Error("Fiyat çarpanı 0 ile 10 arasında olmalıdır.");
-  }
+  validatePriceOperation(operation);
 
   const idSet = new Set(ids);
   const rounding = options.rounding ?? "none";
+  const targeted = store.products.filter((product) => idSet.has(product.id));
+  const currencies = [...new Set(targeted.map((product) => product.currency).filter(Boolean))].sort();
+
+  // Sabit tutarli islemler para birimine baglidir: ayni secimde hem TRY hem USD
+  // varsa "50 dus" komutu birinden 50 TL digerinden 50 USD duser ve sessizce
+  // yanlis fiyat uretir. Bu yuzden tek para birimi sart kosulur.
+  if ((operation.mode === "amount" || operation.mode === "set") && currencies.length > 1) {
+    throw new Error(
+      `Sabit tutar işlemi için seçimde tek para birimi olmalı. Şu an ${currencies.join(", ")} birlikte var; önce para birimi filtresiyle daraltın.`
+    );
+  }
+
   let updated = 0;
   let skippedZeroPrice = 0;
+  let skippedNegative = 0;
 
   const products = store.products.map((product) => {
     if (!idSet.has(product.id)) return product;
 
+    if (operation.mode === "clear") {
+      if (toNumber(product.listPrice) <= 0) return product;
+      updated += 1;
+      return { ...product, listPrice: "0", ...priceStateFields(0), updatedAt: now };
+    }
+
     const current = toNumber(product.listPrice);
-    if (current <= 0) {
+
+    // Fiyati olmayan urun bilincli olarak "fiyat sorunuz" durumundadir; yuzde ve
+    // tutar islemleri onu sessizce fiyatlandirmamali. Sabit fiyat atama haric.
+    if (current <= 0 && operation.mode !== "set") {
       skippedZeroPrice += 1;
       return product;
     }
 
-    const raw = current * multiplier;
+    const raw =
+      operation.mode === "percent"
+        ? current * (1 + operation.value / 100)
+        : operation.mode === "amount"
+          ? current + operation.value
+          : operation.value;
+
+    if (raw < 0) {
+      skippedNegative += 1;
+      return product;
+    }
+
     const next = rounding === "integer" ? String(Math.round(raw)) : raw.toFixed(2);
     if (next === product.listPrice) return product;
 
     updated += 1;
-    return { ...product, listPrice: next, updatedAt: now };
+    // Fiyat sifir sinirini gectiginde onay/gosterim alanlari yeniden turetilir;
+    // aksi halde fiyati kaldirilan urun vitrinde "bayi girisi yapin" olarak
+    // kalir, "fiyat sorunuz" olmaz.
+    return { ...product, listPrice: next, ...priceStateFields(toNumber(next)), updatedAt: now };
   });
 
   const nextStore: CatalogStore = {
@@ -523,10 +575,8 @@ export function applyPriceMarkup(
   };
 
   if (updated === 0) {
-    return { store: nextStore, auditLogs: [], updated, skippedZeroPrice };
+    return { store: nextStore, auditLogs: [], updated, skippedZeroPrice, skippedNegative, currencies };
   }
-
-  const percentLabel = `${multiplier >= 1 ? "+" : ""}${((multiplier - 1) * 100).toFixed(2).replace(/\.?0+$/, "")}%`;
 
   return {
     store: nextStore,
@@ -537,13 +587,68 @@ export function applyPriceMarkup(
         actor,
         action: "PRODUCT_BULK_PRICE",
         entityType: "catalog",
-        message: `${updated.toLocaleString("tr-TR")} ürüne ${percentLabel} fiyat güncellemesi uygulandı.`,
-        metadata: { requestedCount: ids.length, changedCount: updated, multiplier, rounding, skippedZeroPrice }
+        message: `${updated.toLocaleString("tr-TR")} ürüne ${priceOperationLabel(operation, currencies[0])} uygulandı.`,
+        metadata: {
+          requestedCount: ids.length,
+          changedCount: updated,
+          mode: operation.mode,
+          value: operation.mode === "clear" ? 0 : operation.value,
+          rounding,
+          skippedZeroPrice,
+          skippedNegative
+        }
       }
     ],
     updated,
-    skippedZeroPrice
+    skippedZeroPrice,
+    skippedNegative,
+    currencies
   };
+}
+
+/** Fiyat/gosterim alanlari ice aktarimdaki ayni kurala gore turetilir (bkz. toCatalogRecord). */
+function priceStateFields(price: number): Pick<CatalogProductRecord, "priceApprovalStatus" | "priceDisplayMode"> {
+  const hasPrice = price > 0;
+  return {
+    priceApprovalStatus: hasPrice ? "APPROVED" : "NO_PRICE",
+    priceDisplayMode: hasPrice ? "HIDDEN_UNTIL_DEALER" : "CONTACT_REP"
+  };
+}
+
+function validatePriceOperation(operation: PriceOperation): void {
+  if (operation.mode === "clear") return;
+
+  const value = Number(operation.value);
+  if (!Number.isFinite(value)) throw new Error("Geçerli bir sayı girin.");
+
+  if (operation.mode === "percent") {
+    if (value === 0) throw new Error("Yüzde değeri 0 olamaz.");
+    // -100 fiyati sifirlar (bu "fiyatı kaldır" islemidir), altina inmek anlamsiz.
+    if (value <= -100 || value > 900) throw new Error("Yüzde -100 ile 900 arasında olmalıdır.");
+    return;
+  }
+
+  if (operation.mode === "amount") {
+    if (value === 0) throw new Error("Tutar 0 olamaz.");
+    if (Math.abs(value) > 1_000_000) throw new Error("Tutar 1.000.000'dan büyük olamaz.");
+    return;
+  }
+
+  if (value < 0 || value > 1_000_000_000) throw new Error("Sabit fiyat 0 ile 1.000.000.000 arasında olmalıdır.");
+}
+
+export function priceOperationLabel(operation: PriceOperation, currency = ""): string {
+  const suffix = currency ? ` ${currency}` : "";
+  if (operation.mode === "clear") return "fiyat kaldırma";
+  if (operation.mode === "percent") {
+    const sign = operation.value > 0 ? "+" : "";
+    return `${sign}%${String(operation.value).replace(".", ",")} ${operation.value > 0 ? "zam" : "iskonto"}`;
+  }
+  if (operation.mode === "amount") {
+    const sign = operation.value > 0 ? "+" : "";
+    return `${sign}${operation.value}${suffix} tutar değişimi`;
+  }
+  return `sabit ${operation.value}${suffix} fiyat`;
 }
 
 /** Secili urunleri PASSIVE/ACTIVE yapar; pasife alinan urun vitrinden de kaldirilir. */

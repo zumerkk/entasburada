@@ -11,22 +11,56 @@ interface AdminBulkSelectionProps {
   /** Filtreye uyanlar arasinda XML'den senkronize olan kaynak var mi. */
   filterTouchesSyncedSource: boolean;
   bulkSetStatusAction: (formData: FormData) => Promise<void>;
-  bulkPriceMarkupAction: (formData: FormData) => Promise<void>;
+  bulkPriceOperationAction: (formData: FormData) => Promise<void>;
   bulkDeleteProductsAction: (formData: FormData) => Promise<void>;
 }
+
+type PriceMode = "percent" | "amount" | "set" | "clear";
+
+const PRICE_MODES: Array<{ mode: PriceMode; label: string; suffix: string; placeholder: string; hint: string }> = [
+  {
+    mode: "percent",
+    label: "Yüzde",
+    suffix: "%",
+    placeholder: "30",
+    hint: "Zam için pozitif (30), iskonto için negatif (-16) girin. Fiyatı olmayan ürünler atlanır."
+  },
+  {
+    mode: "amount",
+    label: "Tutar ekle / düş",
+    suffix: "₺/$",
+    placeholder: "-50",
+    hint: "Her ürünün fiyatına sabit tutar ekler (50) veya düşer (-50). Sonuç eksiye düşecek ürünler atlanır."
+  },
+  {
+    mode: "set",
+    label: "Sabit fiyat",
+    suffix: "₺/$",
+    placeholder: "199",
+    hint: "Seçimdeki tüm ürünlere aynı fiyatı yazar. Fiyatı olmayan ürünlere de uygulanır."
+  },
+  {
+    mode: "clear",
+    label: "Fiyatı kaldır",
+    suffix: "",
+    placeholder: "",
+    hint: "Fiyatı siler; ürün vitrinde “fiyat sorunuz” olarak görünür ve teklif akışına yönlendirir."
+  }
+];
 
 export function AdminBulkSelection({
   filteredTotal,
   pageCount,
   filterTouchesSyncedSource,
   bulkSetStatusAction,
-  bulkPriceMarkupAction,
+  bulkPriceOperationAction,
   bulkDeleteProductsAction
 }: AdminBulkSelectionProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [selectedCount, setSelectedCount] = useState(0);
   const [scope, setScope] = useState<"selection" | "filtered">("selection");
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [priceMode, setPriceMode] = useState<PriceMode>("percent");
 
   // Kutucuklar sunucu bileseninde satirlarla birlikte render edildigi icin
   // sayim, formun degisim olaylarindan okunur.
@@ -52,6 +86,7 @@ export function AdminBulkSelection({
     setSelectedCount(checked ? form.querySelectorAll('input[name="productId"]').length : 0);
   };
 
+  const activeMode = PRICE_MODES.find((option) => option.mode === priceMode) ?? PRICE_MODES[0]!;
   const targetCount = scope === "filtered" ? filteredTotal : selectedCount;
   const disabled = targetCount === 0;
 
@@ -112,23 +147,64 @@ export function AdminBulkSelection({
       </div>
 
       <div className="adminBulkGroup">
-        <span className="adminBulkGroupTitle">Toplu fiyat güncelleme</span>
+        <span className="adminBulkGroupTitle">Toplu fiyat işlemi</span>
+
+        <div className="adminBulkModes" role="group" aria-label="Fiyat işlemi türü">
+          {PRICE_MODES.map((option) => (
+            <button
+              type="button"
+              key={option.mode}
+              className={priceMode === option.mode ? "active" : ""}
+              onClick={() => setPriceMode(option.mode)}
+              aria-pressed={priceMode === option.mode}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+        <input type="hidden" name="priceMode" value={priceMode} />
+
         <div className="adminBulkActions">
-          <label className="adminBulkPercent">
-            <input name="markupPercent" inputMode="decimal" placeholder="30" aria-label="Yüzde değişim" />
-            <span>%</span>
-          </label>
-          <label className="checkboxLabel">
-            <input type="checkbox" name="rounding" value="integer" />
-            Tam sayıya yuvarla
-          </label>
-          <button className="btn btnPrimary" type="submit" formAction={bulkPriceMarkupAction} disabled={disabled}>
+          {priceMode === "clear" ? null : (
+            <label className="adminBulkPercent">
+              <input
+                name="priceValue"
+                inputMode="decimal"
+                placeholder={activeMode.placeholder}
+                aria-label={activeMode.label}
+                key={priceMode}
+              />
+              <span>{activeMode.suffix}</span>
+            </label>
+          )}
+          {priceMode === "clear" ? null : (
+            <label className="checkboxLabel">
+              <input type="checkbox" name="rounding" value="integer" />
+              Tam sayıya yuvarla
+            </label>
+          )}
+          <button
+            className={priceMode === "clear" ? "btn btnGhost dark" : "btn btnPrimary"}
+            type="submit"
+            formAction={bulkPriceOperationAction}
+            disabled={disabled}
+          >
             <Percent size={16} aria-hidden="true" />
-            Uygula
+            {priceMode === "clear" ? "Fiyatları kaldır" : "Uygula"}
           </button>
         </div>
-        <small>Zam için pozitif (30), indirim için negatif (-10) girin. Fiyatı 0 olan ürünler atlanır.</small>
-        {filterTouchesSyncedSource ? (
+
+        <small>{activeMode.hint}</small>
+
+        {priceMode === "amount" || priceMode === "set" ? (
+          <p className="adminBulkWarning">
+            <AlertTriangle size={15} aria-hidden="true" />
+            Sabit tutar işlemleri para birimine bağlıdır. Seçimde TRY, USD ve EUR birlikte varsa işlem reddedilir;
+            önce kaynak veya marka filtresiyle tek para birimine indirin.
+          </p>
+        ) : null}
+
+        {filterTouchesSyncedSource && priceMode !== "clear" ? (
           <p className="adminBulkWarning">
             <AlertTriangle size={15} aria-hidden="true" />
             Seçim XML&apos;den senkronize olan bir kaynağı (euromix-stock) kapsıyor. Bu ürünlerde elle yapılan fiyat

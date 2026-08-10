@@ -2,9 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { priceOperationLabel, type PriceOperation } from "@entas/catalog";
 import { getAdminEmail } from "../../lib/admin-auth";
 import {
-  bulkApplyPriceMarkup,
+  bulkApplyPriceOperation,
   bulkDeleteProducts,
   bulkSetProductsStatus,
   countSyncedSourceProducts,
@@ -122,15 +123,24 @@ export async function bulkSetStatusAction(formData: FormData): Promise<void> {
   );
 }
 
-export async function bulkPriceMarkupAction(formData: FormData): Promise<void> {
+export async function bulkPriceOperationAction(formData: FormData): Promise<void> {
   await requireAdmin();
   const returnTo = bulkReturnTo(formData);
-  const percent = Number(getString(formData, "markupPercent").replace(",", "."));
-  if (!Number.isFinite(percent) || percent === 0) {
-    redirectWith(returnTo, "error", "Geçerli bir yüzde girin (örnek: 30 veya -10).");
-  }
-  if (percent <= -100 || percent > 900) {
-    redirectWith(returnTo, "error", "Yüzde -100 ile 900 arasında olmalıdır.");
+
+  const mode = getString(formData, "priceMode");
+  const rawValue = getString(formData, "priceValue").replace(",", ".");
+  const value = Number(rawValue);
+
+  let operation: PriceOperation;
+  if (mode === "clear") {
+    operation = { mode: "clear" };
+  } else if (mode === "percent" || mode === "amount" || mode === "set") {
+    if (!rawValue || !Number.isFinite(value)) {
+      redirectWith(returnTo, "error", "Geçerli bir sayı girin.");
+    }
+    operation = { mode, value };
+  } else {
+    redirectWith(returnTo, "error", "Geçersiz fiyat işlemi.");
   }
 
   const ids = await resolveBulkTargetIds(formData);
@@ -138,9 +148,10 @@ export async function bulkPriceMarkupAction(formData: FormData): Promise<void> {
 
   // redirect() ozel bir hata firlattigi icin basari yolu try blogunun DISINDA
   // kalmali; aksi halde yonlendirme kendi catch'imize takilir.
-  const outcome = await bulkApplyPriceMarkup(
+  const outcome = await bulkApplyPriceOperation(
     ids,
-    { multiplier: 1 + percent / 100, rounding: getString(formData, "rounding") === "integer" ? "integer" : "none" },
+    operation,
+    { rounding: getString(formData, "rounding") === "integer" ? "integer" : "none" },
     getAdminEmail()
   ).catch((error: unknown) => {
     redirectWith(returnTo, "error", error instanceof Error ? error.message : "Fiyat güncellenemedi.");
@@ -149,12 +160,15 @@ export async function bulkPriceMarkupAction(formData: FormData): Promise<void> {
   const synced = await countSyncedSourceProducts(ids);
   revalidateCatalogPaths();
 
-  const parts = [`${outcome.updated.toLocaleString("tr-TR")} ürünün fiyatı %${percent} güncellendi.`];
+  const parts = [`${outcome.updated.toLocaleString("tr-TR")} ürüne ${priceOperationLabel(operation, outcome.currencies[0] ?? "")} uygulandı.`];
   if (outcome.skippedZeroPrice > 0) {
     parts.push(`${outcome.skippedZeroPrice.toLocaleString("tr-TR")} ürün fiyatsız olduğu için atlandı.`);
   }
-  // XML'den senkronize olan kaynaklarda bu zam bir sonraki senkronda silinir.
-  if (synced > 0) {
+  if (outcome.skippedNegative > 0) {
+    parts.push(`${outcome.skippedNegative.toLocaleString("tr-TR")} üründe sonuç eksiye düşeceği için işlem uygulanmadı.`);
+  }
+  // XML'den senkronize olan kaynaklarda bu degisiklik bir sonraki senkronda silinir.
+  if (synced > 0 && operation.mode !== "clear") {
     parts.push(
       `Dikkat: ${synced.toLocaleString("tr-TR")} ürün XML'den senkronize olan bir kaynaktan geliyor; sonraki senkronda bu fiyatlar tedarikçi fiyatına döner.`
     );

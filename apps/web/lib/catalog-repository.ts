@@ -5,7 +5,7 @@ import { mkdir, readFile, rename, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import {
   CATALOG_TREE,
-  applyPriceMarkup,
+  applyPriceOperation,
   brandsFromStore,
   categoriesFromStore,
   classifyCatalogProduct,
@@ -29,6 +29,7 @@ import {
   type CatalogStore,
   type CatalogGroupDefinition,
   type ImportedSupplierProduct,
+  type PriceOperation,
   type PriceRounding,
   type ProductStatus,
   type PublicCatalogProduct
@@ -401,18 +402,26 @@ export async function getAdminProductIdsByFilter(filters: CatalogSearchFilters =
 export interface BulkPriceOutcome {
   updated: number;
   skippedZeroPrice: number;
+  skippedNegative: number;
+  currencies: string[];
 }
 
-export async function bulkApplyPriceMarkup(
+export async function bulkApplyPriceOperation(
   ids: string[],
-  options: { multiplier: number; rounding?: PriceRounding },
+  operation: PriceOperation,
+  options: { rounding?: PriceRounding } = {},
   actor = "admin@entasburada.com"
 ): Promise<BulkPriceOutcome> {
   const store = await loadCatalogStore();
-  const result = applyPriceMarkup(store, ids, options, actor);
+  const result = applyPriceOperation(store, ids, operation, options, actor);
   await saveCatalogStore(result.store);
   await appendAuditLogs(result.auditLogs);
-  return { updated: result.updated, skippedZeroPrice: result.skippedZeroPrice };
+  return {
+    updated: result.updated,
+    skippedZeroPrice: result.skippedZeroPrice,
+    skippedNegative: result.skippedNegative,
+    currencies: result.currencies
+  };
 }
 
 export async function bulkSetProductsStatus(

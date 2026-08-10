@@ -10,7 +10,7 @@ import {
 } from "../../../lib/catalog-repository";
 import {
   bulkDeleteProductsAction,
-  bulkPriceMarkupAction,
+  bulkPriceOperationAction,
   bulkSetStatusAction,
   deleteSingleProductAction,
   publishAllDraftAction,
@@ -243,7 +243,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
           pageCount={products.items.length}
           filterTouchesSyncedSource={filterTouchesSyncedSource}
           bulkSetStatusAction={bulkSetStatusAction}
-          bulkPriceMarkupAction={bulkPriceMarkupAction}
+          bulkPriceOperationAction={bulkPriceOperationAction}
           bulkDeleteProductsAction={bulkDeleteProductsAction}
         />
         <div className="adminTable">
