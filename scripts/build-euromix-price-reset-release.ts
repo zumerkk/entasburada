@@ -45,7 +45,7 @@ async function main(): Promise<void> {
           previousCatalogPrice: money(currentPrice),
           restoredSupplierListPrice: money(sourcePrice),
           previousMultiplier: roundRatio(currentPrice / sourcePrice),
-          customerPriceAt32_60Profit: money(sourcePrice * 1.326)
+          customerPriceAt30Profit: money(sourcePrice * 1.3)
         }
       }];
     });
@@ -61,7 +61,7 @@ async function main(): Promise<void> {
     sourceCounts: { "euromix-stock": releaseProducts.length },
     productCount: releaseProducts.length,
     imageCount: 0,
-    resetPolicy: "Euromix katalog fiyatı tedarikçi ham liste fiyatına sıfırlandı; müşteri fiyatında merkezi %32,60 kâr uygulanır.",
+    resetPolicy: "Euromix katalog fiyatı tedarikçi ham liste fiyatına sıfırlandı; müşteri fiyatında merkezi %30 kâr uygulanır.",
     changes: changes.map(({ change }) => change)
   };
 
