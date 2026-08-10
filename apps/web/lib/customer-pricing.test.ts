@@ -54,7 +54,7 @@ describe("common brand pricing", () => {
   it.each([
     ["ARC BANYO", "168.00", "16%"],
     ["Doğal Plastik", "162.00", "19%"],
-    ["EUROMIX", "275.40", undefined],
+    ["EUROMIX", "265.20", undefined],
     ["FORZA", "162.00", "19%"],
     ["IBELTECH", "178.00", "11%"],
     ["KAREN", "140.00", "30%"],
@@ -74,11 +74,12 @@ describe("common brand pricing", () => {
     expect(price?.taxIncluded).toBe(true);
   });
 
-  it("increases Euromix by 37.70% and separates the included VAT without adding it again", () => {
+  it("increases Euromix by 32.60% profit and separates the included VAT without adding it again", () => {
     const price = priceProductForCustomer(product, customer);
 
-    expect(price?.unitNetPrice).toBe("275.40");
-    expect(price?.includedTaxAmount).toBe("45.90");
+    expect(price?.unitNetPrice).toBe("265.20");
+    expect(price?.includedTaxAmount).toBe("44.20");
+    expect(price?.ruleLabel).toBe("Euromix liste fiyatı + %32,60 kâr");
     expect(price?.listPrice).toBeUndefined();
   });
 
