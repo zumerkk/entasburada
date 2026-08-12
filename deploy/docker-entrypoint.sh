@@ -32,6 +32,23 @@ for CATALOG_RELEASE_DIR in /app/deploy/catalog-releases/*; do
   fi
 done
 
+for SUPPLIER_STATUS_RELEASE in /app/deploy/supplier-status-releases/*.json; do
+  [ -f "$SUPPLIER_STATUS_RELEASE" ] || continue
+  SUPPLIER_STATUS_VERSION="$(basename "$SUPPLIER_STATUS_RELEASE" .json)"
+  SUPPLIER_STATUS_MARKER="$DATA_DIR/.supplier-status-$SUPPLIER_STATUS_VERSION"
+  if [ ! -f "$SUPPLIER_STATUS_MARKER" ]; then
+    echo "[entrypoint] tedarikci durumu uygulanıyor: $SUPPLIER_STATUS_VERSION"
+    cd /app
+    pnpm supplier:status -- \
+      --migration="$SUPPLIER_STATUS_RELEASE" \
+      --catalog-store="$DATA_DIR/data/catalog-store.json" \
+      --audit-log="$DATA_DIR/data/audit-log.json" \
+      --actor="render-release-$SUPPLIER_STATUS_VERSION" \
+      --write
+    date -u +%Y-%m-%dT%H:%M:%SZ > "$SUPPLIER_STATUS_MARKER"
+  fi
+done
+
 IMAGE_NORMALIZATION_VERSION="${PRODUCT_IMAGE_NORMALIZATION_VERSION:-square-v1}"
 IMAGE_NORMALIZATION_MARKER="$DATA_DIR/.product-images-$IMAGE_NORMALIZATION_VERSION"
 FIRST_PRODUCT_IMAGE="$(find "$DATA_DIR/uploads/catalog-imports" -type f -path '*/products/*' -name '*.webp' -print -quit 2>/dev/null || true)"

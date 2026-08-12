@@ -24,6 +24,7 @@
     "price:markup:build": "node --import tsx scripts/build-price-markup-release.ts",
     "images:normalize": "node --import tsx scripts/normalize-product-images.ts",
     "catalog:sync": "tsx scripts/sync-catalog-store.ts",
+    "supplier:status": "node --import tsx scripts/set-supplier-status.ts",
     "catalog:reclassify": "tsx scripts/reclassify-catalog.ts",
     "db:validate": "pnpm --filter @entas/database db:validate",
     "db:generate": "pnpm --filter @entas/database db:generate",
