@@ -1,0 +1,24 @@
+[
+  { "externalId": "kollektor-dolabi-40x60x11", "sku": "TPS-KD-40X60X11", "name": "40'lık Kollektör Dolabı", "size": "40x60x11", "group": "Kollektör Dolabı", "sourcePrice": 600, "salePrice": 750, "imageKey": "kollektor-dolabi" },
+  { "externalId": "kollektor-dolabi-60x60x11", "sku": "TPS-KD-60X60X11", "name": "60'lık Kollektör Dolabı", "size": "60x60x11", "group": "Kollektör Dolabı", "sourcePrice": 780, "salePrice": 975, "imageKey": "kollektor-dolabi" },
+  { "externalId": "kollektor-dolabi-80x60x11", "sku": "TPS-KD-80X60X11", "name": "80'lik Kollektör Dolabı", "size": "80x60x11", "group": "Kollektör Dolabı", "sourcePrice": 900, "salePrice": 1125, "imageKey": "kollektor-dolabi" },
+  { "externalId": "kollektor-dolabi-100x60x11", "sku": "TPS-KD-100X60X11", "name": "100'lük Kollektör Dolabı", "size": "100x60x11", "group": "Kollektör Dolabı", "sourcePrice": 1200, "salePrice": 1500, "imageKey": "kollektor-dolabi" },
+
+  { "externalId": "vana-muhafaza-panosu-30x30x15", "sku": "TPS-VMP-30X30X15", "name": "Vana Muhafaza Panosu", "size": "30x30x15", "group": "Sayaç - AKV Panosu", "sourcePrice": 280, "salePrice": 350, "imageKey": "sayac-akv-panosu" },
+  { "externalId": "vana-muhafaza-panosu-25x45x20", "sku": "TPS-VMP-25X45X20", "name": "Vana Muhafaza Panosu", "size": "25x45x20", "group": "Sayaç - AKV Panosu", "sourcePrice": 330, "salePrice": 412.5, "imageKey": "sayac-akv-panosu" },
+  { "externalId": "sayac-muhafaza-panosu-30x60x22", "sku": "TPS-SMP-30X60X22", "name": "Sayaç Muhafaza Panosu", "size": "30x60x22", "group": "Sayaç - AKV Panosu", "sourcePrice": 400, "salePrice": 500, "imageKey": "sayac-akv-panosu" },
+  { "externalId": "sayac-akv-muhafaza-panosu-40x60x22", "sku": "TPS-SAKV-40X60X22", "name": "Sayaç + AKV Muhafaza Panosu", "size": "40x60x22", "group": "Sayaç - AKV Panosu", "sourcePrice": 500, "salePrice": 625, "imageKey": "sayac-akv-panosu" },
+  { "externalId": "cift-sayac-muhafaza-panosu-60x60x22", "sku": "TPS-CSMP-60X60X22", "name": "Çift Sayaç Muhafaza Panosu", "size": "60x60x22", "group": "Sayaç - AKV Panosu", "sourcePrice": 900, "salePrice": 1125, "imageKey": "sayac-akv-panosu" },
+  { "externalId": "cift-sayac-muhafaza-panosu-60x70x22", "sku": "TPS-CSMP-60X70X22", "name": "Çift Sayaç Muhafaza Panosu", "size": "60x70x22", "group": "Sayaç - AKV Panosu", "sourcePrice": 1000, "salePrice": 1250, "imageKey": "sayac-akv-panosu" },
+  { "externalId": "cift-sayac-muhafaza-panosu-70x70x22", "sku": "TPS-CSMP-70X70X22", "name": "Çift Sayaç Muhafaza Panosu", "size": "70x70x22", "group": "Sayaç - AKV Panosu", "sourcePrice": 1100, "salePrice": 1375, "imageKey": "sayac-akv-panosu" },
+  { "externalId": "cift-sayac-muhafaza-panosu-80x80x22", "sku": "TPS-CSMP-80X80X22", "name": "Çift Sayaç Muhafaza Panosu", "size": "80x80x22", "group": "Sayaç - AKV Panosu", "sourcePrice": 1450, "salePrice": 1812.5, "imageKey": "sayac-akv-panosu" },
+
+  { "externalId": "su-sayac-panosu-1-30x60x15", "sku": "TPS-SSP-1-30X60X15", "name": "1 Sayaçlı Su Sayaç Panosu", "size": "30x60x15", "group": "Su Sayaç Panosu", "sourcePrice": null, "salePrice": 0, "imageKey": "su-sayac-panosu" },
+  { "externalId": "su-sayac-panosu-2-50x60x15", "sku": "TPS-SSP-2-50X60X15", "name": "2 Sayaçlı Su Sayaç Panosu", "size": "50x60x15", "group": "Su Sayaç Panosu", "sourcePrice": null, "salePrice": 0, "imageKey": "su-sayac-panosu" },
+  { "externalId": "su-sayac-panosu-3-60x70x15", "sku": "TPS-SSP-3-60X70X15", "name": "3 Sayaçlı Su Sayaç Panosu", "size": "60x70x15", "group": "Su Sayaç Panosu", "sourcePrice": null, "salePrice": 0, "imageKey": "su-sayac-panosu" },
+  { "externalId": "su-sayac-panosu-4-70x80x15", "sku": "TPS-SSP-4-70X80X15", "name": "4 Sayaçlı Su Sayaç Panosu", "size": "70x80x15", "group": "Su Sayaç Panosu", "sourcePrice": null, "salePrice": 0, "imageKey": "su-sayac-panosu" },
+  { "externalId": "su-sayac-panosu-5-80x90x15", "sku": "TPS-SSP-5-80X90X15", "name": "5 Sayaçlı Su Sayaç Panosu", "size": "80x90x15", "group": "Su Sayaç Panosu", "sourcePrice": null, "salePrice": 0, "imageKey": "su-sayac-panosu" },
+  { "externalId": "su-sayac-panosu-6-90x100x15", "sku": "TPS-SSP-6-90X100X15", "name": "6 Sayaçlı Su Sayaç Panosu", "size": "90x100x15", "group": "Su Sayaç Panosu", "sourcePrice": null, "salePrice": 0, "imageKey": "su-sayac-panosu" },
+
+  { "externalId": "ayarlanabilir-isi-pompasi-ayagi-60x30", "sku": "TPS-IPA-60X30", "name": "Ayarlanabilir Isı Pompası Ayağı", "size": "60x30", "group": "Isı Pompası Ayağı", "sourcePrice": 900, "salePrice": 1125, "imageKey": "isi-pompasi-ayagi" }
+]

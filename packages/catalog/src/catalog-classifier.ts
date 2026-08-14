@@ -500,6 +500,29 @@ export function classifyCatalogProduct(product: ClassifiableCatalogProduct): Cat
     return buildClassification("sulama-bahce", "damlama", "pinned-source", 1, "source:sayim-damlama", name, categoryText);
   }
 
+  if (sourceMatches(sourceKey, "catalog-tps-pano-2026-08-14")) {
+    if (matchesAnyPhrase(name, ["isi pompasi ayagi"])) {
+      return buildClassification(
+        "pompa-hidrofor",
+        "pompa-aksesuar",
+        "pinned-source",
+        1,
+        "source:tps-pano:isi-pompasi-ayagi",
+        name,
+        categoryText
+      );
+    }
+    return buildClassification(
+      "su-tesisati",
+      "tesisat-panolari",
+      "pinned-source",
+      1,
+      "source:tps-pano:tesisat-panolari",
+      name,
+      categoryText
+    );
+  }
+
   const pinned = PINNED_SOURCE_RULES.find((rule) => sourceMatches(sourceKey, rule.source));
   if (pinned) {
     return buildClassification(pinned.groupSlug, pinned.categorySlug, "pinned-source", 1, `source:${sourceKey}`, name, categoryText);

@@ -41,6 +41,8 @@ export const CATALOG_TREE: CatalogTreeCategory[] = [
       "pvc boru",
       "duplex",
       "su sayac",
+      "sayac panosu",
+      "kollektor dolabi",
       "regülatör",
       "regületör",
       "koruge",
@@ -77,6 +79,11 @@ export const CATALOG_TREE: CatalogTreeCategory[] = [
           { slug: "rekor-conta", label: "Rekor & Contalar", keywords: ["rekor", "conta"] },
           { slug: "nipeller", label: "Nipeller", keywords: ["nipel"] },
           { slug: "su-sayaci", label: "Su Sayaçları", keywords: ["su sayac", "su sayaç"] },
+          {
+            slug: "tesisat-panolari",
+            label: "Sayaç & Kollektör Panoları",
+            keywords: ["sayac panosu", "sayaç panosu", "sayac muhafaza panosu", "sayaç muhafaza panosu", "kollektor dolabi", "kollektör dolabı"]
+          },
           { slug: "regulator-basinc", label: "Regülatör & Basınç", keywords: ["regülatör", "regületör", "basinc malzeme", "basınç malzeme"] },
           { slug: "koruge-ek", label: "Koruge & Ek Parça", keywords: ["koruge"] }
         ]

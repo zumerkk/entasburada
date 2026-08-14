@@ -1,0 +1,1123 @@
+[
+  {
+    "sourceKey": "catalog-tps-pano-2026-08-14",
+    "sourceName": "TPS Pano Fiyat Listesi 2026-08-14",
+    "externalId": "kollektor-dolabi-40x60x11",
+    "sku": "TPS-KD-40X60X11",
+    "productName": "40'lık Kollektör Dolabı 40x60x11",
+    "brandName": "TPS PANO",
+    "categoryPath": [
+      "Tesisat",
+      "Sayaç ve Kollektör Panoları",
+      "Metal Muhafaza Panoları"
+    ],
+    "categoryName": "Metal Muhafaza Panoları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "750.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "40'lık Kollektör Dolabı; ölçü 40x60x11. TPS Pano fiyat listesinden doğrulanmıştır. Gerçek stok ve teslim süresi sipariş öncesinde teyit edilmelidir.",
+    "technicalSpecs": [
+      {
+        "label": "Marka",
+        "value": "TPS PANO"
+      },
+      {
+        "label": "Sistem Kodu",
+        "value": "TPS-KD-40X60X11"
+      },
+      {
+        "label": "Ürün Grubu",
+        "value": "Kollektör Dolabı"
+      },
+      {
+        "label": "Ölçü",
+        "value": "40x60x11"
+      },
+      {
+        "label": "Birim",
+        "value": "Adet"
+      },
+      {
+        "label": "Fiyat Kaynağı",
+        "value": "TPS Pano 14.08.2026 KDV hariç satış listesi"
+      },
+      {
+        "label": "Stok",
+        "value": "Gerçek stok adedi ve teslim süresi için teyit gerekli"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/tps-pano-2026-08-14/products/01-kollektor-dolabi.webp",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-tps-pano-2026-08-14",
+    "sourceName": "TPS Pano Fiyat Listesi 2026-08-14",
+    "externalId": "kollektor-dolabi-60x60x11",
+    "sku": "TPS-KD-60X60X11",
+    "productName": "60'lık Kollektör Dolabı 60x60x11",
+    "brandName": "TPS PANO",
+    "categoryPath": [
+      "Tesisat",
+      "Sayaç ve Kollektör Panoları",
+      "Metal Muhafaza Panoları"
+    ],
+    "categoryName": "Metal Muhafaza Panoları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "975.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "60'lık Kollektör Dolabı; ölçü 60x60x11. TPS Pano fiyat listesinden doğrulanmıştır. Gerçek stok ve teslim süresi sipariş öncesinde teyit edilmelidir.",
+    "technicalSpecs": [
+      {
+        "label": "Marka",
+        "value": "TPS PANO"
+      },
+      {
+        "label": "Sistem Kodu",
+        "value": "TPS-KD-60X60X11"
+      },
+      {
+        "label": "Ürün Grubu",
+        "value": "Kollektör Dolabı"
+      },
+      {
+        "label": "Ölçü",
+        "value": "60x60x11"
+      },
+      {
+        "label": "Birim",
+        "value": "Adet"
+      },
+      {
+        "label": "Fiyat Kaynağı",
+        "value": "TPS Pano 14.08.2026 KDV hariç satış listesi"
+      },
+      {
+        "label": "Stok",
+        "value": "Gerçek stok adedi ve teslim süresi için teyit gerekli"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/tps-pano-2026-08-14/products/01-kollektor-dolabi.webp",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-tps-pano-2026-08-14",
+    "sourceName": "TPS Pano Fiyat Listesi 2026-08-14",
+    "externalId": "kollektor-dolabi-80x60x11",
+    "sku": "TPS-KD-80X60X11",
+    "productName": "80'lik Kollektör Dolabı 80x60x11",
+    "brandName": "TPS PANO",
+    "categoryPath": [
+      "Tesisat",
+      "Sayaç ve Kollektör Panoları",
+      "Metal Muhafaza Panoları"
+    ],
+    "categoryName": "Metal Muhafaza Panoları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "1125.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "80'lik Kollektör Dolabı; ölçü 80x60x11. TPS Pano fiyat listesinden doğrulanmıştır. Gerçek stok ve teslim süresi sipariş öncesinde teyit edilmelidir.",
+    "technicalSpecs": [
+      {
+        "label": "Marka",
+        "value": "TPS PANO"
+      },
+      {
+        "label": "Sistem Kodu",
+        "value": "TPS-KD-80X60X11"
+      },
+      {
+        "label": "Ürün Grubu",
+        "value": "Kollektör Dolabı"
+      },
+      {
+        "label": "Ölçü",
+        "value": "80x60x11"
+      },
+      {
+        "label": "Birim",
+        "value": "Adet"
+      },
+      {
+        "label": "Fiyat Kaynağı",
+        "value": "TPS Pano 14.08.2026 KDV hariç satış listesi"
+      },
+      {
+        "label": "Stok",
+        "value": "Gerçek stok adedi ve teslim süresi için teyit gerekli"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/tps-pano-2026-08-14/products/01-kollektor-dolabi.webp",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-tps-pano-2026-08-14",
+    "sourceName": "TPS Pano Fiyat Listesi 2026-08-14",
+    "externalId": "kollektor-dolabi-100x60x11",
+    "sku": "TPS-KD-100X60X11",
+    "productName": "100'lük Kollektör Dolabı 100x60x11",
+    "brandName": "TPS PANO",
+    "categoryPath": [
+      "Tesisat",
+      "Sayaç ve Kollektör Panoları",
+      "Metal Muhafaza Panoları"
+    ],
+    "categoryName": "Metal Muhafaza Panoları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "1500.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "100'lük Kollektör Dolabı; ölçü 100x60x11. TPS Pano fiyat listesinden doğrulanmıştır. Gerçek stok ve teslim süresi sipariş öncesinde teyit edilmelidir.",
+    "technicalSpecs": [
+      {
+        "label": "Marka",
+        "value": "TPS PANO"
+      },
+      {
+        "label": "Sistem Kodu",
+        "value": "TPS-KD-100X60X11"
+      },
+      {
+        "label": "Ürün Grubu",
+        "value": "Kollektör Dolabı"
+      },
+      {
+        "label": "Ölçü",
+        "value": "100x60x11"
+      },
+      {
+        "label": "Birim",
+        "value": "Adet"
+      },
+      {
+        "label": "Fiyat Kaynağı",
+        "value": "TPS Pano 14.08.2026 KDV hariç satış listesi"
+      },
+      {
+        "label": "Stok",
+        "value": "Gerçek stok adedi ve teslim süresi için teyit gerekli"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/tps-pano-2026-08-14/products/01-kollektor-dolabi.webp",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-tps-pano-2026-08-14",
+    "sourceName": "TPS Pano Fiyat Listesi 2026-08-14",
+    "externalId": "vana-muhafaza-panosu-30x30x15",
+    "sku": "TPS-VMP-30X30X15",
+    "productName": "Vana Muhafaza Panosu 30x30x15",
+    "brandName": "TPS PANO",
+    "categoryPath": [
+      "Tesisat",
+      "Sayaç ve Kollektör Panoları",
+      "Metal Muhafaza Panoları"
+    ],
+    "categoryName": "Metal Muhafaza Panoları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "350.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "Vana Muhafaza Panosu; ölçü 30x30x15. TPS Pano fiyat listesinden doğrulanmıştır. Gerçek stok ve teslim süresi sipariş öncesinde teyit edilmelidir.",
+    "technicalSpecs": [
+      {
+        "label": "Marka",
+        "value": "TPS PANO"
+      },
+      {
+        "label": "Sistem Kodu",
+        "value": "TPS-VMP-30X30X15"
+      },
+      {
+        "label": "Ürün Grubu",
+        "value": "Sayaç - AKV Panosu"
+      },
+      {
+        "label": "Ölçü",
+        "value": "30x30x15"
+      },
+      {
+        "label": "Birim",
+        "value": "Adet"
+      },
+      {
+        "label": "Fiyat Kaynağı",
+        "value": "TPS Pano 14.08.2026 KDV hariç satış listesi"
+      },
+      {
+        "label": "Stok",
+        "value": "Gerçek stok adedi ve teslim süresi için teyit gerekli"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/tps-pano-2026-08-14/products/02-sayac-akv-panosu.webp",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-tps-pano-2026-08-14",
+    "sourceName": "TPS Pano Fiyat Listesi 2026-08-14",
+    "externalId": "vana-muhafaza-panosu-25x45x20",
+    "sku": "TPS-VMP-25X45X20",
+    "productName": "Vana Muhafaza Panosu 25x45x20",
+    "brandName": "TPS PANO",
+    "categoryPath": [
+      "Tesisat",
+      "Sayaç ve Kollektör Panoları",
+      "Metal Muhafaza Panoları"
+    ],
+    "categoryName": "Metal Muhafaza Panoları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "412.50",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "Vana Muhafaza Panosu; ölçü 25x45x20. TPS Pano fiyat listesinden doğrulanmıştır. Gerçek stok ve teslim süresi sipariş öncesinde teyit edilmelidir.",
+    "technicalSpecs": [
+      {
+        "label": "Marka",
+        "value": "TPS PANO"
+      },
+      {
+        "label": "Sistem Kodu",
+        "value": "TPS-VMP-25X45X20"
+      },
+      {
+        "label": "Ürün Grubu",
+        "value": "Sayaç - AKV Panosu"
+      },
+      {
+        "label": "Ölçü",
+        "value": "25x45x20"
+      },
+      {
+        "label": "Birim",
+        "value": "Adet"
+      },
+      {
+        "label": "Fiyat Kaynağı",
+        "value": "TPS Pano 14.08.2026 KDV hariç satış listesi"
+      },
+      {
+        "label": "Stok",
+        "value": "Gerçek stok adedi ve teslim süresi için teyit gerekli"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/tps-pano-2026-08-14/products/02-sayac-akv-panosu.webp",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-tps-pano-2026-08-14",
+    "sourceName": "TPS Pano Fiyat Listesi 2026-08-14",
+    "externalId": "sayac-muhafaza-panosu-30x60x22",
+    "sku": "TPS-SMP-30X60X22",
+    "productName": "Sayaç Muhafaza Panosu 30x60x22",
+    "brandName": "TPS PANO",
+    "categoryPath": [
+      "Tesisat",
+      "Sayaç ve Kollektör Panoları",
+      "Metal Muhafaza Panoları"
+    ],
+    "categoryName": "Metal Muhafaza Panoları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "500.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "Sayaç Muhafaza Panosu; ölçü 30x60x22. TPS Pano fiyat listesinden doğrulanmıştır. Gerçek stok ve teslim süresi sipariş öncesinde teyit edilmelidir.",
+    "technicalSpecs": [
+      {
+        "label": "Marka",
+        "value": "TPS PANO"
+      },
+      {
+        "label": "Sistem Kodu",
+        "value": "TPS-SMP-30X60X22"
+      },
+      {
+        "label": "Ürün Grubu",
+        "value": "Sayaç - AKV Panosu"
+      },
+      {
+        "label": "Ölçü",
+        "value": "30x60x22"
+      },
+      {
+        "label": "Birim",
+        "value": "Adet"
+      },
+      {
+        "label": "Fiyat Kaynağı",
+        "value": "TPS Pano 14.08.2026 KDV hariç satış listesi"
+      },
+      {
+        "label": "Stok",
+        "value": "Gerçek stok adedi ve teslim süresi için teyit gerekli"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/tps-pano-2026-08-14/products/02-sayac-akv-panosu.webp",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-tps-pano-2026-08-14",
+    "sourceName": "TPS Pano Fiyat Listesi 2026-08-14",
+    "externalId": "sayac-akv-muhafaza-panosu-40x60x22",
+    "sku": "TPS-SAKV-40X60X22",
+    "productName": "Sayaç + AKV Muhafaza Panosu 40x60x22",
+    "brandName": "TPS PANO",
+    "categoryPath": [
+      "Tesisat",
+      "Sayaç ve Kollektör Panoları",
+      "Metal Muhafaza Panoları"
+    ],
+    "categoryName": "Metal Muhafaza Panoları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "625.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "Sayaç + AKV Muhafaza Panosu; ölçü 40x60x22. TPS Pano fiyat listesinden doğrulanmıştır. Gerçek stok ve teslim süresi sipariş öncesinde teyit edilmelidir.",
+    "technicalSpecs": [
+      {
+        "label": "Marka",
+        "value": "TPS PANO"
+      },
+      {
+        "label": "Sistem Kodu",
+        "value": "TPS-SAKV-40X60X22"
+      },
+      {
+        "label": "Ürün Grubu",
+        "value": "Sayaç - AKV Panosu"
+      },
+      {
+        "label": "Ölçü",
+        "value": "40x60x22"
+      },
+      {
+        "label": "Birim",
+        "value": "Adet"
+      },
+      {
+        "label": "Fiyat Kaynağı",
+        "value": "TPS Pano 14.08.2026 KDV hariç satış listesi"
+      },
+      {
+        "label": "Stok",
+        "value": "Gerçek stok adedi ve teslim süresi için teyit gerekli"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/tps-pano-2026-08-14/products/02-sayac-akv-panosu.webp",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-tps-pano-2026-08-14",
+    "sourceName": "TPS Pano Fiyat Listesi 2026-08-14",
+    "externalId": "cift-sayac-muhafaza-panosu-60x60x22",
+    "sku": "TPS-CSMP-60X60X22",
+    "productName": "Çift Sayaç Muhafaza Panosu 60x60x22",
+    "brandName": "TPS PANO",
+    "categoryPath": [
+      "Tesisat",
+      "Sayaç ve Kollektör Panoları",
+      "Metal Muhafaza Panoları"
+    ],
+    "categoryName": "Metal Muhafaza Panoları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "1125.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "Çift Sayaç Muhafaza Panosu; ölçü 60x60x22. TPS Pano fiyat listesinden doğrulanmıştır. Gerçek stok ve teslim süresi sipariş öncesinde teyit edilmelidir.",
+    "technicalSpecs": [
+      {
+        "label": "Marka",
+        "value": "TPS PANO"
+      },
+      {
+        "label": "Sistem Kodu",
+        "value": "TPS-CSMP-60X60X22"
+      },
+      {
+        "label": "Ürün Grubu",
+        "value": "Sayaç - AKV Panosu"
+      },
+      {
+        "label": "Ölçü",
+        "value": "60x60x22"
+      },
+      {
+        "label": "Birim",
+        "value": "Adet"
+      },
+      {
+        "label": "Fiyat Kaynağı",
+        "value": "TPS Pano 14.08.2026 KDV hariç satış listesi"
+      },
+      {
+        "label": "Stok",
+        "value": "Gerçek stok adedi ve teslim süresi için teyit gerekli"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/tps-pano-2026-08-14/products/02-sayac-akv-panosu.webp",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-tps-pano-2026-08-14",
+    "sourceName": "TPS Pano Fiyat Listesi 2026-08-14",
+    "externalId": "cift-sayac-muhafaza-panosu-60x70x22",
+    "sku": "TPS-CSMP-60X70X22",
+    "productName": "Çift Sayaç Muhafaza Panosu 60x70x22",
+    "brandName": "TPS PANO",
+    "categoryPath": [
+      "Tesisat",
+      "Sayaç ve Kollektör Panoları",
+      "Metal Muhafaza Panoları"
+    ],
+    "categoryName": "Metal Muhafaza Panoları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "1250.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "Çift Sayaç Muhafaza Panosu; ölçü 60x70x22. TPS Pano fiyat listesinden doğrulanmıştır. Gerçek stok ve teslim süresi sipariş öncesinde teyit edilmelidir.",
+    "technicalSpecs": [
+      {
+        "label": "Marka",
+        "value": "TPS PANO"
+      },
+      {
+        "label": "Sistem Kodu",
+        "value": "TPS-CSMP-60X70X22"
+      },
+      {
+        "label": "Ürün Grubu",
+        "value": "Sayaç - AKV Panosu"
+      },
+      {
+        "label": "Ölçü",
+        "value": "60x70x22"
+      },
+      {
+        "label": "Birim",
+        "value": "Adet"
+      },
+      {
+        "label": "Fiyat Kaynağı",
+        "value": "TPS Pano 14.08.2026 KDV hariç satış listesi"
+      },
+      {
+        "label": "Stok",
+        "value": "Gerçek stok adedi ve teslim süresi için teyit gerekli"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/tps-pano-2026-08-14/products/02-sayac-akv-panosu.webp",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-tps-pano-2026-08-14",
+    "sourceName": "TPS Pano Fiyat Listesi 2026-08-14",
+    "externalId": "cift-sayac-muhafaza-panosu-70x70x22",
+    "sku": "TPS-CSMP-70X70X22",
+    "productName": "Çift Sayaç Muhafaza Panosu 70x70x22",
+    "brandName": "TPS PANO",
+    "categoryPath": [
+      "Tesisat",
+      "Sayaç ve Kollektör Panoları",
+      "Metal Muhafaza Panoları"
+    ],
+    "categoryName": "Metal Muhafaza Panoları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "1375.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "Çift Sayaç Muhafaza Panosu; ölçü 70x70x22. TPS Pano fiyat listesinden doğrulanmıştır. Gerçek stok ve teslim süresi sipariş öncesinde teyit edilmelidir.",
+    "technicalSpecs": [
+      {
+        "label": "Marka",
+        "value": "TPS PANO"
+      },
+      {
+        "label": "Sistem Kodu",
+        "value": "TPS-CSMP-70X70X22"
+      },
+      {
+        "label": "Ürün Grubu",
+        "value": "Sayaç - AKV Panosu"
+      },
+      {
+        "label": "Ölçü",
+        "value": "70x70x22"
+      },
+      {
+        "label": "Birim",
+        "value": "Adet"
+      },
+      {
+        "label": "Fiyat Kaynağı",
+        "value": "TPS Pano 14.08.2026 KDV hariç satış listesi"
+      },
+      {
+        "label": "Stok",
+        "value": "Gerçek stok adedi ve teslim süresi için teyit gerekli"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/tps-pano-2026-08-14/products/02-sayac-akv-panosu.webp",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-tps-pano-2026-08-14",
+    "sourceName": "TPS Pano Fiyat Listesi 2026-08-14",
+    "externalId": "cift-sayac-muhafaza-panosu-80x80x22",
+    "sku": "TPS-CSMP-80X80X22",
+    "productName": "Çift Sayaç Muhafaza Panosu 80x80x22",
+    "brandName": "TPS PANO",
+    "categoryPath": [
+      "Tesisat",
+      "Sayaç ve Kollektör Panoları",
+      "Metal Muhafaza Panoları"
+    ],
+    "categoryName": "Metal Muhafaza Panoları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "1812.50",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "Çift Sayaç Muhafaza Panosu; ölçü 80x80x22. TPS Pano fiyat listesinden doğrulanmıştır. Gerçek stok ve teslim süresi sipariş öncesinde teyit edilmelidir.",
+    "technicalSpecs": [
+      {
+        "label": "Marka",
+        "value": "TPS PANO"
+      },
+      {
+        "label": "Sistem Kodu",
+        "value": "TPS-CSMP-80X80X22"
+      },
+      {
+        "label": "Ürün Grubu",
+        "value": "Sayaç - AKV Panosu"
+      },
+      {
+        "label": "Ölçü",
+        "value": "80x80x22"
+      },
+      {
+        "label": "Birim",
+        "value": "Adet"
+      },
+      {
+        "label": "Fiyat Kaynağı",
+        "value": "TPS Pano 14.08.2026 KDV hariç satış listesi"
+      },
+      {
+        "label": "Stok",
+        "value": "Gerçek stok adedi ve teslim süresi için teyit gerekli"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/tps-pano-2026-08-14/products/02-sayac-akv-panosu.webp",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-tps-pano-2026-08-14",
+    "sourceName": "TPS Pano Fiyat Listesi 2026-08-14",
+    "externalId": "su-sayac-panosu-1-30x60x15",
+    "sku": "TPS-SSP-1-30X60X15",
+    "productName": "1 Sayaçlı Su Sayaç Panosu 30x60x15",
+    "brandName": "TPS PANO",
+    "categoryPath": [
+      "Tesisat",
+      "Sayaç ve Kollektör Panoları",
+      "Metal Muhafaza Panoları"
+    ],
+    "categoryName": "Metal Muhafaza Panoları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "0.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "1 Sayaçlı Su Sayaç Panosu; ölçü 30x60x15. TPS Pano fiyat listesinden doğrulanmıştır. Gerçek stok ve teslim süresi sipariş öncesinde teyit edilmelidir.",
+    "technicalSpecs": [
+      {
+        "label": "Marka",
+        "value": "TPS PANO"
+      },
+      {
+        "label": "Sistem Kodu",
+        "value": "TPS-SSP-1-30X60X15"
+      },
+      {
+        "label": "Ürün Grubu",
+        "value": "Su Sayaç Panosu"
+      },
+      {
+        "label": "Ölçü",
+        "value": "30x60x15"
+      },
+      {
+        "label": "Birim",
+        "value": "Adet"
+      },
+      {
+        "label": "Fiyat Kaynağı",
+        "value": "TPS Pano listesinde Fiyat Alınız"
+      },
+      {
+        "label": "Stok",
+        "value": "Gerçek stok adedi ve teslim süresi için teyit gerekli"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/tps-pano-2026-08-14/products/03-su-sayac-panosu.webp",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-tps-pano-2026-08-14",
+    "sourceName": "TPS Pano Fiyat Listesi 2026-08-14",
+    "externalId": "su-sayac-panosu-2-50x60x15",
+    "sku": "TPS-SSP-2-50X60X15",
+    "productName": "2 Sayaçlı Su Sayaç Panosu 50x60x15",
+    "brandName": "TPS PANO",
+    "categoryPath": [
+      "Tesisat",
+      "Sayaç ve Kollektör Panoları",
+      "Metal Muhafaza Panoları"
+    ],
+    "categoryName": "Metal Muhafaza Panoları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "0.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "2 Sayaçlı Su Sayaç Panosu; ölçü 50x60x15. TPS Pano fiyat listesinden doğrulanmıştır. Gerçek stok ve teslim süresi sipariş öncesinde teyit edilmelidir.",
+    "technicalSpecs": [
+      {
+        "label": "Marka",
+        "value": "TPS PANO"
+      },
+      {
+        "label": "Sistem Kodu",
+        "value": "TPS-SSP-2-50X60X15"
+      },
+      {
+        "label": "Ürün Grubu",
+        "value": "Su Sayaç Panosu"
+      },
+      {
+        "label": "Ölçü",
+        "value": "50x60x15"
+      },
+      {
+        "label": "Birim",
+        "value": "Adet"
+      },
+      {
+        "label": "Fiyat Kaynağı",
+        "value": "TPS Pano listesinde Fiyat Alınız"
+      },
+      {
+        "label": "Stok",
+        "value": "Gerçek stok adedi ve teslim süresi için teyit gerekli"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/tps-pano-2026-08-14/products/03-su-sayac-panosu.webp",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-tps-pano-2026-08-14",
+    "sourceName": "TPS Pano Fiyat Listesi 2026-08-14",
+    "externalId": "su-sayac-panosu-3-60x70x15",
+    "sku": "TPS-SSP-3-60X70X15",
+    "productName": "3 Sayaçlı Su Sayaç Panosu 60x70x15",
+    "brandName": "TPS PANO",
+    "categoryPath": [
+      "Tesisat",
+      "Sayaç ve Kollektör Panoları",
+      "Metal Muhafaza Panoları"
+    ],
+    "categoryName": "Metal Muhafaza Panoları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "0.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "3 Sayaçlı Su Sayaç Panosu; ölçü 60x70x15. TPS Pano fiyat listesinden doğrulanmıştır. Gerçek stok ve teslim süresi sipariş öncesinde teyit edilmelidir.",
+    "technicalSpecs": [
+      {
+        "label": "Marka",
+        "value": "TPS PANO"
+      },
+      {
+        "label": "Sistem Kodu",
+        "value": "TPS-SSP-3-60X70X15"
+      },
+      {
+        "label": "Ürün Grubu",
+        "value": "Su Sayaç Panosu"
+      },
+      {
+        "label": "Ölçü",
+        "value": "60x70x15"
+      },
+      {
+        "label": "Birim",
+        "value": "Adet"
+      },
+      {
+        "label": "Fiyat Kaynağı",
+        "value": "TPS Pano listesinde Fiyat Alınız"
+      },
+      {
+        "label": "Stok",
+        "value": "Gerçek stok adedi ve teslim süresi için teyit gerekli"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/tps-pano-2026-08-14/products/03-su-sayac-panosu.webp",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-tps-pano-2026-08-14",
+    "sourceName": "TPS Pano Fiyat Listesi 2026-08-14",
+    "externalId": "su-sayac-panosu-4-70x80x15",
+    "sku": "TPS-SSP-4-70X80X15",
+    "productName": "4 Sayaçlı Su Sayaç Panosu 70x80x15",
+    "brandName": "TPS PANO",
+    "categoryPath": [
+      "Tesisat",
+      "Sayaç ve Kollektör Panoları",
+      "Metal Muhafaza Panoları"
+    ],
+    "categoryName": "Metal Muhafaza Panoları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "0.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "4 Sayaçlı Su Sayaç Panosu; ölçü 70x80x15. TPS Pano fiyat listesinden doğrulanmıştır. Gerçek stok ve teslim süresi sipariş öncesinde teyit edilmelidir.",
+    "technicalSpecs": [
+      {
+        "label": "Marka",
+        "value": "TPS PANO"
+      },
+      {
+        "label": "Sistem Kodu",
+        "value": "TPS-SSP-4-70X80X15"
+      },
+      {
+        "label": "Ürün Grubu",
+        "value": "Su Sayaç Panosu"
+      },
+      {
+        "label": "Ölçü",
+        "value": "70x80x15"
+      },
+      {
+        "label": "Birim",
+        "value": "Adet"
+      },
+      {
+        "label": "Fiyat Kaynağı",
+        "value": "TPS Pano listesinde Fiyat Alınız"
+      },
+      {
+        "label": "Stok",
+        "value": "Gerçek stok adedi ve teslim süresi için teyit gerekli"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/tps-pano-2026-08-14/products/03-su-sayac-panosu.webp",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-tps-pano-2026-08-14",
+    "sourceName": "TPS Pano Fiyat Listesi 2026-08-14",
+    "externalId": "su-sayac-panosu-5-80x90x15",
+    "sku": "TPS-SSP-5-80X90X15",
+    "productName": "5 Sayaçlı Su Sayaç Panosu 80x90x15",
+    "brandName": "TPS PANO",
+    "categoryPath": [
+      "Tesisat",
+      "Sayaç ve Kollektör Panoları",
+      "Metal Muhafaza Panoları"
+    ],
+    "categoryName": "Metal Muhafaza Panoları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "0.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "5 Sayaçlı Su Sayaç Panosu; ölçü 80x90x15. TPS Pano fiyat listesinden doğrulanmıştır. Gerçek stok ve teslim süresi sipariş öncesinde teyit edilmelidir.",
+    "technicalSpecs": [
+      {
+        "label": "Marka",
+        "value": "TPS PANO"
+      },
+      {
+        "label": "Sistem Kodu",
+        "value": "TPS-SSP-5-80X90X15"
+      },
+      {
+        "label": "Ürün Grubu",
+        "value": "Su Sayaç Panosu"
+      },
+      {
+        "label": "Ölçü",
+        "value": "80x90x15"
+      },
+      {
+        "label": "Birim",
+        "value": "Adet"
+      },
+      {
+        "label": "Fiyat Kaynağı",
+        "value": "TPS Pano listesinde Fiyat Alınız"
+      },
+      {
+        "label": "Stok",
+        "value": "Gerçek stok adedi ve teslim süresi için teyit gerekli"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/tps-pano-2026-08-14/products/03-su-sayac-panosu.webp",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-tps-pano-2026-08-14",
+    "sourceName": "TPS Pano Fiyat Listesi 2026-08-14",
+    "externalId": "su-sayac-panosu-6-90x100x15",
+    "sku": "TPS-SSP-6-90X100X15",
+    "productName": "6 Sayaçlı Su Sayaç Panosu 90x100x15",
+    "brandName": "TPS PANO",
+    "categoryPath": [
+      "Tesisat",
+      "Sayaç ve Kollektör Panoları",
+      "Metal Muhafaza Panoları"
+    ],
+    "categoryName": "Metal Muhafaza Panoları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "0.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "6 Sayaçlı Su Sayaç Panosu; ölçü 90x100x15. TPS Pano fiyat listesinden doğrulanmıştır. Gerçek stok ve teslim süresi sipariş öncesinde teyit edilmelidir.",
+    "technicalSpecs": [
+      {
+        "label": "Marka",
+        "value": "TPS PANO"
+      },
+      {
+        "label": "Sistem Kodu",
+        "value": "TPS-SSP-6-90X100X15"
+      },
+      {
+        "label": "Ürün Grubu",
+        "value": "Su Sayaç Panosu"
+      },
+      {
+        "label": "Ölçü",
+        "value": "90x100x15"
+      },
+      {
+        "label": "Birim",
+        "value": "Adet"
+      },
+      {
+        "label": "Fiyat Kaynağı",
+        "value": "TPS Pano listesinde Fiyat Alınız"
+      },
+      {
+        "label": "Stok",
+        "value": "Gerçek stok adedi ve teslim süresi için teyit gerekli"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/tps-pano-2026-08-14/products/03-su-sayac-panosu.webp",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-tps-pano-2026-08-14",
+    "sourceName": "TPS Pano Fiyat Listesi 2026-08-14",
+    "externalId": "ayarlanabilir-isi-pompasi-ayagi-60x30",
+    "sku": "TPS-IPA-60X30",
+    "productName": "Ayarlanabilir Isı Pompası Ayağı 60x30",
+    "brandName": "TPS PANO",
+    "categoryPath": [
+      "Isıtma ve Soğutma",
+      "Isı Pompası Aksesuarları",
+      "Isı Pompası Ayakları"
+    ],
+    "categoryName": "Isı Pompası Ayakları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "1125.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "Ayarlanabilir Isı Pompası Ayağı; ölçü 60x30. TPS Pano fiyat listesinden doğrulanmıştır. Genişlik ve yükseklik ayarı yapılabilir. Gerçek stok ve teslim süresi sipariş öncesinde teyit edilmelidir.",
+    "technicalSpecs": [
+      {
+        "label": "Marka",
+        "value": "TPS PANO"
+      },
+      {
+        "label": "Sistem Kodu",
+        "value": "TPS-IPA-60X30"
+      },
+      {
+        "label": "Ürün Grubu",
+        "value": "Isı Pompası Ayağı"
+      },
+      {
+        "label": "Ölçü",
+        "value": "60x30"
+      },
+      {
+        "label": "Birim",
+        "value": "Adet"
+      },
+      {
+        "label": "Fiyat Kaynağı",
+        "value": "TPS Pano 14.08.2026 KDV hariç satış listesi"
+      },
+      {
+        "label": "Stok",
+        "value": "Gerçek stok adedi ve teslim süresi için teyit gerekli"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/tps-pano-2026-08-14/products/04-isi-pompasi-ayagi.webp",
+    "priceVisibleToPublic": false
+  }
+]

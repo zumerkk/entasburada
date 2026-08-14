@@ -220,6 +220,26 @@ describe("@entas/catalog", () => {
     expect(modamixProduct.categoryLabel).toBe("Robot Duşlar");
   });
 
+  it("keeps TPS Pano products in their exact catalog categories", () => {
+    const meterPanel = classifyCatalogProduct({
+      sourceKey: "catalog-tps-pano-2026-08-14",
+      name: "Çift Sayaç Muhafaza Panosu 60x70x22",
+      category: "Metal Muhafaza Panoları",
+      categoryPath: ["Tesisat", "Sayaç ve Kollektör Panoları", "Metal Muhafaza Panoları"]
+    });
+    const heatPumpFoot = classifyCatalogProduct({
+      sourceKey: "catalog-tps-pano-2026-08-14",
+      name: "Ayarlanabilir Isı Pompası Ayağı 60x30",
+      category: "Isı Pompası Ayakları",
+      categoryPath: ["Isıtma ve Soğutma", "Isı Pompası Aksesuarları", "Isı Pompası Ayakları"]
+    });
+
+    expect(meterPanel.groupSlug).toBe("su-tesisati");
+    expect(meterPanel.categorySlug).toBe("tesisat-panolari");
+    expect(heatPumpFoot.groupSlug).toBe("pompa-hidrofor");
+    expect(heatPumpFoot.categorySlug).toBe("pompa-aksesuar");
+  });
+
   it("keeps every Sayım catalog product under Sulama & Bahçe", () => {
     const hoseMender = classifyCatalogProduct({
       sourceKey: "catalog-pdfler-sayim-2026-fiyat-listesi",

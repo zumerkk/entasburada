@@ -1,0 +1,22 @@
+{
+  "releaseVersion": "2026-08-14-tps-pano-v1",
+  "productCount": 19,
+  "pricedProductCount": 13,
+  "contactPriceProductCount": 6,
+  "uniqueImageCount": 4,
+  "existingExactBrandCount": 0,
+  "sourcePriceSubtotal": 10340,
+  "salePriceSubtotal": 12925,
+  "marginRate": 25,
+  "mode": "write",
+  "createdAt": "2026-08-14T12:41:43.602Z",
+  "source": {
+    "name": "TPS Pano Fiyat Listesi",
+    "receivedAt": "2026-08-14",
+    "fileName": "WhatsApp Image 2026-08-14 at 13.49.28.jpeg",
+    "listedPricesExcludeVat": true
+  },
+  "pricingPolicy": "Kaynak KDV hariç liste fiyatı x 1.25; iki ondalık hassasiyet. Fiyat Alınız satırları 0.00 ve CONTACT_REP.",
+  "imagePolicy": "Kaynak fiyat listesindeki gerçek ürün görselleri kırpıldı; 1200x1200 WebP, beyaz zemin, Lanczos3 ve kontrollü hafif keskinleştirme",
+  "stockPolicy": "Liste gerçek stok adedi içermiyor; stockQuantityKnown=false"
+}
