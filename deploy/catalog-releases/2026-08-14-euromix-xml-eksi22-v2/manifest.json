@@ -13,7 +13,7 @@
     "TRY": 2224
   },
   "pricingPolicy": "Katalog listPrice alanı güncel Euromix XML Fiyat değerine sıfırlandı. Bayi satış fiyatı ticari politika katmanında XML liste × 0,78 olarak hesaplanır; ilave kâr veya indirim zinciri uygulanmaz.",
-  "statusPolicy": "Fiyatlar hazırlandı; önceki kullanıcı talebi uyarınca Euromix ürünleri PASSIVE kalır.",
+  "statusPolicy": "Fiyatlar XML liste × 0,78 olarak hazırlandı. Ürünler 2026-08-15-euromix-active-xml-eksi22-v3 durum migration'ı ile ACTIVE olarak satışa açılır.",
   "samples": [
     {
       "sku": "MP 007-5",

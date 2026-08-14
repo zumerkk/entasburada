@@ -1,0 +1,7 @@
+{
+  "source": "euromix-stock",
+  "status": "ACTIVE",
+  "actor": "supplier-reactivation-with-xml-minus-22-pricing",
+  "catalogRelease": "2026-08-14-euromix-xml-eksi22-v2",
+  "pricingPolicy": "Euromix XML liste fiyatı × 0,78; XML fiyatına başka artış veya indirim uygulanmaz."
+}
