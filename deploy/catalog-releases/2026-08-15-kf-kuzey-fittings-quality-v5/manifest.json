@@ -1,0 +1,339 @@
+{
+  "releaseVersion": "2026-08-15-kf-kuzey-fittings-quality-v5",
+  "productCount": 180,
+  "uniqueImageCount": 32,
+  "minimumAcceptedOriginalEdgePx": 220,
+  "remainingLowResolutionCount": 0,
+  "normalizedCanvas": "2160x2160 WebP",
+  "mode": "write",
+  "createdAt": "2026-08-14T22:13:19.267Z",
+  "source": {
+    "productData": "KF Kuzey Fittings 2026/1 resmî fiyat kataloğu",
+    "officialPdf": "https://kuzeyfittings.com.tr/wp-content/uploads/2026/06/2026-Katalog.pdf",
+    "qualityMap": "scripts/catalog-data/kf-kuzey-quality-v2.json"
+  },
+  "imagePolicy": "V2 taramasında tahmini kısa kenarı 220 pikselin altında kalan ve V4'te yenilenmemiş bütün KF görselleri ürün biçimi korunarak yüksek çözünürlüklü olarak restore edildi. Görseller oranı bozulmadan 2160px ENTAŞBURADA kartına alındı.",
+  "coveragePolicy": "Kalan düşük çözünürlüklü 32 görsel ailesinin tamamı ve bu görselleri kullanan 180 ürün varyantı yenilendi; eşik altında açık kayıt bırakılmadı.",
+  "images": [
+    {
+      "key": "p4-candidate-10",
+      "page": 4,
+      "productCount": 4,
+      "previousEstimatedSourceEdgePx": 132,
+      "restoredSourceWidth": 1254,
+      "restoredSourceHeight": 1254,
+      "outputWidth": 2160,
+      "outputHeight": 2160
+    },
+    {
+      "key": "p4-candidate-11",
+      "page": 4,
+      "productCount": 6,
+      "previousEstimatedSourceEdgePx": 107,
+      "restoredSourceWidth": 1254,
+      "restoredSourceHeight": 1254,
+      "outputWidth": 2160,
+      "outputHeight": 2160
+    },
+    {
+      "key": "p4-candidate-12",
+      "page": 4,
+      "productCount": 14,
+      "previousEstimatedSourceEdgePx": 175,
+      "restoredSourceWidth": 1254,
+      "restoredSourceHeight": 1254,
+      "outputWidth": 2160,
+      "outputHeight": 2160
+    },
+    {
+      "key": "p5-candidate-0",
+      "page": 5,
+      "productCount": 9,
+      "previousEstimatedSourceEdgePx": 101,
+      "restoredSourceWidth": 1254,
+      "restoredSourceHeight": 1254,
+      "outputWidth": 2160,
+      "outputHeight": 2160
+    },
+    {
+      "key": "p5-candidate-1",
+      "page": 5,
+      "productCount": 9,
+      "previousEstimatedSourceEdgePx": 120,
+      "restoredSourceWidth": 1254,
+      "restoredSourceHeight": 1254,
+      "outputWidth": 2160,
+      "outputHeight": 2160
+    },
+    {
+      "key": "p5-candidate-10",
+      "page": 5,
+      "productCount": 5,
+      "previousEstimatedSourceEdgePx": 123,
+      "restoredSourceWidth": 1254,
+      "restoredSourceHeight": 1254,
+      "outputWidth": 2160,
+      "outputHeight": 2160
+    },
+    {
+      "key": "p5-candidate-11",
+      "page": 5,
+      "productCount": 6,
+      "previousEstimatedSourceEdgePx": 101,
+      "restoredSourceWidth": 1254,
+      "restoredSourceHeight": 1254,
+      "outputWidth": 2160,
+      "outputHeight": 2160
+    },
+    {
+      "key": "p5-candidate-12",
+      "page": 5,
+      "productCount": 14,
+      "previousEstimatedSourceEdgePx": 165,
+      "restoredSourceWidth": 1254,
+      "restoredSourceHeight": 1254,
+      "outputWidth": 2160,
+      "outputHeight": 2160
+    },
+    {
+      "key": "p5-candidate-2",
+      "page": 5,
+      "productCount": 9,
+      "previousEstimatedSourceEdgePx": 113,
+      "restoredSourceWidth": 1254,
+      "restoredSourceHeight": 1254,
+      "outputWidth": 2160,
+      "outputHeight": 2160
+    },
+    {
+      "key": "p5-candidate-3",
+      "page": 5,
+      "productCount": 9,
+      "previousEstimatedSourceEdgePx": 115,
+      "restoredSourceWidth": 1254,
+      "restoredSourceHeight": 1254,
+      "outputWidth": 2160,
+      "outputHeight": 2160
+    },
+    {
+      "key": "p5-candidate-4",
+      "page": 5,
+      "productCount": 6,
+      "previousEstimatedSourceEdgePx": 106,
+      "restoredSourceWidth": 1254,
+      "restoredSourceHeight": 1254,
+      "outputWidth": 2160,
+      "outputHeight": 2160
+    },
+    {
+      "key": "p5-candidate-5",
+      "page": 5,
+      "productCount": 9,
+      "previousEstimatedSourceEdgePx": 124,
+      "restoredSourceWidth": 1254,
+      "restoredSourceHeight": 1254,
+      "outputWidth": 2160,
+      "outputHeight": 2160
+    },
+    {
+      "key": "p5-candidate-6",
+      "page": 5,
+      "productCount": 18,
+      "previousEstimatedSourceEdgePx": 108,
+      "restoredSourceWidth": 1254,
+      "restoredSourceHeight": 1254,
+      "outputWidth": 2160,
+      "outputHeight": 2160
+    },
+    {
+      "key": "p5-candidate-8",
+      "page": 5,
+      "productCount": 27,
+      "previousEstimatedSourceEdgePx": 153,
+      "restoredSourceWidth": 1254,
+      "restoredSourceHeight": 1254,
+      "outputWidth": 2160,
+      "outputHeight": 2160
+    },
+    {
+      "key": "p5-candidate-9",
+      "page": 5,
+      "productCount": 3,
+      "previousEstimatedSourceEdgePx": 136,
+      "restoredSourceWidth": 1254,
+      "restoredSourceHeight": 1254,
+      "outputWidth": 2160,
+      "outputHeight": 2160
+    },
+    {
+      "key": "p29-candidate-9",
+      "page": 29,
+      "productCount": 1,
+      "previousEstimatedSourceEdgePx": 204,
+      "restoredSourceWidth": 1254,
+      "restoredSourceHeight": 1254,
+      "outputWidth": 2160,
+      "outputHeight": 2160
+    },
+    {
+      "key": "p34-candidate-5",
+      "page": 34,
+      "productCount": 1,
+      "previousEstimatedSourceEdgePx": 176,
+      "restoredSourceWidth": 1254,
+      "restoredSourceHeight": 1254,
+      "outputWidth": 2160,
+      "outputHeight": 2160
+    },
+    {
+      "key": "p43-candidate-0",
+      "page": 43,
+      "productCount": 4,
+      "previousEstimatedSourceEdgePx": 162,
+      "restoredSourceWidth": 1254,
+      "restoredSourceHeight": 1254,
+      "outputWidth": 2160,
+      "outputHeight": 2160
+    },
+    {
+      "key": "p51-candidate-1",
+      "page": 51,
+      "productCount": 9,
+      "previousEstimatedSourceEdgePx": 204,
+      "restoredSourceWidth": 1254,
+      "restoredSourceHeight": 1254,
+      "outputWidth": 2160,
+      "outputHeight": 2160
+    },
+    {
+      "key": "p52-candidate-0",
+      "page": 52,
+      "productCount": 1,
+      "previousEstimatedSourceEdgePx": 149,
+      "restoredSourceWidth": 1254,
+      "restoredSourceHeight": 1254,
+      "outputWidth": 2160,
+      "outputHeight": 2160
+    },
+    {
+      "key": "p52-candidate-1",
+      "page": 52,
+      "productCount": 1,
+      "previousEstimatedSourceEdgePx": 206,
+      "restoredSourceWidth": 1254,
+      "restoredSourceHeight": 1254,
+      "outputWidth": 2160,
+      "outputHeight": 2160
+    },
+    {
+      "key": "p52-candidate-2",
+      "page": 52,
+      "productCount": 1,
+      "previousEstimatedSourceEdgePx": 123,
+      "restoredSourceWidth": 1254,
+      "restoredSourceHeight": 1254,
+      "outputWidth": 2160,
+      "outputHeight": 2160
+    },
+    {
+      "key": "p52-candidate-4",
+      "page": 52,
+      "productCount": 1,
+      "previousEstimatedSourceEdgePx": 208,
+      "restoredSourceWidth": 1254,
+      "restoredSourceHeight": 1254,
+      "outputWidth": 2160,
+      "outputHeight": 2160
+    },
+    {
+      "key": "p52-candidate-5",
+      "page": 52,
+      "productCount": 1,
+      "previousEstimatedSourceEdgePx": 133,
+      "restoredSourceWidth": 1254,
+      "restoredSourceHeight": 1254,
+      "outputWidth": 2160,
+      "outputHeight": 2160
+    },
+    {
+      "key": "p52-candidate-6",
+      "page": 52,
+      "productCount": 1,
+      "previousEstimatedSourceEdgePx": 163,
+      "restoredSourceWidth": 1254,
+      "restoredSourceHeight": 1254,
+      "outputWidth": 2160,
+      "outputHeight": 2160
+    },
+    {
+      "key": "p52-candidate-7",
+      "page": 52,
+      "productCount": 1,
+      "previousEstimatedSourceEdgePx": 112,
+      "restoredSourceWidth": 1254,
+      "restoredSourceHeight": 1254,
+      "outputWidth": 2160,
+      "outputHeight": 2160
+    },
+    {
+      "key": "p52-candidate-8",
+      "page": 52,
+      "productCount": 1,
+      "previousEstimatedSourceEdgePx": 200,
+      "restoredSourceWidth": 1254,
+      "restoredSourceHeight": 1254,
+      "outputWidth": 2160,
+      "outputHeight": 2160
+    },
+    {
+      "key": "p88-candidate-6",
+      "page": 88,
+      "productCount": 1,
+      "previousEstimatedSourceEdgePx": 217,
+      "restoredSourceWidth": 1254,
+      "restoredSourceHeight": 1254,
+      "outputWidth": 2160,
+      "outputHeight": 2160
+    },
+    {
+      "key": "p100-candidate-0",
+      "page": 100,
+      "productCount": 5,
+      "previousEstimatedSourceEdgePx": 202,
+      "restoredSourceWidth": 1254,
+      "restoredSourceHeight": 1254,
+      "outputWidth": 2160,
+      "outputHeight": 2160
+    },
+    {
+      "key": "p126-candidate-11",
+      "page": 126,
+      "productCount": 1,
+      "previousEstimatedSourceEdgePx": 209,
+      "restoredSourceWidth": 1254,
+      "restoredSourceHeight": 1254,
+      "outputWidth": 2160,
+      "outputHeight": 2160
+    },
+    {
+      "key": "p126-candidate-12",
+      "page": 126,
+      "productCount": 1,
+      "previousEstimatedSourceEdgePx": 172,
+      "restoredSourceWidth": 1254,
+      "restoredSourceHeight": 1254,
+      "outputWidth": 2160,
+      "outputHeight": 2160
+    },
+    {
+      "key": "p126-candidate-13",
+      "page": 126,
+      "productCount": 1,
+      "previousEstimatedSourceEdgePx": 172,
+      "restoredSourceWidth": 1254,
+      "restoredSourceHeight": 1254,
+      "outputWidth": 2160,
+      "outputHeight": 2160
+    }
+  ]
+}
