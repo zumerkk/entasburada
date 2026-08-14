@@ -1,0 +1,22 @@
+{
+  "releaseVersion": "2026-08-14-kf-kuzey-fittings-quality-v3",
+  "productCount": 9,
+  "correctedProductNameCount": 9,
+  "sourceImage": "1024x1536",
+  "normalizedCanvas": "2160x2160 WebP",
+  "mode": "write",
+  "createdAt": "2026-08-14T20:25:24.963Z",
+  "source": {
+    "productData": "KF Kuzey Fittings 2026/1 resmî fiyat kataloğu",
+    "officialPdf": "https://kuzeyfittings.com.tr/wp-content/uploads/2026/06/2026-Katalog.pdf",
+    "productPhotoVerification": "https://www.iconinsaatyapi.com.tr/kuzey-1-1/4-galvaniz-dirsek",
+    "restoredImageSha256": "2591fb755dce9e996e95ec0150cedfe1baccebfea912b2c6fcdf4f70f043c34b"
+  },
+  "imagePolicy": "Resmî PDF'deki yaklaşık 60 piksellik bulanık dirsek görseli kullanılmadı. KF markalı gerçek ürün fotoğrafı geometri, bağlantı ağzı, diş yapısı ve ürün formu korunarak netlik restorasyonundan geçirildi; oran korumalı 2160px ENTAŞBURADA çerçevesi ve watermark uygulandı.",
+  "productPolicy": "KF001-KF009 kodlarının ölçüleri katalog sırasına göre doğrulandı; ürün adlarına ölçü eklendi. Ölçü varyantları aynı galvaniz dirsek ürün ailesi temsil görselini kullanır.",
+  "sourceImageWidth": 1024,
+  "sourceImageHeight": 1536,
+  "outputImageWidth": 2160,
+  "outputImageHeight": 2160,
+  "uniqueImageCount": 1
+}

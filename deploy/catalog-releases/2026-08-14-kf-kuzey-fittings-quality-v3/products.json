@@ -1,0 +1,515 @@
+[
+  {
+    "sourceKey": "catalog-kf-kuzey-fittings-2026-1",
+    "sourceName": "KF Kuzey Fittings 2026/1 Fiyat Kataloğu - Netlik V3",
+    "externalId": "p004-kf001",
+    "sku": "KFK-004-KF001",
+    "manufacturerCode": "KF001",
+    "productName": "1/2\" Galvaniz Dirsek - KF001",
+    "brandName": "KF KUZEY FITTINGS",
+    "categoryPath": [
+      "Tesisat",
+      "Fittings",
+      "Galvaniz ve Siyah Fittings"
+    ],
+    "categoryName": "Galvaniz ve Siyah Fittings",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "34.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "1/2\" Galvaniz Dirsek - KF001. KF Kuzey Fittings 2026/1 resmî kataloğunun 4. sayfasındaki KF001 kodlu 1/2\" ölçü varyantıdır. Görsel, düşük çözünürlüklü PDF küçük resmi yerine KF markalı gerçek ürün fotoğrafından netlik restorasyonu ile hazırlanmıştır. Gerçek stok ve teslim süresi sipariş öncesinde teyit edilmelidir.",
+    "technicalSpecs": [
+      {
+        "label": "Marka",
+        "value": "KF KUZEY FITTINGS"
+      },
+      {
+        "label": "Ürün / Model Kodu",
+        "value": "KF001"
+      },
+      {
+        "label": "Ölçü",
+        "value": "1/2\""
+      },
+      {
+        "label": "2026/1 Katalog Sayfası",
+        "value": "4"
+      },
+      {
+        "label": "Stok",
+        "value": "Katalog ürünü; gerçek stok adedi ve teslim süresi için teyit gerekli"
+      },
+      {
+        "label": "Görsel Kalitesi",
+        "value": "Netlik restorasyonlu gerçek KF ürün fotoğrafı; oran korumalı 2160px ENTAŞ sunum standardı"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/kf-kuzey-fittings-2026-quality-v3/products/kf-galvaniz-dirsek-netlik-v3.webp",
+    "sourceUrl": "https://kuzeyfittings.com.tr/wp-content/uploads/2026/06/2026-Katalog.pdf#page=4",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-kf-kuzey-fittings-2026-1",
+    "sourceName": "KF Kuzey Fittings 2026/1 Fiyat Kataloğu - Netlik V3",
+    "externalId": "p004-kf002",
+    "sku": "KFK-004-KF002",
+    "manufacturerCode": "KF002",
+    "productName": "3/4\" Galvaniz Dirsek - KF002",
+    "brandName": "KF KUZEY FITTINGS",
+    "categoryPath": [
+      "Tesisat",
+      "Fittings",
+      "Galvaniz ve Siyah Fittings"
+    ],
+    "categoryName": "Galvaniz ve Siyah Fittings",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "50.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "3/4\" Galvaniz Dirsek - KF002. KF Kuzey Fittings 2026/1 resmî kataloğunun 4. sayfasındaki KF002 kodlu 3/4\" ölçü varyantıdır. Görsel, düşük çözünürlüklü PDF küçük resmi yerine KF markalı gerçek ürün fotoğrafından netlik restorasyonu ile hazırlanmıştır. Gerçek stok ve teslim süresi sipariş öncesinde teyit edilmelidir.",
+    "technicalSpecs": [
+      {
+        "label": "Marka",
+        "value": "KF KUZEY FITTINGS"
+      },
+      {
+        "label": "Ürün / Model Kodu",
+        "value": "KF002"
+      },
+      {
+        "label": "Ölçü",
+        "value": "3/4\""
+      },
+      {
+        "label": "2026/1 Katalog Sayfası",
+        "value": "4"
+      },
+      {
+        "label": "Stok",
+        "value": "Katalog ürünü; gerçek stok adedi ve teslim süresi için teyit gerekli"
+      },
+      {
+        "label": "Görsel Kalitesi",
+        "value": "Netlik restorasyonlu gerçek KF ürün fotoğrafı; oran korumalı 2160px ENTAŞ sunum standardı"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/kf-kuzey-fittings-2026-quality-v3/products/kf-galvaniz-dirsek-netlik-v3.webp",
+    "sourceUrl": "https://kuzeyfittings.com.tr/wp-content/uploads/2026/06/2026-Katalog.pdf#page=4",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-kf-kuzey-fittings-2026-1",
+    "sourceName": "KF Kuzey Fittings 2026/1 Fiyat Kataloğu - Netlik V3",
+    "externalId": "p004-kf003",
+    "sku": "KFK-004-KF003",
+    "manufacturerCode": "KF003",
+    "productName": "1\" Galvaniz Dirsek - KF003",
+    "brandName": "KF KUZEY FITTINGS",
+    "categoryPath": [
+      "Tesisat",
+      "Fittings",
+      "Galvaniz ve Siyah Fittings"
+    ],
+    "categoryName": "Galvaniz ve Siyah Fittings",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "79.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "1\" Galvaniz Dirsek - KF003. KF Kuzey Fittings 2026/1 resmî kataloğunun 4. sayfasındaki KF003 kodlu 1\" ölçü varyantıdır. Görsel, düşük çözünürlüklü PDF küçük resmi yerine KF markalı gerçek ürün fotoğrafından netlik restorasyonu ile hazırlanmıştır. Gerçek stok ve teslim süresi sipariş öncesinde teyit edilmelidir.",
+    "technicalSpecs": [
+      {
+        "label": "Marka",
+        "value": "KF KUZEY FITTINGS"
+      },
+      {
+        "label": "Ürün / Model Kodu",
+        "value": "KF003"
+      },
+      {
+        "label": "Ölçü",
+        "value": "1\""
+      },
+      {
+        "label": "2026/1 Katalog Sayfası",
+        "value": "4"
+      },
+      {
+        "label": "Stok",
+        "value": "Katalog ürünü; gerçek stok adedi ve teslim süresi için teyit gerekli"
+      },
+      {
+        "label": "Görsel Kalitesi",
+        "value": "Netlik restorasyonlu gerçek KF ürün fotoğrafı; oran korumalı 2160px ENTAŞ sunum standardı"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/kf-kuzey-fittings-2026-quality-v3/products/kf-galvaniz-dirsek-netlik-v3.webp",
+    "sourceUrl": "https://kuzeyfittings.com.tr/wp-content/uploads/2026/06/2026-Katalog.pdf#page=4",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-kf-kuzey-fittings-2026-1",
+    "sourceName": "KF Kuzey Fittings 2026/1 Fiyat Kataloğu - Netlik V3",
+    "externalId": "p004-kf004",
+    "sku": "KFK-004-KF004",
+    "manufacturerCode": "KF004",
+    "productName": "1 1/4\" Galvaniz Dirsek - KF004",
+    "brandName": "KF KUZEY FITTINGS",
+    "categoryPath": [
+      "Tesisat",
+      "Fittings",
+      "Galvaniz ve Siyah Fittings"
+    ],
+    "categoryName": "Galvaniz ve Siyah Fittings",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "152.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "1 1/4\" Galvaniz Dirsek - KF004. KF Kuzey Fittings 2026/1 resmî kataloğunun 4. sayfasındaki KF004 kodlu 1 1/4\" ölçü varyantıdır. Görsel, düşük çözünürlüklü PDF küçük resmi yerine KF markalı gerçek ürün fotoğrafından netlik restorasyonu ile hazırlanmıştır. Gerçek stok ve teslim süresi sipariş öncesinde teyit edilmelidir.",
+    "technicalSpecs": [
+      {
+        "label": "Marka",
+        "value": "KF KUZEY FITTINGS"
+      },
+      {
+        "label": "Ürün / Model Kodu",
+        "value": "KF004"
+      },
+      {
+        "label": "Ölçü",
+        "value": "1 1/4\""
+      },
+      {
+        "label": "2026/1 Katalog Sayfası",
+        "value": "4"
+      },
+      {
+        "label": "Stok",
+        "value": "Katalog ürünü; gerçek stok adedi ve teslim süresi için teyit gerekli"
+      },
+      {
+        "label": "Görsel Kalitesi",
+        "value": "Netlik restorasyonlu gerçek KF ürün fotoğrafı; oran korumalı 2160px ENTAŞ sunum standardı"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/kf-kuzey-fittings-2026-quality-v3/products/kf-galvaniz-dirsek-netlik-v3.webp",
+    "sourceUrl": "https://kuzeyfittings.com.tr/wp-content/uploads/2026/06/2026-Katalog.pdf#page=4",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-kf-kuzey-fittings-2026-1",
+    "sourceName": "KF Kuzey Fittings 2026/1 Fiyat Kataloğu - Netlik V3",
+    "externalId": "p004-kf005",
+    "sku": "KFK-004-KF005",
+    "manufacturerCode": "KF005",
+    "productName": "1 1/2\" Galvaniz Dirsek - KF005",
+    "brandName": "KF KUZEY FITTINGS",
+    "categoryPath": [
+      "Tesisat",
+      "Fittings",
+      "Galvaniz ve Siyah Fittings"
+    ],
+    "categoryName": "Galvaniz ve Siyah Fittings",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "260.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "1 1/2\" Galvaniz Dirsek - KF005. KF Kuzey Fittings 2026/1 resmî kataloğunun 4. sayfasındaki KF005 kodlu 1 1/2\" ölçü varyantıdır. Görsel, düşük çözünürlüklü PDF küçük resmi yerine KF markalı gerçek ürün fotoğrafından netlik restorasyonu ile hazırlanmıştır. Gerçek stok ve teslim süresi sipariş öncesinde teyit edilmelidir.",
+    "technicalSpecs": [
+      {
+        "label": "Marka",
+        "value": "KF KUZEY FITTINGS"
+      },
+      {
+        "label": "Ürün / Model Kodu",
+        "value": "KF005"
+      },
+      {
+        "label": "Ölçü",
+        "value": "1 1/2\""
+      },
+      {
+        "label": "2026/1 Katalog Sayfası",
+        "value": "4"
+      },
+      {
+        "label": "Stok",
+        "value": "Katalog ürünü; gerçek stok adedi ve teslim süresi için teyit gerekli"
+      },
+      {
+        "label": "Görsel Kalitesi",
+        "value": "Netlik restorasyonlu gerçek KF ürün fotoğrafı; oran korumalı 2160px ENTAŞ sunum standardı"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/kf-kuzey-fittings-2026-quality-v3/products/kf-galvaniz-dirsek-netlik-v3.webp",
+    "sourceUrl": "https://kuzeyfittings.com.tr/wp-content/uploads/2026/06/2026-Katalog.pdf#page=4",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-kf-kuzey-fittings-2026-1",
+    "sourceName": "KF Kuzey Fittings 2026/1 Fiyat Kataloğu - Netlik V3",
+    "externalId": "p004-kf006",
+    "sku": "KFK-004-KF006",
+    "manufacturerCode": "KF006",
+    "productName": "2\" Galvaniz Dirsek - KF006",
+    "brandName": "KF KUZEY FITTINGS",
+    "categoryPath": [
+      "Tesisat",
+      "Fittings",
+      "Galvaniz ve Siyah Fittings"
+    ],
+    "categoryName": "Galvaniz ve Siyah Fittings",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "273.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "2\" Galvaniz Dirsek - KF006. KF Kuzey Fittings 2026/1 resmî kataloğunun 4. sayfasındaki KF006 kodlu 2\" ölçü varyantıdır. Görsel, düşük çözünürlüklü PDF küçük resmi yerine KF markalı gerçek ürün fotoğrafından netlik restorasyonu ile hazırlanmıştır. Gerçek stok ve teslim süresi sipariş öncesinde teyit edilmelidir.",
+    "technicalSpecs": [
+      {
+        "label": "Marka",
+        "value": "KF KUZEY FITTINGS"
+      },
+      {
+        "label": "Ürün / Model Kodu",
+        "value": "KF006"
+      },
+      {
+        "label": "Ölçü",
+        "value": "2\""
+      },
+      {
+        "label": "2026/1 Katalog Sayfası",
+        "value": "4"
+      },
+      {
+        "label": "Stok",
+        "value": "Katalog ürünü; gerçek stok adedi ve teslim süresi için teyit gerekli"
+      },
+      {
+        "label": "Görsel Kalitesi",
+        "value": "Netlik restorasyonlu gerçek KF ürün fotoğrafı; oran korumalı 2160px ENTAŞ sunum standardı"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/kf-kuzey-fittings-2026-quality-v3/products/kf-galvaniz-dirsek-netlik-v3.webp",
+    "sourceUrl": "https://kuzeyfittings.com.tr/wp-content/uploads/2026/06/2026-Katalog.pdf#page=4",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-kf-kuzey-fittings-2026-1",
+    "sourceName": "KF Kuzey Fittings 2026/1 Fiyat Kataloğu - Netlik V3",
+    "externalId": "p004-kf007",
+    "sku": "KFK-004-KF007",
+    "manufacturerCode": "KF007",
+    "productName": "2 1/2\" Galvaniz Dirsek - KF007",
+    "brandName": "KF KUZEY FITTINGS",
+    "categoryPath": [
+      "Tesisat",
+      "Fittings",
+      "Galvaniz ve Siyah Fittings"
+    ],
+    "categoryName": "Galvaniz ve Siyah Fittings",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "650.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "2 1/2\" Galvaniz Dirsek - KF007. KF Kuzey Fittings 2026/1 resmî kataloğunun 4. sayfasındaki KF007 kodlu 2 1/2\" ölçü varyantıdır. Görsel, düşük çözünürlüklü PDF küçük resmi yerine KF markalı gerçek ürün fotoğrafından netlik restorasyonu ile hazırlanmıştır. Gerçek stok ve teslim süresi sipariş öncesinde teyit edilmelidir.",
+    "technicalSpecs": [
+      {
+        "label": "Marka",
+        "value": "KF KUZEY FITTINGS"
+      },
+      {
+        "label": "Ürün / Model Kodu",
+        "value": "KF007"
+      },
+      {
+        "label": "Ölçü",
+        "value": "2 1/2\""
+      },
+      {
+        "label": "2026/1 Katalog Sayfası",
+        "value": "4"
+      },
+      {
+        "label": "Stok",
+        "value": "Katalog ürünü; gerçek stok adedi ve teslim süresi için teyit gerekli"
+      },
+      {
+        "label": "Görsel Kalitesi",
+        "value": "Netlik restorasyonlu gerçek KF ürün fotoğrafı; oran korumalı 2160px ENTAŞ sunum standardı"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/kf-kuzey-fittings-2026-quality-v3/products/kf-galvaniz-dirsek-netlik-v3.webp",
+    "sourceUrl": "https://kuzeyfittings.com.tr/wp-content/uploads/2026/06/2026-Katalog.pdf#page=4",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-kf-kuzey-fittings-2026-1",
+    "sourceName": "KF Kuzey Fittings 2026/1 Fiyat Kataloğu - Netlik V3",
+    "externalId": "p004-kf008",
+    "sku": "KFK-004-KF008",
+    "manufacturerCode": "KF008",
+    "productName": "3\" Galvaniz Dirsek - KF008",
+    "brandName": "KF KUZEY FITTINGS",
+    "categoryPath": [
+      "Tesisat",
+      "Fittings",
+      "Galvaniz ve Siyah Fittings"
+    ],
+    "categoryName": "Galvaniz ve Siyah Fittings",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "975.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "3\" Galvaniz Dirsek - KF008. KF Kuzey Fittings 2026/1 resmî kataloğunun 4. sayfasındaki KF008 kodlu 3\" ölçü varyantıdır. Görsel, düşük çözünürlüklü PDF küçük resmi yerine KF markalı gerçek ürün fotoğrafından netlik restorasyonu ile hazırlanmıştır. Gerçek stok ve teslim süresi sipariş öncesinde teyit edilmelidir.",
+    "technicalSpecs": [
+      {
+        "label": "Marka",
+        "value": "KF KUZEY FITTINGS"
+      },
+      {
+        "label": "Ürün / Model Kodu",
+        "value": "KF008"
+      },
+      {
+        "label": "Ölçü",
+        "value": "3\""
+      },
+      {
+        "label": "2026/1 Katalog Sayfası",
+        "value": "4"
+      },
+      {
+        "label": "Stok",
+        "value": "Katalog ürünü; gerçek stok adedi ve teslim süresi için teyit gerekli"
+      },
+      {
+        "label": "Görsel Kalitesi",
+        "value": "Netlik restorasyonlu gerçek KF ürün fotoğrafı; oran korumalı 2160px ENTAŞ sunum standardı"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/kf-kuzey-fittings-2026-quality-v3/products/kf-galvaniz-dirsek-netlik-v3.webp",
+    "sourceUrl": "https://kuzeyfittings.com.tr/wp-content/uploads/2026/06/2026-Katalog.pdf#page=4",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-kf-kuzey-fittings-2026-1",
+    "sourceName": "KF Kuzey Fittings 2026/1 Fiyat Kataloğu - Netlik V3",
+    "externalId": "p004-kf009",
+    "sku": "KFK-004-KF009",
+    "manufacturerCode": "KF009",
+    "productName": "4\" Galvaniz Dirsek - KF009",
+    "brandName": "KF KUZEY FITTINGS",
+    "categoryPath": [
+      "Tesisat",
+      "Fittings",
+      "Galvaniz ve Siyah Fittings"
+    ],
+    "categoryName": "Galvaniz ve Siyah Fittings",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "1690.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "4\" Galvaniz Dirsek - KF009. KF Kuzey Fittings 2026/1 resmî kataloğunun 4. sayfasındaki KF009 kodlu 4\" ölçü varyantıdır. Görsel, düşük çözünürlüklü PDF küçük resmi yerine KF markalı gerçek ürün fotoğrafından netlik restorasyonu ile hazırlanmıştır. Gerçek stok ve teslim süresi sipariş öncesinde teyit edilmelidir.",
+    "technicalSpecs": [
+      {
+        "label": "Marka",
+        "value": "KF KUZEY FITTINGS"
+      },
+      {
+        "label": "Ürün / Model Kodu",
+        "value": "KF009"
+      },
+      {
+        "label": "Ölçü",
+        "value": "4\""
+      },
+      {
+        "label": "2026/1 Katalog Sayfası",
+        "value": "4"
+      },
+      {
+        "label": "Stok",
+        "value": "Katalog ürünü; gerçek stok adedi ve teslim süresi için teyit gerekli"
+      },
+      {
+        "label": "Görsel Kalitesi",
+        "value": "Netlik restorasyonlu gerçek KF ürün fotoğrafı; oran korumalı 2160px ENTAŞ sunum standardı"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/kf-kuzey-fittings-2026-quality-v3/products/kf-galvaniz-dirsek-netlik-v3.webp",
+    "sourceUrl": "https://kuzeyfittings.com.tr/wp-content/uploads/2026/06/2026-Katalog.pdf#page=4",
+    "priceVisibleToPublic": false
+  }
+]
