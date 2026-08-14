@@ -9,6 +9,7 @@ dist
 coverage
 *.tsbuildinfo
 apps/web/public/uploads
+apps/web/public/catalog-imports/
 apps/admin/public/uploads
 data/import-sources
 data/catalog-imports
@@ -23,3 +24,4 @@ data/*.json
 # kaynak PDF katalogları repoya girmez
 Pdfler/
 .neon
+tmp/

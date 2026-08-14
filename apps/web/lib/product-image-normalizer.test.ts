@@ -1,14 +1,31 @@
 import { describe, expect, it } from "vitest";
 import sharp from "sharp";
 import {
+  ENTAS_CATALOG_IMAGE_CANVAS_SIZE,
   PRODUCT_IMAGE_CANVAS_SIZE,
   PRODUCT_IMAGE_CONTENT_SIZE,
+  createEntasCatalogProductImage,
   cropAndNormalizeProductImage,
   normalizeProductImage,
   readProductImageContentBounds
 } from "./product-image-normalizer";
 
 describe("product image normalizer", () => {
+  it("creates a 2160px ENTAŞ catalog card while preserving the source aspect ratio", async () => {
+    const source = await sharp({
+      create: { width: 600, height: 300, channels: 3, background: "#f97316" }
+    }).png().toBuffer();
+
+    const result = await createEntasCatalogProductImage(source);
+    const metadata = await sharp(result.buffer).metadata();
+
+    expect(metadata.format).toBe("webp");
+    expect(metadata.width).toBe(ENTAS_CATALOG_IMAGE_CANVAS_SIZE);
+    expect(metadata.height).toBe(ENTAS_CATALOG_IMAGE_CANVAS_SIZE);
+    expect(result.sourceWidth).toBe(600);
+    expect(result.sourceHeight).toBe(300);
+  });
+
   it("centers a wide product on a square canvas without cropping", async () => {
     const source = await sharp({
       create: { width: 1600, height: 240, channels: 3, background: "#0b7a53" }

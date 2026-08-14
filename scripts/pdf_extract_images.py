@@ -65,10 +65,27 @@ def extract_image_bytes(doc, xref, smask_xref):
         except Exception:
             pass
 
-    base_image = doc.extract_image(xref)
-    if not base_image or not base_image.get("image"):
-        return None
-    return {**base_image, "softMaskApplied": False}
+    # Decode every source through PyMuPDF and persist a lossless PNG. PDF/X
+    # catalogs commonly use JPEG2000/JPX, which browsers and libvips builds do
+    # not consistently decode even though PyMuPDF can read it exactly.
+    try:
+        pixmap = fitz.Pixmap(doc, xref)
+        if pixmap.n > 4 or (pixmap.colorspace and pixmap.colorspace.n > 3):
+            pixmap = fitz.Pixmap(fitz.csRGB, pixmap)
+        return {
+            "image": pixmap.tobytes("png"),
+            "ext": "png",
+            "width": pixmap.width,
+            "height": pixmap.height,
+            "colorspace": pixmap.colorspace.name if pixmap.colorspace else "",
+            "bpc": 8,
+            "softMaskApplied": False,
+        }
+    except Exception:
+        base_image = doc.extract_image(xref)
+        if not base_image or not base_image.get("image"):
+            return None
+        return {**base_image, "softMaskApplied": False}
 
 
 def main():

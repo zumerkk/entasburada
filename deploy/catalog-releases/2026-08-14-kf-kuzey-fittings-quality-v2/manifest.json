@@ -1,0 +1,28 @@
+{
+  "releaseVersion": "2026-08-14-kf-kuzey-fittings-quality-v2",
+  "originalSeedCount": 2375,
+  "removedPhantomRecordCount": 26,
+  "productCount": 2349,
+  "aiMatchedProductCount": 1755,
+  "correctedNameCount": 1612,
+  "uniqueImageCount": 746,
+  "catalogPageCount": 124,
+  "mode": "write",
+  "createdAt": "2026-08-14T16:05:19.440Z",
+  "source": {
+    "productData": "KF Kuzey Fittings 2026/1 resmi fiyat kataloğu",
+    "officialCatalogPage": "https://kuzeyfittings.com.tr/katalog/",
+    "officialPdf": "https://kuzeyfittings.com.tr/wp-content/uploads/2026/06/2026-Katalog.pdf",
+    "pdfSha256": "b1927d66381af1127d60be5b116cef669c7fecf479024033e609fea0f9f7f8b6"
+  },
+  "verificationPolicy": "124 ürün sayfası Gemini görsel+PDF metin katmanı ile denetlendi; yalnız mevcut katalog kodları güncellendi; yoğun tablolar koordinat ve ürün ailesi kurallarıyla tamamlandı",
+  "imagePolicy": "CorelDRAW katman/sprite bozulmalarını önlemek için resmi PDF'nin doğru görünen sayfası 400 DPI'da işlendi; doğrulanmış dar ürün sınırı kırpıldı; üretken detay eklenmeden oran korumalı Lanczos3, kontrollü hafif keskinleştirme, beyaz zemin, ENTAŞBURADA çerçeve ve düşük opaklıklı watermark uygulandı",
+  "normalizedCanvas": "2160x2160 WebP",
+  "directlyExtractedImageCount": 0,
+  "faithful400DpiRenderedCropCount": 746,
+  "lowResolutionSourceCount": 83,
+  "minimumSourceEdge": 103,
+  "maximumSourceEdge": 3436,
+  "pricePolicy": "2026/1 resmi katalog liste fiyatı; TRY ve sayfa 33 için USD; bayi oturumu dışında gizli; F.Sorunuz satırları 0.00",
+  "stockPolicy": "Katalogda ürün yer alıyor; gerçek stok adedi bilinmediği için stockQuantityKnown=false"
+}
