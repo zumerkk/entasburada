@@ -1,0 +1,412 @@
+{
+  "releaseVersion": "2026-08-14-kf-kuzey-fittings-quality-v4",
+  "productCount": 99,
+  "restoredFamilyProductCount": 36,
+  "exactVerifiedPhotoProductCount": 63,
+  "uniqueImageCount": 56,
+  "correctedProductNameCount": 99,
+  "normalizedCanvas": "2160x2160 WebP",
+  "mode": "write",
+  "createdAt": "2026-08-14T21:05:56.550Z",
+  "source": {
+    "productData": "KF Kuzey Fittings 2026/1 resmî fiyat kataloğu, sayfa 4",
+    "officialPdf": "https://kuzeyfittings.com.tr/wp-content/uploads/2026/06/2026-Katalog.pdf",
+    "verifiedProductPhotoCatalog": "https://www.iconinsaatyapi.com.tr/trakya-dokum-fittings"
+  },
+  "imagePolicy": "Ekranda pikselleşen yaklaşık 60 piksellik PDF küçük resimleri kaldırıldı. Te, nipel, tapa ve dirsek aileleri doğrulanmış gerçek ürün biçimi korunarak yüksek çözünürlüklü netlik restorasyonundan geçirildi. Diğer standart galvaniz ürünlerde ölçüyle eşleşen gerçek KF ürün fotoğrafı kullanıldı. Tümü oran korumalı 2160px ENTAŞBURADA kartına alındı.",
+  "productPolicy": "Sayfa 4 standart galvaniz ürün kodları resmî tablodaki ölçülerle eşleştirildi ve ölçü ürün adına/teknik özelliğe eklendi.",
+  "images": [
+    {
+      "key": "dirsek",
+      "kind": "restored",
+      "referenceUrl": "KF galvaniz dirsek ürün fotoğrafı",
+      "sourceWidth": 1024,
+      "sourceHeight": 1536
+    },
+    {
+      "key": "te",
+      "kind": "restored",
+      "referenceUrl": "KF galvaniz te ürün fotoğrafı",
+      "sourceWidth": 1254,
+      "sourceHeight": 1254
+    },
+    {
+      "key": "nipel",
+      "kind": "restored",
+      "referenceUrl": "KF galvaniz nipel ürün fotoğrafı",
+      "sourceWidth": 1254,
+      "sourceHeight": 1254
+    },
+    {
+      "key": "tapa",
+      "kind": "restored",
+      "referenceUrl": "KF galvaniz tapa ürün fotoğrafı",
+      "sourceWidth": 1254,
+      "sourceHeight": 1254
+    },
+    {
+      "key": "manson:1/2\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-1/2-galvaniz-kalin-manson",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "manson:1\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-1-galvaniz-manson",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "manson:3/4\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-3/4-galvaniz-manson",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "konik-rekor:1\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-1-galvaniz-konik-rekor",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "manson:1 1/4\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-1-1/4-galvaniz-manson",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "konik-rekor:1 1/4\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-1-1/4-galvaniz-konik-rekor",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "konik-rekor:1/2\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-1/2-galvaniz-konik-rekor",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "konik-rekor:3/4\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-3/4-galvaniz-konik-rekor",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "manson:2\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-2-galvaniz-manson",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "manson:1 1/2\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-1-1/2-galvaniz-manson",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "konik-rekor:1 1/2\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-1-1/2-galvaniz-konik-rekor",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "manson:3\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-3-galvaniz-manson",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "konik-rekor:2\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-2-galvaniz-konik-rekor",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "manson:2 1/2\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-2-1/2-galvaniz-manson",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "konik-rekor:3\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-3-galvaniz-konik-rekor",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "konik-rekor:2 1/2\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-2-1/2-galvaniz-konik-rekor",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "kuyruklu-dirsek:1/2\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-1/2-galvaniz-kuyruklu-dirsek",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "konik-rekor:4\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-4-galvaniz-konik-rekor",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "manson:4\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-4-galvaniz-manson",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "kuyruklu-dirsek:1 1/4\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-1-1/4-galvaniz-kuyruklu-dirsek",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "kuyruklu-dirsek:3/4\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-3/4-galvaniz-kuyruklu-dirsek",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "kuyruklu-dirsek:1\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-1-galvaniz-kuyruklu-dirsek",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "kuyruklu-dirsek:1 1/2\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-1-1/2-galvaniz-kuyruklu-dirsek",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "reduksiyon:3/4\" x 1/2\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-3/4-x-1/2-galvaniz-reduksiyon",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "reduksiyon:1\" x 1/2\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-1-x-1/2-galvaniz-reduksiyon",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "kuyruklu-dirsek:2\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-2-galvaniz-kuyruklu-dirsek",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "reduksiyon:1\" x 3/4\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-1-x-3/4-galvaniz-reduksiyon",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "reduksiyon:1 1/2\" x 3/4\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-1-1/2-x-3/4-galvaniz-reduksiyon",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "reduksiyon:1 1/2\" x 1/2\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-1-1/2-x-1/2-galvaniz-reduksiyon",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "reduksiyon:1 1/4\" x 1/2\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-1-1/4-x-1/2-galvaniz-reduksiyon",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "reduksiyon:1 1/4\" x 3/4\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-1-1/4-x-3/4-galvaniz-reduksiyon",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "reduksiyon:1 1/2\" x 1\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-3/4-x-1/2-galvaniz-reduksiyon",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "reduksiyon:1 1/2\" x 1 1/4\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-1-1/2-x-1-1/4-galvaniz-reduksiyon",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "reduksiyon:1 1/4\" x 1\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-1-1/4-x-1-galvaniz-reduksiyon",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "reduksiyon:2\" x 1/2\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-2-x-1/2-galvaniz-reduksiyon",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "reduksiyon:2\" x 3/4\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-2-x-3/4-galvaniz-reduksiyon",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "reduksiyon:2\" x 1\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-2-x-1-galvaniz-reduksiyon",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "reduksiyon:2\" x 1 1/2\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-2-x-1-1/2-galvaniz-reduksiyon",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "reduksiyon:2 1/2\" x 1 1/2\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-2-1/2-x-1-1/2-galvaniz-reduksiyon",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "reduksiyon:2 1/2\" x 1 1/4\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-2-1/2-x-1-1/4-galvaniz-reduksiyon",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "reduksiyon:2 1/2\" x 1\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-2-1/2-x-1-galvaniz-reduksiyon",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "reduksiyon:2 1/2\" x 2\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-2-1/2-x-2-galvaniz-reduksiyon",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "reduksiyon:2\" x 1 1/4\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-2-x-1-1/4-galvaniz-reduksiyon",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "reduksiyon:3\" x 1\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-3-x-1-galvaniz-reduksiyon",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "reduksiyon:3\" x 1 1/4\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-3-x-1-1/4-galvaniz-reduksiyon",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "reduksiyon:3\" x 2\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-3-x-2-galvaniz-reduksiyon",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "reduksiyon:3\" x 1 1/2\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-3/4-x-1/2-galvaniz-reduksiyon",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "reduksiyon:4\" x 2\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-4-x-2-galvaniz-reduksiyon",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "reduksiyon:4\" x 2 1/2\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-4-x-2-1/2-galvaniz-reduksiyon",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "manson-reduksiyon",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-galvanizli-manson-reduksiyon-3/4x1/2",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "reduksiyon:4\" x 3\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-4-x-3-galvaniz-reduksiyon",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    },
+    {
+      "key": "reduksiyon:3\" x 2 1/2\"",
+      "kind": "verified-retailer-photo",
+      "referenceUrl": "https://www.iconinsaatyapi.com.tr/kuzey-3-x-2-1/2-galvaniz-reduksiyon",
+      "sourceWidth": 300,
+      "sourceHeight": 300
+    }
+  ]
+}

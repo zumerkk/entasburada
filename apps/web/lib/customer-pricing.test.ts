@@ -54,7 +54,7 @@ describe("common brand pricing", () => {
   it.each([
     ["ARC BANYO", "168.00", "16%"],
     ["Doğal Plastik", "162.00", "19%"],
-    ["EUROMIX", "260.00", undefined],
+    ["EUROMIX", "156.00", "22%"],
     ["FORZA", "162.00", "19%"],
     ["IBELTECH", "178.00", "11%"],
     ["KAREN", "140.00", "30%"],
@@ -74,21 +74,21 @@ describe("common brand pricing", () => {
     expect(price?.taxIncluded).toBe(true);
   });
 
-  it("increases Euromix by 30% profit and separates the included VAT without adding it again", () => {
+  it("discounts the Euromix XML list by 22% and separates the included VAT without adding it again", () => {
     const price = priceProductForCustomer(product, customer);
 
-    expect(price?.unitNetPrice).toBe("260.00");
-    expect(price?.includedTaxAmount).toBe("43.33");
-    expect(price?.ruleLabel).toBe("Euromix liste fiyatı + %30 kâr");
-    expect(price?.listPrice).toBeUndefined();
+    expect(price?.unitNetPrice).toBe("156.00");
+    expect(price?.includedTaxAmount).toBe("26.00");
+    expect(price?.ruleLabel).toBe("Euromix XML liste fiyatı - %22");
+    expect(price?.listPrice).toBe("₺200,00");
   });
 
-  it("locks the approved EURO 089 example to 1,690.00 TL list and 2,197.00 TL sale", () => {
+  it("locks EURO 089 to the XML list and a 22% discounted dealer price", () => {
     const price = priceProductForCustomer({ ...product, sku: "EURO 089", listPrice: "1690.00" }, customer);
 
-    expect(price?.unitNetPrice).toBe("2197.00");
-    expect(price?.displayPrice).toBe("₺2.197,00");
-    expect(price?.ruleLabel).toBe("Euromix liste fiyatı + %30 kâr");
+    expect(price?.unitNetPrice).toBe("1318.20");
+    expect(price?.displayPrice).toBe("₺1.318,20");
+    expect(price?.ruleLabel).toBe("Euromix XML liste fiyatı - %22");
   });
 
   it("does not disclose Floran/Floorpan and Jamindar/Lamindoor prices", () => {

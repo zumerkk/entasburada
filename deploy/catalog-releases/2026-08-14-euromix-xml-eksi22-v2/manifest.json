@@ -1,0 +1,92 @@
+{
+  "version": "2026-08-14-euromix-xml-eksi22-v2",
+  "createdAt": "2026-08-14T20:47:39.844Z",
+  "xmlUrl": "https://bayi.euro-mix.com.tr/C79BE2D9-04CE-4B5B-A51C-7E8F78E25FE3/EuromixStoklar.xml",
+  "xmlSha256": "dd5cb4cff3887c033b9bd38b1d281e862f5e07466a0a76023ee278d3e66291d0",
+  "xmlRecordCount": 2617,
+  "acceptedRecordCount": 2617,
+  "productCount": 2617,
+  "positivePriceCount": 2325,
+  "zeroPriceCount": 292,
+  "currencyCounts": {
+    "USD": 393,
+    "TRY": 2224
+  },
+  "pricingPolicy": "Katalog listPrice alanı güncel Euromix XML Fiyat değerine sıfırlandı. Bayi satış fiyatı ticari politika katmanında XML liste × 0,78 olarak hesaplanır; ilave kâr veya indirim zinciri uygulanmaz.",
+  "statusPolicy": "Fiyatlar hazırlandı; önceki kullanıcı talebi uyarınca Euromix ürünleri PASSIVE kalır.",
+  "samples": [
+    {
+      "sku": "MP 007-5",
+      "currency": "USD",
+      "xmlListPrice": "6.5150",
+      "dealerPriceAt22Discount": "5.08"
+    },
+    {
+      "sku": "RBT 007",
+      "currency": "USD",
+      "xmlListPrice": "54.7500",
+      "dealerPriceAt22Discount": "42.71"
+    },
+    {
+      "sku": "FLEX 042",
+      "currency": "TRY",
+      "xmlListPrice": "105.0000",
+      "dealerPriceAt22Discount": "81.90"
+    },
+    {
+      "sku": "KN 001",
+      "currency": "TRY",
+      "xmlListPrice": "57.0000",
+      "dealerPriceAt22Discount": "44.46"
+    },
+    {
+      "sku": "TC 023",
+      "currency": "TRY",
+      "xmlListPrice": "67.5000",
+      "dealerPriceAt22Discount": "52.65"
+    },
+    {
+      "sku": "ŞB 013",
+      "currency": "TRY",
+      "xmlListPrice": "420.4688",
+      "dealerPriceAt22Discount": "327.97"
+    },
+    {
+      "sku": "TC 020",
+      "currency": "TRY",
+      "xmlListPrice": "75.0000",
+      "dealerPriceAt22Discount": "58.50"
+    },
+    {
+      "sku": "KS 017",
+      "currency": "USD",
+      "xmlListPrice": "18.2500",
+      "dealerPriceAt22Discount": "14.24"
+    },
+    {
+      "sku": "KLPC 059",
+      "currency": "TRY",
+      "xmlListPrice": "94.5000",
+      "dealerPriceAt22Discount": "73.71"
+    },
+    {
+      "sku": "KK 041",
+      "currency": "TRY",
+      "xmlListPrice": "295.2625",
+      "dealerPriceAt22Discount": "230.30"
+    },
+    {
+      "sku": "VK 008-36",
+      "currency": "TRY",
+      "xmlListPrice": "175.5000",
+      "dealerPriceAt22Discount": "136.89"
+    },
+    {
+      "sku": "TE 001",
+      "currency": "TRY",
+      "xmlListPrice": "467.1875",
+      "dealerPriceAt22Discount": "364.41"
+    }
+  ],
+  "mode": "write"
+}

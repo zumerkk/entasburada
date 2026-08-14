@@ -1,94 +1,102 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
-import type { CatalogStore, ImportedSupplierProduct } from "@entas/catalog";
+import type { ImportedSupplierProduct } from "@entas/catalog";
+import { parseProductXmlBufferPreview } from "@entas/import-engine";
 
 const rootDir = process.cwd();
-const releaseVersion = "2026-08-10-euromix-price-reset-v1";
+const releaseVersion = "2026-08-14-euromix-xml-eksi22-v2";
 const releaseDir = path.join(rootDir, "deploy", "catalog-releases", releaseVersion);
-const catalogStorePath = path.join(rootDir, "data", "catalog-store.json");
+const xmlPath = process.env.EUROMIX_XML_PATH || path.join(rootDir, "data", "import-sources", "EuromixStoklar.xml");
 const supplierProductsPath = path.join(rootDir, "data", "import-results", "supplier-products.json");
+const xmlUrl = "https://bayi.euro-mix.com.tr/C79BE2D9-04CE-4B5B-A51C-7E8F78E25FE3/EuromixStoklar.xml";
+const shouldWrite = process.argv.includes("--write");
 
 async function main(): Promise<void> {
-  const [catalogStore, supplierProducts] = await Promise.all([
-    readJson<CatalogStore>(catalogStorePath),
+  const [xmlBuffer, supplierProducts] = await Promise.all([
+    readFile(xmlPath),
     readJson<ImportedSupplierProduct[]>(supplierProductsPath)
   ]);
+  const parsed = await parseProductXmlBufferPreview(xmlBuffer, { previewLimit: Number.MAX_SAFE_INTEGER });
+  if (parsed.issues.length) throw new Error(`Euromix XML içinde ${parsed.issues.length} geçersiz satır var.`);
 
-  const supplierByKey = new Map(
-    supplierProducts
-      .filter((product) => product.brandName.trim().toLocaleUpperCase("tr-TR") === "EUROMIX")
-      .map((product) => [importKey(product.sourceKey, product.externalId), product] as const)
-  );
-
-  const changes = catalogStore.products
-    .filter((product) => product.brand.trim().toLocaleUpperCase("tr-TR") === "EUROMIX" && product.status === "ACTIVE")
-    .flatMap((product) => {
-      const supplier = supplierByKey.get(importKey(product.sourceKey, product.externalId));
-      if (!supplier) return [];
-      if (product.currency !== supplier.currency) {
-        throw new Error(`${product.sku}: katalog para birimi ${product.currency}, tedarikçi para birimi ${supplier.currency}.`);
-      }
-
-      const currentPrice = Number(product.listPrice);
-      const sourcePrice = Number(supplier.listPrice);
-      if (!Number.isFinite(currentPrice) || !Number.isFinite(sourcePrice)) {
-        throw new Error(`${product.sku}: geçersiz fiyat.`);
-      }
-      if (Math.abs(currentPrice - sourcePrice) <= 0.005) return [];
-
-      return [{
-        product: supplier,
-        change: {
-          sku: product.sku,
-          name: product.name,
-          currency: product.currency,
-          previousCatalogPrice: money(currentPrice),
-          restoredSupplierListPrice: money(sourcePrice),
-          previousMultiplier: roundRatio(currentPrice / sourcePrice),
-          customerPriceAt30Profit: money(sourcePrice * 1.3)
-        }
-      }];
-    });
-
-  if (changes.length !== 17) {
-    throw new Error(`Beklenen 17 eski kârlı Euromix kaydı yerine ${changes.length} fiyat farkı bulundu.`);
+  const euromixProducts = supplierProducts.filter((product) => product.sourceKey === "euromix-stock");
+  const xmlByExternalId = new Map(parsed.acceptedRows.map((row) => [row.externalId, row]));
+  if (parsed.acceptedRows.length !== euromixProducts.length) {
+    throw new Error(`XML ${parsed.acceptedRows.length}, normalize ürün listesi ${euromixProducts.length} kayıt içeriyor.`);
   }
 
-  const releaseProducts = changes.map(({ product }) => product);
+  const releaseProducts = euromixProducts.map((product) => {
+    const xml = xmlByExternalId.get(product.externalId);
+    if (!xml) throw new Error(`XML'de ürün bulunamadı: ${product.externalId}`);
+    if (xml.currency && xml.currency !== product.currency) {
+      throw new Error(`${product.sku}: XML para birimi ${xml.currency}, ürün para birimi ${product.currency}.`);
+    }
+    return {
+      ...product,
+      sourceName: "EuroMix Güncel Stok XML - Liste Eksi %22",
+      listPrice: normalizeMoney(xml.listPrice || "0")
+    } satisfies ImportedSupplierProduct;
+  });
+
+  const positiveProducts = releaseProducts.filter((product) => Number(product.listPrice) > 0);
   const manifest = {
     version: releaseVersion,
     createdAt: new Date().toISOString(),
-    sourceCounts: { "euromix-stock": releaseProducts.length },
+    xmlUrl,
+    xmlSha256: createHash("sha256").update(xmlBuffer).digest("hex"),
+    xmlRecordCount: parsed.totalRows,
+    acceptedRecordCount: parsed.acceptedRows.length,
     productCount: releaseProducts.length,
-    imageCount: 0,
-    resetPolicy: "Euromix katalog fiyatı tedarikçi ham liste fiyatına sıfırlandı; müşteri fiyatında merkezi %30 kâr uygulanır.",
-    changes: changes.map(({ change }) => change)
+    positivePriceCount: positiveProducts.length,
+    zeroPriceCount: releaseProducts.length - positiveProducts.length,
+    currencyCounts: countBy(releaseProducts, (product) => product.currency),
+    pricingPolicy: "Katalog listPrice alanı güncel Euromix XML Fiyat değerine sıfırlandı. Bayi satış fiyatı ticari politika katmanında XML liste × 0,78 olarak hesaplanır; ilave kâr veya indirim zinciri uygulanmaz.",
+    statusPolicy: "Fiyatlar hazırlandı; önceki kullanıcı talebi uyarınca Euromix ürünleri PASSIVE kalır.",
+    samples: positiveProducts.slice(0, 12).map((product) => ({
+      sku: product.sku,
+      currency: product.currency,
+      xmlListPrice: product.listPrice,
+      dealerPriceAt22Discount: money(Number(product.listPrice) * 0.78)
+    })),
+    mode: shouldWrite ? "write" : "dry-run"
   };
 
+  if (!shouldWrite) {
+    console.log(JSON.stringify(manifest, null, 2));
+    return;
+  }
+
+  await rm(releaseDir, { recursive: true, force: true });
   await mkdir(path.join(releaseDir, "uploads"), { recursive: true });
   await Promise.all([
     writeFile(path.join(releaseDir, "products.json"), `${JSON.stringify(releaseProducts, null, 2)}\n`),
     writeFile(path.join(releaseDir, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`),
     writeFile(path.join(releaseDir, "uploads", ".gitkeep"), "")
   ]);
-
-  console.log(JSON.stringify({ release: releaseVersion, products: releaseProducts.length, changes: manifest.changes }, null, 2));
+  console.log(JSON.stringify(manifest, null, 2));
 }
 
 async function readJson<T>(filePath: string): Promise<T> {
   return JSON.parse(await readFile(filePath, "utf8")) as T;
 }
 
-function importKey(sourceKey: string, externalId: string): string {
-  return `${sourceKey}\u0000${externalId}`;
+function normalizeMoney(value: string): string {
+  const parsed = Number(value.replace(",", "."));
+  if (!Number.isFinite(parsed) || parsed < 0) throw new Error(`Geçersiz XML fiyatı: ${value}`);
+  return parsed.toFixed(4);
 }
 
 function money(value: number): string {
   return (Math.round((value + Number.EPSILON) * 100) / 100).toFixed(2);
 }
 
-function roundRatio(value: number): number {
-  return Math.round(value * 10_000) / 10_000;
+function countBy<T>(items: T[], key: (item: T) => string): Record<string, number> {
+  return items.reduce<Record<string, number>>((result, item) => {
+    const value = key(item);
+    result[value] = (result[value] || 0) + 1;
+    return result;
+  }, {});
 }
 
 void main().catch((error) => {
