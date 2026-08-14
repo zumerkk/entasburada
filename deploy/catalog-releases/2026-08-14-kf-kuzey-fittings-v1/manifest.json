@@ -1,0 +1,38 @@
+{
+  "releaseVersion": "2026-08-14-kf-kuzey-fittings-v1",
+  "productCount": 2375,
+  "pricedProductCount": 2288,
+  "contactPriceProductCount": 87,
+  "uniqueManufacturerCodeCount": 2304,
+  "uniqueImageCount": 620,
+  "catalogPageCount": 124,
+  "currencies": {
+    "TRY": 2368,
+    "USD": 7
+  },
+  "categories": {
+    "Galvaniz ve Siyah Fittings": 247,
+    "Bataryalar": 209,
+    "Duş Setleri ve Aksesuarları": 121,
+    "Bağlantı Elemanları": 651,
+    "Tesisat Aksesuarları": 246,
+    "Banyo Aksesuar Setleri": 294,
+    "Banyo Ekipmanları": 101,
+    "Drenaj Ekipmanları": 30,
+    "PE Fittings ve Kaplinler": 476
+  },
+  "mode": "write",
+  "createdAt": "2026-08-14T12:07:25.944Z",
+  "source": {
+    "productData": "KF Kuzey Fittings 2026/1 resmi fiyat kataloğu",
+    "officialCatalogPage": "https://kuzeyfittings.com.tr/katalog/",
+    "officialPdf": "https://kuzeyfittings.com.tr/wp-content/uploads/2026/06/2026-Katalog.pdf",
+    "pdfSha256": "b1927d66381af1127d60be5b116cef669c7fecf479024033e609fea0f9f7f8b6"
+  },
+  "imagePolicy": "Resmi PDF ürün görselleri kontrollü kırpıldı; 1200x1200 WebP, Lanczos3, beyaz zemin ve kontrollü hafif keskinleştirme uygulandı",
+  "pricePolicy": "2026/1 resmi katalog liste fiyatı; TRY ve sayfa 33 için USD; bayi oturumu dışında gizli; F.Sorunuz satırları 0.00",
+  "stockPolicy": "Katalogda ürün yer alıyor; gerçek stok adedi bilinmediği için stockQuantityKnown=false",
+  "normalizedCanvas": "1200x1200 WebP",
+  "minimumSourceCrop": 67,
+  "maximumSourceCrop": 1266
+}
