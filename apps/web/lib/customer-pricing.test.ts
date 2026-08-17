@@ -58,6 +58,7 @@ describe("common brand pricing", () => {
     ["FORZA", "162.00", "19%"],
     ["IBELTECH", "178.00", "11%"],
     ["KAREN", "140.00", "30%"],
+    ["KF KUZEY FITTINGS", "140.00", "30%"],
     ["MESEM", "156.00", "22%"],
     ["MRSMAX", "200.00", undefined],
     ["MIRSAN", "200.00", undefined],
@@ -89,6 +90,17 @@ describe("common brand pricing", () => {
     expect(price?.unitNetPrice).toBe("1318.20");
     expect(price?.displayPrice).toBe("₺1.318,20");
     expect(price?.ruleLabel).toBe("Euromix XML liste fiyatı - %22");
+  });
+
+  it("discounts KF Kuzey Fittings catalog prices by 30%", () => {
+    const price = priceProductForCustomer(withBrand("KF KUZEY FITTINGS"), customer);
+
+    expect(price).toMatchObject({
+      unitNetPrice: "140.00",
+      listPrice: "₺200,00",
+      discountRate: "30%",
+      ruleLabel: "KF Kuzey Fittings liste fiyatı - %30"
+    });
   });
 
   it("does not disclose Floran/Floorpan and Jamindar/Lamindoor prices", () => {
