@@ -207,8 +207,8 @@ export function AdminBulkSelection({
         {filterTouchesSyncedSource && priceMode !== "clear" ? (
           <p className="adminBulkWarning">
             <AlertTriangle size={15} aria-hidden="true" />
-            Seçim XML&apos;den senkronize olan bir kaynağı (euromix-stock) kapsıyor. Bu ürünlerde elle yapılan fiyat
-            değişikliği bir sonraki XML senkronunda tedarikçi fiyatına döner.
+            Seçim tedarikçi portalından senkronize olan bir kaynağı (euromix-stock) kapsıyor. Bu ürünlerde elle
+            yapılan fiyat değişikliği bir sonraki portal senkronunda tedarikçi fiyatına döner.
           </p>
         ) : null}
       </div>

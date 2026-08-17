@@ -1,0 +1,6 @@
+{
+  "source": "euromix-stock",
+  "status": "PASSIVE",
+  "actor": "euromix-portal-sync",
+  "reason": "Portalda olmayan veya sayisal net fiyati bulunmayan eski Euromix kayitlarini vitrinden kaldir."
+}

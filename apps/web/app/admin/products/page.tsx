@@ -142,13 +142,13 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
             <input name="q" defaultValue={q} placeholder="Ürün, SKU, barkod" />
           </label>
           <label>
-            Kaynak (PDF / XML)
+            Kaynak (PDF / tedarikçi senkronu)
             <select name="sourceKey" defaultValue={sourceKey}>
               <option value="">Tüm kaynaklar</option>
               {facets.sources.map((source) => (
                 <option value={source.key} key={source.key}>
                   {source.name} — {source.count.toLocaleString("tr-TR")} ürün
-                  {XML_SYNCED_SOURCE_KEYS.has(source.key) ? " (XML)" : ""}
+                  {XML_SYNCED_SOURCE_KEYS.has(source.key) ? " (senkron)" : ""}
                 </option>
               ))}
             </select>
@@ -283,7 +283,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
                 </span>
                 <span>
                   {product.sourceName}
-                  {XML_SYNCED_SOURCE_KEYS.has(product.sourceKey) ? <small>XML senkron</small> : null}
+                  {XML_SYNCED_SOURCE_KEYS.has(product.sourceKey) ? <small>Tedarikçi senkronu</small> : null}
                 </span>
                 <span>{formatCatalogMoney(product.listPrice, product.currency)}</span>
                 <span>

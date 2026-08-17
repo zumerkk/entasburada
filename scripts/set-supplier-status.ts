@@ -34,19 +34,26 @@ async function main(): Promise<void> {
   const brand = args.get("brand")?.trim() || migration.brand || "";
   const status = toStatus(args.get("status")?.trim() || migration.status || "");
   const actor = args.get("actor")?.trim() || migration.actor || "admin@entasburada.com";
+  const externalIds = migration.externalIds?.length ? new Set(migration.externalIds) : undefined;
   if (!sourceKey && !brand) throw new Error("--source=... veya --brand=... zorunludur.");
 
   const store = JSON.parse(await readFile(catalogStorePath, "utf8")) as CatalogStore;
   const targets = store.products.filter((product) =>
-    (sourceKey ? product.sourceKey === sourceKey : true) && (brand ? brandMatches(product.brand, brand) : true)
+    (sourceKey ? product.sourceKey === sourceKey : true) &&
+    (brand ? brandMatches(product.brand, brand) : true) &&
+    (externalIds ? externalIds.has(product.externalId) : true)
   );
   if (!targets.length) throw new Error(`Eşleşen ürün yok: source=${sourceKey || "-"} brand=${brand || "-"}`);
+  if (migration.expectedMatched !== undefined && targets.length !== migration.expectedMatched) {
+    throw new Error(`Migration ${migration.expectedMatched} ürün bekliyordu, ${targets.length} ürün eşleşti.`);
+  }
 
   const alreadyInTarget = targets.filter((product) => product.status === status && product.isVisible === (status === "ACTIVE"));
   const report = {
     catalogStore: catalogStorePath,
     source: sourceKey || "-",
     brand: brand || "-",
+    externalIdFilterCount: externalIds?.size ?? 0,
     status,
     matched: targets.length,
     willChange: targets.length - alreadyInTarget.length,
@@ -74,6 +81,8 @@ async function readMigration(value: string | undefined): Promise<{
   brand?: string;
   status?: string;
   actor?: string;
+  externalIds?: string[];
+  expectedMatched?: number;
 }> {
   if (!value) return {};
   const migrationPath = path.resolve(value);
@@ -82,7 +91,13 @@ async function readMigration(value: string | undefined): Promise<{
     source: typeof parsed.source === "string" ? parsed.source.trim() : undefined,
     brand: typeof parsed.brand === "string" ? parsed.brand.trim() : undefined,
     status: typeof parsed.status === "string" ? parsed.status.trim() : undefined,
-    actor: typeof parsed.actor === "string" ? parsed.actor.trim() : undefined
+    actor: typeof parsed.actor === "string" ? parsed.actor.trim() : undefined,
+    externalIds: Array.isArray(parsed.externalIds)
+      ? parsed.externalIds.filter((value): value is string => typeof value === "string" && value.trim() !== "").map((value) => value.trim())
+      : undefined,
+    expectedMatched: typeof parsed.expectedMatched === "number" && Number.isInteger(parsed.expectedMatched) && parsed.expectedMatched >= 0
+      ? parsed.expectedMatched
+      : undefined
   };
 }
 

@@ -21,7 +21,14 @@ const DEFAULT_PRICE_POLICY: BrandPricePolicy = {
 const BRAND_PRICE_POLICIES: Array<BrandPricePolicy & { aliases: string[] }> = [
   { canonicalBrand: "ARC Boya", aliases: ["ARC BOYA", "ARC BANYO"], action: "discount", rate: 16, ruleLabel: "ARC Boya liste fiyatı - %16" },
   { canonicalBrand: "Doğal Plastik", aliases: ["DOGAL PLASTIK"], action: "discount", rate: 19, ruleLabel: "Doğal Plastik liste fiyatı - %19" },
-  { canonicalBrand: "Euromix", aliases: ["EUROMIX"], action: "discount", rate: 22, ruleLabel: "Euromix XML liste fiyatı - %22" },
+  {
+    canonicalBrand: "Euromix",
+    aliases: ["EUROMIX"],
+    action: "net",
+    rate: 0,
+    ruleLabel: "Euromix bayi neti - %15 alış iskontosu + %20 KDV + %30 kâr",
+    priceLabel: "Net"
+  },
   { canonicalBrand: "Floran", aliases: ["FLORAN", "FLOORPAN"], action: "hidden", rate: 0, ruleLabel: "Fiyat bilgisi verilmeyecek" },
   { canonicalBrand: "Forza", aliases: ["FORZA"], action: "discount", rate: 19, ruleLabel: "Forza liste fiyatı - %19" },
   { canonicalBrand: "İbeltech", aliases: ["IBELTECH"], action: "discount", rate: 11, ruleLabel: "İbeltech liste fiyatı - %11" },

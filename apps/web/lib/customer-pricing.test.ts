@@ -54,7 +54,7 @@ describe("common brand pricing", () => {
   it.each([
     ["ARC BANYO", "168.00", "16%"],
     ["Doğal Plastik", "162.00", "19%"],
-    ["EUROMIX", "156.00", "22%"],
+    ["EUROMIX", "200.00", undefined],
     ["FORZA", "162.00", "19%"],
     ["IBELTECH", "178.00", "11%"],
     ["KAREN", "140.00", "30%"],
@@ -75,21 +75,15 @@ describe("common brand pricing", () => {
     expect(price?.taxIncluded).toBe(true);
   });
 
-  it("discounts the Euromix XML list by 22% and separates the included VAT without adding it again", () => {
-    const price = priceProductForCustomer(product, customer);
+  it("uses the precomputed Euromix portal sale price without applying a second discount", () => {
+    const price = priceProductForCustomer({ ...product, sku: "BH 012", listPrice: "486.06" }, customer);
 
-    expect(price?.unitNetPrice).toBe("156.00");
-    expect(price?.includedTaxAmount).toBe("26.00");
-    expect(price?.ruleLabel).toBe("Euromix XML liste fiyatı - %22");
-    expect(price?.listPrice).toBe("₺200,00");
-  });
-
-  it("locks EURO 089 to the XML list and a 22% discounted dealer price", () => {
-    const price = priceProductForCustomer({ ...product, sku: "EURO 089", listPrice: "1690.00" }, customer);
-
-    expect(price?.unitNetPrice).toBe("1318.20");
-    expect(price?.displayPrice).toBe("₺1.318,20");
-    expect(price?.ruleLabel).toBe("Euromix XML liste fiyatı - %22");
+    expect(price?.unitNetPrice).toBe("486.06");
+    expect(price?.displayPrice).toBe("₺486,06");
+    expect(price?.includedTaxAmount).toBe("81.01");
+    expect(price?.ruleLabel).toBe("Euromix bayi neti - %15 alış iskontosu + %20 KDV + %30 kâr");
+    expect(price?.priceLabel).toBe("Net");
+    expect(price?.listPrice).toBeUndefined();
   });
 
   it("discounts KF Kuzey Fittings catalog prices by 30%", () => {

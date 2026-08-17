@@ -37,8 +37,12 @@ async function main(): Promise<void> {
   const auditLogs: AuditLogEntry[] = [syncAudit];
 
   if (publishNew) {
+    const importedKeys = new Set(importedProducts.map((product) => `${product.sourceKey}\u0000${product.externalId}`));
     const publishIds = mergedStore.products
-      .filter((product) => product.status !== "ACTIVE" || !product.isVisible)
+      .filter((product) =>
+        importedKeys.has(`${product.sourceKey}\u0000${product.externalId}`) &&
+        (product.status !== "ACTIVE" || !product.isVisible)
+      )
       .map((product) => product.id);
     const publishResult = publishProducts(mergedStore, publishIds, actor, now);
     nextStore = publishResult.store;

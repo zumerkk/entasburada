@@ -27,6 +27,13 @@ export {
   type CatalogClassificationMethod,
   type ClassifiableCatalogProduct
 } from "./catalog-classifier";
+export {
+  EUROMIX_BUYING_DISCOUNT_RATE,
+  EUROMIX_PORTAL_PRICE_MULTIPLIER,
+  EUROMIX_PROFIT_RATE,
+  EUROMIX_VAT_RATE,
+  calculateEuromixPortalSalePrice
+} from "./euromix-pricing";
 
 export type ProductStatus = "DRAFT" | "ACTIVE" | "PASSIVE";
 export type PriceApprovalStatus = "APPROVED" | "NO_PRICE" | "NEEDS_REVIEW";

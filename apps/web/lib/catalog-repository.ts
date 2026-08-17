@@ -167,8 +167,12 @@ export async function syncImportedProducts({ publishNew = false, actor = "admin@
 
   let nextStore = mergedStore;
   if (publishNew) {
+    const importedKeys = new Set(importedProducts.map((product) => `${product.sourceKey}\u0000${product.externalId}`));
     const publishIds = mergedStore.products
-      .filter((product) => product.status !== "ACTIVE" || !product.isVisible)
+      .filter((product) =>
+        importedKeys.has(`${product.sourceKey}\u0000${product.externalId}`) &&
+        (product.status !== "ACTIVE" || !product.isVisible)
+      )
       .map((product) => product.id);
     const publishResult = publishProducts(mergedStore, publishIds, actor, now);
     nextStore = publishResult.store;
@@ -444,7 +448,7 @@ export async function bulkDeleteProducts(ids: string[], actor = "admin@entasbura
   return result.deleted;
 }
 
-/** Secilen urunlerden kaci XML'den senkronize olan bir kaynaktan geliyor. */
+/** Secilen urunlerden kaci tedarikciden senkronize olan bir kaynaktan geliyor. */
 export async function countSyncedSourceProducts(ids: string[]): Promise<number> {
   const store = await loadCatalogStore();
   const idSet = new Set(ids);
@@ -452,7 +456,7 @@ export async function countSyncedSourceProducts(ids: string[]): Promise<number> 
 }
 
 /**
- * XML'den otomatik senkronize olan kaynaklar. Bu kaynaklardaki urunlerde elle
+ * Tedarikciden senkronize olan kaynaklar. Bu kaynaklardaki urunlerde elle
  * yapilan fiyat degisikligi bir sonraki senkronda silinir; cunku
  * `mergeImportedProducts` ice aktarilan `listPrice` degerini kosulsuz uygular.
  */

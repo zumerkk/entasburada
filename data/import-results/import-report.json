@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-10T11:50:41.621Z",
+  "generatedAt": "2026-08-17T09:49:05.380Z",
   "sources": [
     {
       "key": "mirsan-efiyat",
@@ -12,25 +12,28 @@
     },
     {
       "key": "euromix-stock",
-      "name": "EuroMix Stok XML",
-      "path": "data/import-sources/EuromixStoklar.xml",
-      "url": "https://bayi.euro-mix.com.tr/C79BE2D9-04CE-4B5B-A51C-7E8F78E25FE3/EuromixStoklar.xml",
-      "totalRows": 2617,
-      "acceptedRows": 2617,
+      "name": "EuroMix Bayi Portalı - Güncel Net Fiyat",
+      "path": "deploy/catalog-releases/2026-08-17-euromix-portal-net-v1/products.json",
+      "url": "https://bayi.euro-mix.com.tr/",
+      "totalRows": 1970,
+      "acceptedRows": 1843,
       "issueCount": 0,
-      "issues": []
+      "issues": [],
+      "askPriceRows": 127,
+      "capturedAt": "2026-08-17T09:49:00.168Z"
     }
   ],
   "totals": {
-    "products": 2960,
-    "inStock": 1218,
-    "lowStock": 177,
-    "outOfStock": 1565,
-    "pricedRows": 2372,
-    "zeroPriceRows": 588,
+    "products": 2186,
+    "inStock": 1072,
+    "lowStock": 0,
+    "outOfStock": 1114,
+    "pricedRows": 1890,
+    "zeroPriceRows": 296,
     "duplicateSkuCount": 0,
     "duplicateBarcodeCount": 0
   },
   "duplicateSkus": [],
-  "duplicateBarcodes": []
+  "duplicateBarcodes": [],
+  "euromixAskPriceCount": 127
 }

@@ -167,10 +167,10 @@ export async function bulkPriceOperationAction(formData: FormData): Promise<void
   if (outcome.skippedNegative > 0) {
     parts.push(`${outcome.skippedNegative.toLocaleString("tr-TR")} üründe sonuç eksiye düşeceği için işlem uygulanmadı.`);
   }
-  // XML'den senkronize olan kaynaklarda bu degisiklik bir sonraki senkronda silinir.
+  // Tedarikciden senkronize olan kaynaklarda bu degisiklik bir sonraki senkronda silinir.
   if (synced > 0 && operation.mode !== "clear") {
     parts.push(
-      `Dikkat: ${synced.toLocaleString("tr-TR")} ürün XML'den senkronize olan bir kaynaktan geliyor; sonraki senkronda bu fiyatlar tedarikçi fiyatına döner.`
+      `Dikkat: ${synced.toLocaleString("tr-TR")} ürün tedarikçiden senkronize olan bir kaynaktan geliyor; sonraki senkronda bu fiyatlar tedarikçi fiyatına döner.`
     );
   }
   redirectWith(returnTo, "ok", parts.join(" "));

@@ -44,14 +44,6 @@ const sources: SupplierSource[] = [
     defaultBrand: "MRSMAX",
     prefix: "MIR",
     path: path.join(sourceDir, "EFIYATkopyasi.xml")
-  },
-  {
-    key: "euromix-stock",
-    name: "EuroMix Stok XML",
-    defaultBrand: "EUROMIX",
-    prefix: "EMX",
-    path: path.join(sourceDir, "EuromixStoklar.xml"),
-    url: "https://bayi.euro-mix.com.tr/C79BE2D9-04CE-4B5B-A51C-7E8F78E25FE3/EuromixStoklar.xml"
   }
 ];
 
@@ -64,6 +56,14 @@ async function main(): Promise<void> {
   await mkdir(sourceDir, { recursive: true });
   await mkdir(resultDir, { recursive: true });
 
+  // Euromix'in herkese acik XML'i bayi portalindaki guncel urun/fiyat listesini
+  // yansitmiyor. Portal snapshot'i ayri release builder ile uretilir ve burada
+  // korunur; genel import komutu eski XML ile onu ezmez.
+  const [existingProducts, existingReport] = await Promise.all([
+    readJson<NormalizedSupplierProduct[]>(path.join(resultDir, "supplier-products.json"), []),
+    readJson<{ sources?: Array<Record<string, unknown> & { key?: string }> }>(path.join(resultDir, "import-report.json"), {})
+  ]);
+  const portalManagedProducts = existingProducts.filter((product) => product.sourceKey === "euromix-stock");
   const products: NormalizedSupplierProduct[] = [];
   const sourceReports = [];
 
@@ -86,6 +86,20 @@ async function main(): Promise<void> {
       acceptedRows: preview.acceptedRows.length,
       issueCount: preview.issues.length,
       issues: preview.issues.slice(0, 50)
+    });
+  }
+
+  if (portalManagedProducts.length > 0) {
+    products.push(...portalManagedProducts);
+    sourceReports.push(existingReport.sources?.find((source) => source.key === "euromix-stock") ?? {
+      key: "euromix-stock",
+      name: "EuroMix Bayi Portalı - Güncel Net Fiyat",
+      path: "deploy/catalog-releases/2026-08-17-euromix-portal-net-v1/products.json",
+      url: "https://bayi.euro-mix.com.tr/",
+      totalRows: portalManagedProducts.length,
+      acceptedRows: portalManagedProducts.length,
+      issueCount: 0,
+      issues: []
     });
   }
 
@@ -228,4 +242,13 @@ function csvCell(value: unknown): string {
 
 function stripUndefined<T extends Record<string, unknown>>(value: T): Partial<T> {
   return Object.fromEntries(Object.entries(value).filter(([, entry]) => entry !== undefined)) as Partial<T>;
+}
+
+async function readJson<T>(filePath: string, fallback: T): Promise<T> {
+  try {
+    return JSON.parse(await readFile(filePath, "utf8")) as T;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return fallback;
+    throw error;
+  }
 }

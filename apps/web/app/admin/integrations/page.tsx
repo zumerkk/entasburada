@@ -15,7 +15,7 @@ export default async function AdminIntegrationsPage() {
     <AdminFrame active="integrations">
       <header className="adminTopbar">
         <div>
-          <span>XML entegrasyon izleme</span>
+          <span>Tedarikçi entegrasyon izleme</span>
           <h1>Tedarikçi veri sağlığı</h1>
         </div>
         <div className="adminTopActions">
@@ -46,7 +46,7 @@ export default async function AdminIntegrationsPage() {
         <div className="panelHeader">
           <div>
             <h2>Kaynak sağlık listesi</h2>
-            <p>XML kaynakları import raporu ve katalog store üzerinden izlenir.</p>
+            <p>XML ve bayi portalı kaynakları import raporu ve katalog store üzerinden izlenir.</p>
           </div>
           <StatusPill tone={health.sources.every((source) => source.status === "ok") ? "success" : "warning"}>
             {health.sources.every((source) => source.status === "ok") ? "Tüm kaynaklar sağlıklı" : "Kontrol gereken kaynak var"}
