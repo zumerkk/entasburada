@@ -93,8 +93,8 @@ async function main(): Promise<void> {
     products.push(...portalManagedProducts);
     sourceReports.push(existingReport.sources?.find((source) => source.key === "euromix-stock") ?? {
       key: "euromix-stock",
-      name: "EuroMix Bayi Portalı - Güncel Net Fiyat",
-      path: "deploy/catalog-releases/2026-08-17-euromix-portal-net-v1/products.json",
+      name: "EuroMix Bayi Portalı - Güncel Fiyat V2",
+      path: "deploy/catalog-releases/2026-08-19-euromix-portal-vat20-profit40-v2/products.json",
       url: "https://bayi.euro-mix.com.tr/",
       totalRows: portalManagedProducts.length,
       acceptedRows: portalManagedProducts.length,

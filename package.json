@@ -22,6 +22,7 @@
     "catalog:release:build": "node --import tsx scripts/build-catalog-release.ts",
     "catalog:release:apply": "node --import tsx scripts/apply-catalog-release.ts",
     "euromix:portal:build": "node --import tsx scripts/build-euromix-portal-release.ts",
+    "euromix:pricing-v2:build": "node --import tsx scripts/build-euromix-pricing-v2-release.ts",
     "price:markup:build": "node --import tsx scripts/build-price-markup-release.ts",
     "images:normalize": "node --import tsx scripts/normalize-product-images.ts",
     "catalog:sync": "tsx scripts/sync-catalog-store.ts",

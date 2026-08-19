@@ -1,11 +1,11 @@
-export const EUROMIX_BUYING_DISCOUNT_RATE = 15;
+export const EUROMIX_BUYING_DISCOUNT_RATE = 0;
 export const EUROMIX_VAT_RATE = 20;
-export const EUROMIX_PROFIT_RATE = 30;
-export const EUROMIX_PORTAL_PRICE_MULTIPLIER = 1.326;
+export const EUROMIX_PROFIT_RATE = 40;
+export const EUROMIX_PORTAL_PRICE_MULTIPLIER = 1.68;
 
 /**
  * Euromix bayi portalindaki KDV haric net fiyati, sitede gosterilecek KDV dahil
- * satis fiyatina cevirir: -%15 alis iskontosu, +%20 KDV, +%30 kar.
+ * satis fiyatina cevirir: alis iskontosu yok, +%20 KDV, +%40 kar.
  */
 export function calculateEuromixPortalSalePrice(portalNetPrice: number): number {
   if (!Number.isFinite(portalNetPrice) || portalNetPrice <= 0) {

@@ -1,0 +1,97 @@
+{
+  "version": "2026-08-19-euromix-portal-vat20-profit40-v2",
+  "createdAt": "2026-08-19T13:05:28.787Z",
+  "sourceRelease": "2026-08-17-euromix-portal-net-v1",
+  "portalCapturedAt": "2026-08-17T09:49:00.168Z",
+  "portalUrl": "https://bayi.euro-mix.com.tr/",
+  "portalProductCount": 1970,
+  "publishedProductCount": 1843,
+  "askPricePassiveCount": 127,
+  "recoveredPortalPriceCount": 1843,
+  "pricing": {
+    "portalPriceBasis": "KDV haric Net Fiyat (TRY)",
+    "buyingDiscountRate": 0,
+    "vatRate": 20,
+    "profitRate": 40,
+    "multiplier": 1.68,
+    "formula": "portalNet × 1,20 × 1,40",
+    "rounding": "final amount rounded to 2 decimals"
+  },
+  "previousPricing": {
+    "buyingDiscountRate": 15,
+    "vatRate": 20,
+    "profitRate": 30,
+    "multiplier": 1.326,
+    "formula": "portalNet × 0,85 × 1,20 × 1,30"
+  },
+  "recoveryPolicy": "Portal net fiyatlari, onceki surumdeki iki ondalikli satis fiyatini eski 1,326 carpanla birebir yeniden uretebilen tek kurus degeri bulunarak geri kazanildi; 1.843/1.843 kayit tekil eslesti.",
+  "statusPolicy": "1.843 sayisal fiyatli urun ACTIVE; 127 Fiyat Sorunuz kaydi PASSIVE kalir.",
+  "totals": {
+    "previousSalePriceSum": "780588.10",
+    "salePriceSum": "988979.93",
+    "increasePercent": 26.7
+  },
+  "samples": [
+    {
+      "sku": "BH 012",
+      "portalNetPrice": 366.56,
+      "previousSalePrice": "486.06",
+      "salePrice": "615.82"
+    },
+    {
+      "sku": "AB 001",
+      "portalNetPrice": 29.75,
+      "previousSalePrice": "39.45",
+      "salePrice": "49.98"
+    },
+    {
+      "sku": "AB 001-1",
+      "portalNetPrice": 28.05,
+      "previousSalePrice": "37.19",
+      "salePrice": "47.12"
+    },
+    {
+      "sku": "AB 002",
+      "portalNetPrice": 36.13,
+      "previousSalePrice": "47.91",
+      "salePrice": "60.70"
+    },
+    {
+      "sku": "AB 002-1",
+      "portalNetPrice": 23.83,
+      "previousSalePrice": "31.60",
+      "salePrice": "40.03"
+    },
+    {
+      "sku": "AB 002-2",
+      "portalNetPrice": 6.63,
+      "previousSalePrice": "8.79",
+      "salePrice": "11.14"
+    },
+    {
+      "sku": "AB 003",
+      "portalNetPrice": 30.55,
+      "previousSalePrice": "40.51",
+      "salePrice": "51.32"
+    },
+    {
+      "sku": "AB 004",
+      "portalNetPrice": 34.21,
+      "previousSalePrice": "45.36",
+      "salePrice": "57.47"
+    },
+    {
+      "sku": "AB 009",
+      "portalNetPrice": 51,
+      "previousSalePrice": "67.63",
+      "salePrice": "85.68"
+    },
+    {
+      "sku": "AC 001-1",
+      "portalNetPrice": 6.84,
+      "previousSalePrice": "9.07",
+      "salePrice": "11.49"
+    }
+  ],
+  "mode": "write"
+}

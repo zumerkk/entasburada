@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-17T09:49:05.380Z",
+  "generatedAt": "2026-08-19T13:05:28.790Z",
   "sources": [
     {
       "key": "mirsan-efiyat",
@@ -12,15 +12,16 @@
     },
     {
       "key": "euromix-stock",
-      "name": "EuroMix Bayi Portalı - Güncel Net Fiyat",
-      "path": "deploy/catalog-releases/2026-08-17-euromix-portal-net-v1/products.json",
+      "name": "EuroMix Bayi Portalı - Güncel Fiyat V2",
+      "path": "deploy/catalog-releases/2026-08-19-euromix-portal-vat20-profit40-v2/products.json",
       "url": "https://bayi.euro-mix.com.tr/",
       "totalRows": 1970,
       "acceptedRows": 1843,
       "issueCount": 0,
       "issues": [],
       "askPriceRows": 127,
-      "capturedAt": "2026-08-17T09:49:00.168Z"
+      "capturedAt": "2026-08-17T09:49:00.168Z",
+      "pricingPolicy": "Portal Net Fiyat × 1,20 KDV × 1,40 kar; alis iskontosu yok."
     }
   ],
   "totals": {

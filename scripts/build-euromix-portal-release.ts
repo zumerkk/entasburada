@@ -45,7 +45,7 @@ const args = new Map(process.argv.slice(2).map((argument) => {
   return [key, value.join("=") || "true"];
 }));
 const rootDir = process.cwd();
-const releaseVersion = args.get("version")?.trim() || "2026-08-17-euromix-portal-net-v1";
+const releaseVersion = args.get("version")?.trim() || "2026-08-19-euromix-portal-vat20-profit40-v2";
 const releaseDir = path.join(rootDir, "deploy", "catalog-releases", releaseVersion);
 const supplierProductsPath = path.join(rootDir, "data", "import-results", "supplier-products.json");
 const legacyEuromixProductsPath = path.join(
@@ -95,8 +95,8 @@ async function main(): Promise<void> {
   const releaseExternalIds = releaseProducts.map((product) => product.externalId);
   const nextSupplierProducts = [...otherProducts, ...releaseProducts];
   const bh012 = releaseProducts.find((product) => normalizeSku(product.sku) === "BH 012");
-  if (!bh012 || bh012.listPrice !== "486.06") {
-    throw new Error(`BH 012 beklenen 486.06 TL yerine ${bh012?.listPrice ?? "bulunamadi"}.`);
+  if (!bh012 || bh012.listPrice !== "615.82") {
+    throw new Error(`BH 012 beklenen 615.82 TL yerine ${bh012?.listPrice ?? "bulunamadi"}.`);
   }
 
   const manifest = {
@@ -118,7 +118,7 @@ async function main(): Promise<void> {
       vatRate: EUROMIX_VAT_RATE,
       profitRate: EUROMIX_PROFIT_RATE,
       multiplier: EUROMIX_PORTAL_PRICE_MULTIPLIER,
-      formula: "portalNet × 0,85 × 1,20 × 1,30",
+      formula: "portalNet × 1,20 × 1,40",
       rounding: "final amount rounded to 2 decimals"
     },
     statusPolicy: "Portalda sayisal Net Fiyat bulunan urunler ACTIVE; portalda olmayan veya Fiyat Sorunuz yazan urunler PASSIVE.",
@@ -152,7 +152,7 @@ async function main(): Promise<void> {
     externalIds: releaseExternalIds,
     expectedMatched: releaseProducts.length,
     catalogRelease: releaseVersion,
-    pricingPolicy: "Portal Net Fiyat × 0,85 × 1,20 KDV × 1,30 kar."
+    pricingPolicy: "Portal Net Fiyat × 1,20 KDV × 1,40 kar; alis iskontosu yok."
   };
 
   await rm(releaseDir, { recursive: true, force: true });
@@ -162,8 +162,8 @@ async function main(): Promise<void> {
     writeJson(path.join(releaseDir, "products.json"), releaseProducts),
     writeJson(path.join(releaseDir, "manifest.json"), manifest),
     writeFile(path.join(releaseDir, "uploads", ".gitkeep"), ""),
-    writeJson(path.join(statusReleaseDir, "2026-08-17-euromix-portal-all-passive-v4.json"), allPassiveMigration),
-    writeJson(path.join(statusReleaseDir, "2026-08-17-euromix-portal-current-active-v5.json"), activeMigration),
+    writeJson(path.join(statusReleaseDir, "2026-08-19-euromix-portal-all-passive-v6.json"), allPassiveMigration),
+    writeJson(path.join(statusReleaseDir, "2026-08-19-euromix-portal-current-active-v7.json"), activeMigration),
     writeJson(supplierProductsPath, nextSupplierProducts),
     writeJson(importReportPath, nextImportReport),
     writeFile(supplierCsvPath, toCsv(nextSupplierProducts))
@@ -182,7 +182,7 @@ function toReleaseProduct(portal: PortalSnapshotProduct, existing?: ImportedSupp
   return stripUndefined({
     ...(existing ?? {}),
     sourceKey: "euromix-stock",
-    sourceName: "EuroMix Bayi Portalı - Güncel Net Fiyat",
+    sourceName: "EuroMix Bayi Portalı - Güncel Fiyat V2",
     externalId: normalizeWhitespace(portal.sku),
     sku: normalizeWhitespace(portal.sku),
     productName: normalizeWhitespace(portal.name),
@@ -217,7 +217,7 @@ function buildImportReport(
       ...current.sources.filter((source) => source.key !== "euromix-stock"),
       {
         key: "euromix-stock",
-        name: "EuroMix Bayi Portalı - Güncel Net Fiyat",
+        name: "EuroMix Bayi Portalı - Güncel Fiyat V2",
         path: `deploy/catalog-releases/${release}/products.json`,
         url: snapshot.sourceUrl,
         totalRows: snapshot.products.length,
