@@ -1,4 +1,4 @@
-import { ArrowRight, BadgePercent, Bell, BellRing, Clock3, FileSpreadsheet, FileText, Gauge, Heart, PackageCheck, ShieldCheck, ShoppingCart, TrendingDown, TrendingUp, Truck, WalletCards } from "lucide-react";
+import { ArrowRight, BadgePercent, Bell, BellRing, Clock3, CreditCard, FileSpreadsheet, FileText, Gauge, Heart, PackageCheck, ShieldCheck, ShoppingCart, TrendingDown, TrendingUp, Truck, WalletCards } from "lucide-react";
 import { orderStatusLabel, quoteStatusLabel } from "../../lib/commercial-labels";
 import { StatusPill } from "@entas/ui";
 import { loadPricedCart } from "../../lib/cart-repository";
@@ -98,6 +98,10 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
         <a href="/orders">
           <Truck size={19} aria-hidden="true" />
           <span>Takip</span>
+        </a>
+        <a href="/account/debt-payment">
+          <CreditCard size={19} aria-hidden="true" />
+          <span>Borç Öde</span>
         </a>
       </section>
 
@@ -244,6 +248,12 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
                 <p className="balanceAlert" role="alert">
                   Kredi limitiniz {formatMoney(balance.overLimitAmount, balance.currency)} tutarında aşıldı. Yeni sipariş öncesi ödeme gerekebilir.
                 </p>
+              ) : null}
+              {balance.balance > 0 ? (
+                <a className="btn btnPrimary balancePaymentCta" href="/account/debt-payment">
+                  <CreditCard size={17} aria-hidden="true" />
+                  Kartla Borç Öde
+                </a>
               ) : null}
             </div>
             <div className="balanceLedger">

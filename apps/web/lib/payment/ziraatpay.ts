@@ -147,6 +147,8 @@ export interface CreateSessionInput {
   orderItems?: SessionOrderItem[];
   /** Taksit sayısı (1 = tek çekim). 1'den büyükse INSTALLMENTS olarak gönderilir. */
   installments?: number;
+  /** Ödeme sayfası oturum süresi. ZiraatPay biçimi: örn. "24h". */
+  sessionExpiry?: string;
 }
 
 export interface CreateSessionResult {
@@ -191,6 +193,7 @@ export async function createPaymentSession(input: CreateSessionInput): Promise<C
   body.set("AMOUNT", input.amount);
   body.set("CURRENCY", input.currency ?? "TRY");
   body.set("RETURNURL", input.returnUrl);
+  if (input.sessionExpiry) body.set("SESSIONEXPIRY", input.sessionExpiry);
   body.set("CUSTOMER", input.customerId);
   if (input.customerName) body.set("CUSTOMERNAME", input.customerName);
   if (input.customerEmail) body.set("CUSTOMEREMAIL", input.customerEmail);

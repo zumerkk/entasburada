@@ -4680,11 +4680,16 @@ a.metricCard {
 
 .accountQuickActions {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 10px;
   margin-top: -26px;
   position: relative;
   z-index: 1;
+}
+
+.balancePaymentCta {
+  width: 100%;
+  margin-top: 2px;
 }
 
 .accountQuickActions a {
@@ -7757,6 +7762,296 @@ a.metricCard {
 }
 @media (max-width: 900px) {
   .productEditForm {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* --- Müşteri cari borç ödeme ekranı --- */
+.debtPaymentPage {
+  min-height: 70vh;
+  padding-bottom: 52px;
+}
+
+.debtPaymentNotice {
+  margin-top: 18px;
+}
+
+.debtPaymentNotice .statusPill {
+  min-height: 42px;
+  padding: 9px 14px;
+  white-space: normal;
+}
+
+.debtPaymentGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(330px, 0.8fr);
+  gap: 20px;
+  align-items: start;
+  padding-top: 22px;
+}
+
+.debtPaymentMain {
+  padding: 22px;
+}
+
+.debtPaymentMain .panelHeader > svg {
+  color: var(--orange-600);
+}
+
+.debtPaymentForm,
+.debtPaymentSession {
+  display: grid;
+  gap: 16px;
+}
+
+.debtPaymentForm > label {
+  color: var(--green-900);
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.debtPaymentAmountField {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  min-height: 76px;
+  overflow: hidden;
+  background: var(--white);
+  border: 2px solid var(--green-800);
+  border-radius: 12px;
+}
+
+.debtPaymentAmountField:focus-within {
+  border-color: var(--orange-600);
+  box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.12);
+}
+
+.debtPaymentAmountField span {
+  padding: 0 18px;
+  color: var(--green-900);
+  font-size: 18px;
+  font-weight: 950;
+}
+
+.debtPaymentAmountField input {
+  min-width: 0;
+  height: 72px;
+  padding: 0 8px;
+  color: var(--green-900);
+  background: transparent;
+  border: 0;
+  outline: 0;
+  font-size: clamp(28px, 5vw, 42px);
+  font-weight: 950;
+}
+
+.debtPaymentAmountField input::-webkit-inner-spin-button,
+.debtPaymentAmountField input::-webkit-outer-spin-button {
+  margin: 0;
+  appearance: none;
+}
+
+.debtPaymentPresets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.debtPaymentPresets button {
+  min-height: 38px;
+  padding: 0 13px;
+  color: var(--green-900);
+  background: #f8fafb;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.debtPaymentPresets button:hover {
+  color: var(--orange-700);
+  background: #fff7ed;
+  border-color: #fdba74;
+}
+
+.debtPaymentSelection {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 15px;
+  color: var(--green-900);
+  background: var(--teal-50);
+  border: 1px solid #b9eeea;
+  border-radius: 10px;
+}
+
+.debtPaymentSelection span {
+  display: grid;
+  gap: 2px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.debtPaymentSelection strong {
+  color: var(--green-900);
+  font-size: 19px;
+}
+
+.debtPaymentSubmit {
+  min-height: 54px;
+  font-size: 15px;
+}
+
+.debtPaymentSide {
+  display: grid;
+  gap: 14px;
+}
+
+.debtPaymentBalance {
+  display: grid;
+  gap: 4px;
+  padding: 16px;
+  margin-bottom: 10px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 10px;
+}
+
+.debtPaymentBalance span,
+.debtPaymentBalance small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.debtPaymentBalance strong {
+  color: #b42318;
+  font-size: 28px;
+}
+
+.debtPaymentSecurity {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 10px 0 0;
+  padding: 11px 12px;
+  color: #075f49;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.debtPaymentSecurity svg {
+  flex: 0 0 auto;
+}
+
+.debtPaymentHistoryList {
+  display: grid;
+  gap: 8px;
+}
+
+.debtPaymentHistoryList > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.debtPaymentHistoryList > div:last-child {
+  border-bottom: 0;
+}
+
+.debtPaymentHistoryList > div > span:first-child {
+  display: grid;
+  gap: 2px;
+}
+
+.debtPaymentHistoryList strong {
+  color: var(--green-900);
+}
+
+.debtPaymentHistoryList small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.debtPaymentHistoryActions {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+}
+
+.debtPaymentHistoryActions > a {
+  color: var(--orange-700);
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.debtPaymentClear {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 22px;
+  color: #075f49;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 12px;
+}
+
+.debtPaymentClear div {
+  display: grid;
+  gap: 3px;
+}
+
+.debtPaymentClear span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.debtPaymentClear.pending {
+  color: #92400e;
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+.debtPaymentClear.pending .btn {
+  justify-self: start;
+  margin-top: 8px;
+}
+
+@media (max-width: 900px) {
+  .debtPaymentGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .debtPaymentMain {
+    padding: 16px;
+  }
+
+  .debtPaymentAmountField {
+    min-height: 66px;
+  }
+
+  .debtPaymentAmountField span {
+    padding: 0 11px;
+    font-size: 15px;
+  }
+
+  .debtPaymentAmountField input {
+    height: 62px;
+    font-size: 28px;
+  }
+
+  .debtPaymentPresets {
+    display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

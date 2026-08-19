@@ -18,6 +18,7 @@ export type { BalanceSummary, LedgerEntry } from "./customer-balance-policy";
 const rootDir = findWorkspaceRoot(process.cwd());
 const dataDir = path.join(rootDir, "data");
 const ledgerPath = path.join(dataDir, "customer-ledger.json");
+let ledgerMutationQueue: Promise<void> = Promise.resolve();
 
 export interface AddLedgerEntryInput {
   customerId: string;
@@ -42,7 +43,26 @@ export async function getCustomerBalance(customer: CustomerAccount): Promise<Bal
   return summarizeLedger(entries, customer.creditLimit, "TRY");
 }
 
-export async function addLedgerEntry(input: AddLedgerEntryInput): Promise<LedgerEntry> {
+export function addLedgerEntry(input: AddLedgerEntryInput): Promise<LedgerEntry> {
+  return enqueueLedgerMutation(() => addLedgerEntryUnlocked(input));
+}
+
+export function addLedgerEntryIfMissing(
+  input: AddLedgerEntryInput & { refId: string }
+): Promise<{ entry: LedgerEntry; created: boolean }> {
+  return enqueueLedgerMutation(async () => {
+    await ensureLedgerFile();
+    const all = await readJson<LedgerEntry[]>(ledgerPath, []);
+    const existing = all.find(
+      (entry) => entry.customerId === input.customerId && entry.refType === input.refType && entry.refId === input.refId
+    );
+    if (existing) return { entry: existing, created: false };
+    const entry = await addLedgerEntryUnlocked(input, all);
+    return { entry, created: true };
+  });
+}
+
+async function addLedgerEntryUnlocked(input: AddLedgerEntryInput, currentEntries?: LedgerEntry[]): Promise<LedgerEntry> {
   const amount = input.amount.trim();
   if (!amount) {
     throw new Error("Tutar zorunludur.");
@@ -70,9 +90,15 @@ export async function addLedgerEntry(input: AddLedgerEntryInput): Promise<Ledger
   };
 
   await ensureLedgerFile();
-  const all = await readJson<LedgerEntry[]>(ledgerPath, []);
+  const all = currentEntries ?? await readJson<LedgerEntry[]>(ledgerPath, []);
   await saveLedger([...all, entry]);
   return entry;
+}
+
+function enqueueLedgerMutation<T>(mutation: () => Promise<T>): Promise<T> {
+  const operation = ledgerMutationQueue.then(mutation, mutation);
+  ledgerMutationQueue = operation.then(() => undefined, () => undefined);
+  return operation;
 }
 
 async function saveLedger(entries: LedgerEntry[]): Promise<void> {

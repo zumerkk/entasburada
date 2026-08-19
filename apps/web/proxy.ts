@@ -25,7 +25,12 @@ export function proxy(request: NextRequest): NextResponse {
 
   // Ödeme sağlayıcısının sunucudan/tarayıcıdan POST ettiği imzalı callback kendi
   // kriptografik doğrulamasını yapar; tarayıcı origin kontrolünden bilinçli istisnadır.
-  if (pathname === "/api/payments/ziraatpay/callback") return NextResponse.next({ headers: responseHeaders });
+  if (
+    pathname === "/api/payments/ziraatpay/callback" ||
+    pathname === "/api/payments/ziraatpay/balance/callback"
+  ) {
+    return NextResponse.next({ headers: responseHeaders });
+  }
 
   const fetchSite = request.headers.get("sec-fetch-site")?.toLowerCase();
   if (fetchSite === "cross-site") {
