@@ -11,6 +11,8 @@ type SearchParams = Record<string, string | string[] | undefined>;
 
 export const dynamic = "force-dynamic";
 
+const CATALOG_PAGE_SIZE = 72;
+
 export default async function CatalogPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const params = await searchParams;
   const q = getParam(params, "q");
@@ -20,7 +22,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
   const brand = getParam(params, "brand");
   const sourceKey = getParam(params, "sourceKey");
   const page = Math.max(1, Number(getParam(params, "page") || "1"));
-  const limit = 24;
+  const limit = CATALOG_PAGE_SIZE;
   const offset = (page - 1) * limit;
 
   const customer = await getCurrentCustomer();
@@ -31,6 +33,8 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
   ]);
   const safePage = Math.floor(products.offset / products.limit) + 1;
   const pageCount = Math.max(1, Math.ceil(products.total / products.limit));
+  const visibleStart = products.total > 0 ? products.offset + 1 : 0;
+  const visibleEnd = Math.min(products.offset + products.items.length, products.total);
 
   return (
     <main className="catalogPage">
@@ -52,7 +56,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
 
       <BulkQuoteCampaign variant="catalog" />
 
-      <section className="shell catalogLayout">
+      <section className="shell catalogLayout catalogLayoutWide">
         <aside className="filterPanel" aria-label="Katalog filtreleri">
           <div className="filterTitle">
             <Filter size={18} aria-hidden="true" />
@@ -114,7 +118,9 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
           <div className="resultToolbar">
             <div>
               <strong>{products.total.toLocaleString("tr-TR")} ürün listeleniyor</strong>
-              <span>Teknik özellik, SKU, barkod ve stok durumuna göre aranabilir.</span>
+              <span>
+                {visibleStart.toLocaleString("tr-TR")}–{visibleEnd.toLocaleString("tr-TR")} arası gösteriliyor · Sayfa başına {CATALOG_PAGE_SIZE.toLocaleString("tr-TR")} ürün
+              </span>
             </div>
             <a className="btn btnGhost dark" href="/catalog">
               <SlidersHorizontal size={17} aria-hidden="true" />
@@ -130,7 +136,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
           </div>
           {products.fallback ? <div className="catalogNotice">{products.fallback.message}</div> : null}
           {products.items.length > 0 ? (
-            <div className="productGrid dense">
+            <div className="productGrid dense catalogProductGrid">
               {products.items.map((product) => (
                 <ProductCard
                   key={product.slug}
