@@ -18,19 +18,12 @@ export function parseBalancePaymentAmount(value: unknown): number | null {
   return roundMoney(amount);
 }
 
-export function balancePaymentError(amount: number | null, openDebt: number): string | null {
-  const debt = Math.max(0, roundMoney(openDebt));
+export function balancePaymentError(amount: number | null): string | null {
   if (amount === null || amount < MIN_BALANCE_PAYMENT_TRY) {
     return "Geçerli bir ödeme tutarı girin.";
   }
   if (amount > MAX_BALANCE_PAYMENT_TRY) {
     return `Tek işlemde en fazla ${formatTry(MAX_BALANCE_PAYMENT_TRY)} ödeme yapılabilir.`;
-  }
-  if (debt < MIN_BALANCE_PAYMENT_TRY) {
-    return "Ödenebilir açık borç bulunmuyor.";
-  }
-  if (amount > debt) {
-    return `Ödeme tutarı açık borç olan ${formatTry(debt)} tutarını aşamaz.`;
   }
   return null;
 }
@@ -50,10 +43,6 @@ export function balancePaymentProviderMatches(
 
 export function canCompleteBalancePayment(status: string): boolean {
   return status === "pending";
-}
-
-export function remainingBalancePaymentAmount(openDebt: number, reservedAmount: number): number {
-  return Math.max(0, roundMoney(roundMoney(openDebt) - Math.max(0, roundMoney(reservedAmount))));
 }
 
 export function roundMoney(value: number): number {

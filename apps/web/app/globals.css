@@ -7930,6 +7930,38 @@ a.metricCard {
   font-size: 28px;
 }
 
+.debtPaymentManualNote {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 15px;
+  margin-bottom: 10px;
+  color: var(--green-900);
+  background: var(--teal-50);
+  border: 1px solid #b9eeea;
+  border-radius: 10px;
+}
+
+.debtPaymentManualNote svg {
+  flex: 0 0 auto;
+  color: var(--orange-600);
+}
+
+.debtPaymentManualNote div {
+  display: grid;
+  gap: 3px;
+}
+
+.debtPaymentManualNote strong {
+  font-size: 14px;
+}
+
+.debtPaymentManualNote span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
 .debtPaymentSecurity {
   display: flex;
   align-items: flex-start;

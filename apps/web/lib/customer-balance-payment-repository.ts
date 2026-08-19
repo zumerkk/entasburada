@@ -7,9 +7,7 @@ import type { CustomerAccount } from "./customer-auth";
 import { addLedgerEntryIfMissing } from "./customer-balance-repository";
 import {
   BALANCE_PAYMENT_SESSION_EXPIRY_HOURS,
-  balancePaymentError,
   canCompleteBalancePayment,
-  remainingBalancePaymentAmount,
   roundMoney
 } from "./customer-balance-payment-policy";
 
@@ -41,30 +39,12 @@ const dataDir = path.join(rootDir, "data");
 const paymentsPath = path.join(dataDir, "customer-balance-payments.json");
 let paymentMutationQueue: Promise<void> = Promise.resolve();
 
-export class BalancePaymentAvailabilityError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "BalancePaymentAvailabilityError";
-  }
-}
-
 export function createBalancePaymentIntent(
   customer: Pick<CustomerAccount, "id" | "email" | "companyName">,
-  amount: number,
-  openDebt: number
+  amount: number
 ): Promise<CustomerBalancePayment> {
   return enqueuePaymentMutation(async () => {
     const payments = expirePayments(await readPayments());
-    const reservedAmount = activePaymentTotal(payments, customer.id);
-    const availableAmount = remainingBalancePaymentAmount(openDebt, reservedAmount);
-    const validationError = balancePaymentError(amount, availableAmount);
-    if (validationError) {
-      const message = reservedAmount > 0 && amount > availableAmount
-        ? `Banka onayı bekleyen ${formatTry(reservedAmount)} ödemeniz nedeniyle şu anda en fazla ${formatTry(availableAmount)} ödeyebilirsiniz.`
-        : validationError;
-      throw new BalancePaymentAvailabilityError(message);
-    }
-
     const now = new Date().toISOString();
     const intent: CustomerBalancePayment = {
       id: `CBP${randomBytes(16).toString("hex").toUpperCase()}`,
@@ -166,10 +146,6 @@ export async function listCustomerBalancePayments(customerId: string, limit = 8)
     .slice(0, Math.max(1, Math.min(50, Math.trunc(limit))));
 }
 
-export async function getCustomerPendingBalancePaymentTotal(customerId: string): Promise<number> {
-  return activePaymentTotal(await readPayments(), customerId);
-}
-
 function updateBalancePayment(
   id: string,
   updater: (current: CustomerBalancePayment) => CustomerBalancePayment
@@ -233,14 +209,6 @@ function retainPayments(payments: CustomerBalancePayment[]): CustomerBalancePaym
   return [...active, ...terminal];
 }
 
-function activePaymentTotal(payments: CustomerBalancePayment[], customerId: string): number {
-  return roundMoney(expirePayments(payments)
-    .filter((payment) =>
-      payment.customerId === customerId && (payment.status === "creating" || payment.status === "pending")
-    )
-    .reduce((total, payment) => total + (Number(payment.amount) || 0), 0));
-}
-
 function expirePayments(payments: CustomerBalancePayment[]): CustomerBalancePayment[] {
   return payments.map(effectivePayment);
 }
@@ -272,10 +240,6 @@ async function readJson<T>(filePath: string, fallback: T): Promise<T> {
 
 function boundedText(value: string, maxLength: number): string {
   return value.trim().replace(/[\u0000-\u001f\u007f]/g, " ").slice(0, maxLength);
-}
-
-function formatTry(value: number): string {
-  return new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY" }).format(value);
 }
 
 function findWorkspaceRoot(startDir: string): string {

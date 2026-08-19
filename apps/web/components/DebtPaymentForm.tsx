@@ -5,18 +5,18 @@ import { ArrowLeft, CreditCard, ShieldCheck, WalletCards } from "lucide-react";
 import { CardPaymentForm } from "./CardPaymentForm";
 import { MAX_BALANCE_PAYMENT_TRY } from "../lib/customer-balance-payment-policy";
 
-export function DebtPaymentForm({ openDebt }: { openDebt: number }) {
+export function DebtPaymentForm() {
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [session, setSession] = useState<{ directPostUrl: string; amount: number } | null>(null);
-  const maxPayable = Math.min(openDebt, MAX_BALANCE_PAYMENT_TRY);
+  const maxPayable = MAX_BALANCE_PAYMENT_TRY;
   const presets = useMemo(() => {
-    const candidates = [10_000, 25_000, 50_000, maxPayable];
+    const candidates = [10_000, 25_000, 50_000];
     return [...new Set(candidates.map(roundMoney))]
       .filter((value) => value > 0 && value <= maxPayable)
       .sort((left, right) => left - right);
-  }, [maxPayable]);
+  }, []);
 
   const parsedAmount = Number(amount);
   const amountValid = Number.isFinite(parsedAmount) && parsedAmount >= 0.01 && parsedAmount <= maxPayable;
@@ -103,7 +103,7 @@ export function DebtPaymentForm({ openDebt }: { openDebt: number }) {
       <div className="debtPaymentPresets" aria-label="Hızlı tutar seçenekleri">
         {presets.map((preset) => (
           <button type="button" key={preset} onClick={() => setAmount(preset.toFixed(2))}>
-            {preset === openDebt ? "Tüm borç" : formatCompactTry(preset)}
+            {formatCompactTry(preset)}
           </button>
         ))}
       </div>

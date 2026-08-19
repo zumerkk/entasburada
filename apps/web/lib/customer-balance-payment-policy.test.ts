@@ -4,8 +4,7 @@ import {
   balancePaymentError,
   balancePaymentProviderMatches,
   canCompleteBalancePayment,
-  parseBalancePaymentAmount,
-  remainingBalancePaymentAmount
+  parseBalancePaymentAmount
 } from "./customer-balance-payment-policy";
 
 describe("customer balance payment policy", () => {
@@ -24,15 +23,15 @@ describe("customer balance payment policy", () => {
     expect(parseBalancePaymentAmount(Number.NaN)).toBeNull();
   });
 
-  it("never allows paying more than the current open debt", () => {
-    expect(balancePaymentError(10_000, 10_000)).toBeNull();
-    expect(balancePaymentError(10_000.01, 10_000)).toContain("aşamaz");
-    expect(balancePaymentError(100, 0)).toContain("bulunmuyor");
+  it("allows a valid manual amount without requiring a tracked site debt", () => {
+    expect(balancePaymentError(10_000)).toBeNull();
+    expect(balancePaymentError(50_000)).toBeNull();
+    expect(balancePaymentError(0)).toContain("Geçerli");
   });
 
   it("limits a single card collection", () => {
-    expect(balancePaymentError(MAX_BALANCE_PAYMENT_TRY, MAX_BALANCE_PAYMENT_TRY)).toBeNull();
-    expect(balancePaymentError(MAX_BALANCE_PAYMENT_TRY + 0.01, MAX_BALANCE_PAYMENT_TRY + 1)).toContain("en fazla");
+    expect(balancePaymentError(MAX_BALANCE_PAYMENT_TRY)).toBeNull();
+    expect(balancePaymentError(MAX_BALANCE_PAYMENT_TRY + 0.01)).toContain("en fazla");
   });
 
   it("requires an exact merchant, session and customer callback match", () => {
@@ -59,9 +58,4 @@ describe("customer balance payment policy", () => {
     expect(canCompleteBalancePayment("failed")).toBe(false);
   });
 
-  it("reserves active payment amounts against the payable balance", () => {
-    expect(remainingBalancePaymentAmount(60_000, 10_000)).toBe(50_000);
-    expect(remainingBalancePaymentAmount(10_000, 10_000.01)).toBe(0);
-    expect(remainingBalancePaymentAmount(100.1, 0.05)).toBe(100.05);
-  });
 });

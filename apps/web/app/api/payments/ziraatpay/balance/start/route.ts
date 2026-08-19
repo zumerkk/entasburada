@@ -1,8 +1,6 @@
 import { getCurrentCustomer } from "../../../../../../lib/customer-auth";
-import { getCustomerBalance } from "../../../../../../lib/customer-balance-repository";
 import {
   activateBalancePaymentIntent,
-  BalancePaymentAvailabilityError,
   createBalancePaymentIntent,
   failBalancePaymentIntent
 } from "../../../../../../lib/customer-balance-payment-repository";
@@ -40,8 +38,7 @@ export async function POST(request: Request): Promise<Response> {
     return requestErrorResponse(error, "Geçersiz ödeme isteği.");
   }
 
-  const balance = await getCustomerBalance(customer);
-  const validationError = balancePaymentError(amount, balance.balance);
+  const validationError = balancePaymentError(amount);
   if (validationError || amount === null) {
     return noStoreJson({ error: validationError ?? "Geçersiz ödeme tutarı." }, 400);
   }
@@ -53,11 +50,8 @@ export async function POST(request: Request): Promise<Response> {
 
   let intent;
   try {
-    intent = await createBalancePaymentIntent(customer, amount, balance.balance);
-  } catch (error) {
-    if (error instanceof BalancePaymentAvailabilityError) {
-      return noStoreJson({ error: error.message }, 409);
-    }
+    intent = await createBalancePaymentIntent(customer, amount);
+  } catch {
     return noStoreJson({ error: "Ödeme kaydı oluşturulamadı. Lütfen yeniden deneyin." }, 500);
   }
   const merchantPaymentId = buildMerchantPaymentId(intent.id);

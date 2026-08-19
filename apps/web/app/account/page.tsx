@@ -101,7 +101,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
         </a>
         <a href="/account/debt-payment">
           <CreditCard size={19} aria-hidden="true" />
-          <span>Borç Öde</span>
+          <span>Cari Ödeme</span>
         </a>
       </section>
 
@@ -249,12 +249,10 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
                   Kredi limitiniz {formatMoney(balance.overLimitAmount, balance.currency)} tutarında aşıldı. Yeni sipariş öncesi ödeme gerekebilir.
                 </p>
               ) : null}
-              {balance.balance > 0 ? (
-                <a className="btn btnPrimary balancePaymentCta" href="/account/debt-payment">
-                  <CreditCard size={17} aria-hidden="true" />
-                  Kartla Borç Öde
-                </a>
-              ) : null}
+              <a className="btn btnPrimary balancePaymentCta" href="/account/debt-payment">
+                <CreditCard size={17} aria-hidden="true" />
+                Kartla Cari Ödeme Yap
+              </a>
             </div>
             <div className="balanceLedger">
               {recentLedger.map((item) => (
