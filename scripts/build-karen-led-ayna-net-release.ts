@@ -70,11 +70,13 @@ const SUPPLIER_PRICES: Record<string, number> = {
 };
 
 /**
- * Canlidaki gorsel adresleri. Render'da `normalize-product-images` her gorsele
- * `?iv=square-v1` onbellek kirici ekliyor; paket bunu korumazsa canlidaki adres
- * eski haline doner (dosya ayni, yalnizca onbellek davranisi degisir).
+ * GORSEL ADRESI CIPLAK SAKLANIR.
+ *
+ * `?iv=<surum>` onbellek kiricisini `versionProductImageUrl` (packages/catalog)
+ * SERVIS ANINDA ekler ve mevcut bir `?` varsa `&` ile zincirler. Bu yuzden pakete
+ * suffix'li adres yazilirsa canlida `?iv=square-v1&iv=square-v1` olusur.
+ * v1 paketi bu hatayla gitti; v2 depodaki adresi oldugu gibi birakir.
  */
-const LIVE_IMAGE_SUFFIX = "?iv=square-v1";
 
 async function main(): Promise<void> {
   const store = JSON.parse(await readFile(catalogStorePath, "utf8")) as CatalogStore;
@@ -201,8 +203,10 @@ function parseListPrice(value: string): number {
 }
 
 function toImportedProduct(product: CatalogProductRecord, listPrice: string): ImportedSupplierProduct {
-  const imageUrl = product.imageUrl?.startsWith("/uploads/") && !product.imageUrl.includes("?")
-    ? `${product.imageUrl}${LIVE_IMAGE_SUFFIX}`
+  // Yerel gorsellerde birikmis `?iv=...` varsa temizle; onbellek kiricisini
+  // servis katmani ekler (yukaridaki nota bak).
+  const imageUrl = product.imageUrl?.startsWith("/uploads/")
+    ? product.imageUrl.split("?")[0]
     : product.imageUrl;
 
   return stripUndefined({

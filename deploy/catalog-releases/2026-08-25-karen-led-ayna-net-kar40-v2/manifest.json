@@ -1,0 +1,207 @@
+{
+  "version": "2026-08-25-karen-led-ayna-net-kar40-v2",
+  "createdAt": "2026-08-25T14:15:14.497Z",
+  "sourceCounts": {
+    "catalog-pdf-karen-led-ayna-2026": 19
+  },
+  "productCount": 19,
+  "imageCount": 0,
+  "pricing": {
+    "basis": "AYNA FIYAT LISTESI PDF (KAREN tedarikci alis listesi)",
+    "profitMultiplier": 1.4,
+    "policy": "Alis fiyati x 1,40 = NET satis fiyati (KDV dahil). Marka iskontosu uygulanmaz.",
+    "requires": "commercial-policy.ts icinde SOURCE_PRICE_POLICIES[catalog-pdf-karen-led-ayna-2026] = net",
+    "changes": [
+      {
+        "sku": "KRN-AYN-SILVA-60X80XCM",
+        "name": "KAREN SİLVA LED Ayna 60x80 cm",
+        "supplierPrice": "2000.00",
+        "previousPrice": "2800.00",
+        "previousDealerPrice": "1960.00",
+        "nextPrice": "2800.00",
+        "nextDealerPrice": "2800.00",
+        "currency": "TRY"
+      },
+      {
+        "sku": "KRN-AYN-ASTER-50XCM",
+        "name": "KAREN ASTER LED Ayna 50 cm",
+        "supplierPrice": "850.00",
+        "previousPrice": "1190.00",
+        "previousDealerPrice": "833.00",
+        "nextPrice": "1190.00",
+        "nextDealerPrice": "1190.00",
+        "currency": "TRY"
+      },
+      {
+        "sku": "KRN-AYN-ASTER-60XCM",
+        "name": "KAREN ASTER LED Ayna 60 cm",
+        "supplierPrice": "1000.00",
+        "previousPrice": "1400.00",
+        "previousDealerPrice": "980.00",
+        "nextPrice": "1400.00",
+        "nextDealerPrice": "1400.00",
+        "currency": "TRY"
+      },
+      {
+        "sku": "KRN-AYN-ASTER-80XCM",
+        "name": "KAREN ASTER LED Ayna 80 cm",
+        "supplierPrice": "1400.00",
+        "previousPrice": "1960.00",
+        "previousDealerPrice": "1372.00",
+        "nextPrice": "1960.00",
+        "nextDealerPrice": "1960.00",
+        "currency": "TRY"
+      },
+      {
+        "sku": "KRN-AYN-AQUA-60X80XCM",
+        "name": "KAREN AQUA LED Ayna 60x80 cm",
+        "supplierPrice": "1600.00",
+        "previousPrice": "2240.00",
+        "previousDealerPrice": "1568.00",
+        "nextPrice": "2240.00",
+        "nextDealerPrice": "2240.00",
+        "currency": "TRY"
+      },
+      {
+        "sku": "KRN-AYN-ALKA-60X80XCM",
+        "name": "KAREN ALKA LED Ayna 60x80 cm",
+        "supplierPrice": "1800.00",
+        "previousPrice": "2520.00",
+        "previousDealerPrice": "1764.00",
+        "nextPrice": "2520.00",
+        "nextDealerPrice": "2520.00",
+        "currency": "TRY"
+      },
+      {
+        "sku": "KRN-AYN-TETRA-80X60XCM",
+        "name": "KAREN TETRA LED Ayna 80x60 cm",
+        "supplierPrice": "1800.00",
+        "previousPrice": "2520.00",
+        "previousDealerPrice": "1764.00",
+        "nextPrice": "2520.00",
+        "nextDealerPrice": "2520.00",
+        "currency": "TRY"
+      },
+      {
+        "sku": "KRN-AYN-HAZE-60X80XCM",
+        "name": "KAREN HAZE LED Ayna 60x80 cm",
+        "supplierPrice": "1600.00",
+        "previousPrice": "2240.00",
+        "previousDealerPrice": "1568.00",
+        "nextPrice": "2240.00",
+        "nextDealerPrice": "2240.00",
+        "currency": "TRY"
+      },
+      {
+        "sku": "KRN-AYN-SORA-60XCM",
+        "name": "KAREN SORA LED Ayna 60 cm",
+        "supplierPrice": "1250.00",
+        "previousPrice": "1750.00",
+        "previousDealerPrice": "1225.00",
+        "nextPrice": "1750.00",
+        "nextDealerPrice": "1750.00",
+        "currency": "TRY"
+      },
+      {
+        "sku": "KRN-AYN-SORA-70XCM",
+        "name": "KAREN SORA LED Ayna 70 cm",
+        "supplierPrice": "1450.00",
+        "previousPrice": "2030.00",
+        "previousDealerPrice": "1421.00",
+        "nextPrice": "2030.00",
+        "nextDealerPrice": "2030.00",
+        "currency": "TRY"
+      },
+      {
+        "sku": "KRN-AYN-SORA-80XCM",
+        "name": "KAREN SORA LED Ayna 80 cm",
+        "supplierPrice": "1800.00",
+        "previousPrice": "2520.00",
+        "previousDealerPrice": "1764.00",
+        "nextPrice": "2520.00",
+        "nextDealerPrice": "2520.00",
+        "currency": "TRY"
+      },
+      {
+        "sku": "KRN-AYN-SORA-90XCM",
+        "name": "KAREN SORA LED Ayna 90 cm",
+        "supplierPrice": "2100.00",
+        "previousPrice": "2940.00",
+        "previousDealerPrice": "2058.00",
+        "nextPrice": "2940.00",
+        "nextDealerPrice": "2940.00",
+        "currency": "TRY"
+      },
+      {
+        "sku": "KRN-AYN-VITA-60XCM",
+        "name": "KAREN VİTA LED Ayna 60 cm",
+        "supplierPrice": "1300.00",
+        "previousPrice": "1820.00",
+        "previousDealerPrice": "1274.00",
+        "nextPrice": "1820.00",
+        "nextDealerPrice": "1820.00",
+        "currency": "TRY"
+      },
+      {
+        "sku": "KRN-AYN-VITA-70XCM",
+        "name": "KAREN VİTA LED Ayna 70 cm",
+        "supplierPrice": "1500.00",
+        "previousPrice": "2100.00",
+        "previousDealerPrice": "1470.00",
+        "nextPrice": "2100.00",
+        "nextDealerPrice": "2100.00",
+        "currency": "TRY"
+      },
+      {
+        "sku": "KRN-AYN-VITA-80XCM",
+        "name": "KAREN VİTA LED Ayna 80 cm",
+        "supplierPrice": "1850.00",
+        "previousPrice": "2590.00",
+        "previousDealerPrice": "1813.00",
+        "nextPrice": "2590.00",
+        "nextDealerPrice": "2590.00",
+        "currency": "TRY"
+      },
+      {
+        "sku": "KRN-AYN-VITA-90XCM",
+        "name": "KAREN VİTA LED Ayna 90 cm",
+        "supplierPrice": "2150.00",
+        "previousPrice": "3010.00",
+        "previousDealerPrice": "2107.00",
+        "nextPrice": "3010.00",
+        "nextDealerPrice": "3010.00",
+        "currency": "TRY"
+      },
+      {
+        "sku": "KRN-AYN-MILA-50XCM",
+        "name": "KAREN MİLA LED Ayna 50 cm",
+        "supplierPrice": "750.00",
+        "previousPrice": "1050.00",
+        "previousDealerPrice": "735.00",
+        "nextPrice": "1050.00",
+        "nextDealerPrice": "1050.00",
+        "currency": "TRY"
+      },
+      {
+        "sku": "KRN-AYN-MILA-60XCM",
+        "name": "KAREN MİLA LED Ayna 60 cm",
+        "supplierPrice": "900.00",
+        "previousPrice": "1260.00",
+        "previousDealerPrice": "882.00",
+        "nextPrice": "1260.00",
+        "nextDealerPrice": "1260.00",
+        "currency": "TRY"
+      },
+      {
+        "sku": "KRN-AYN-MILA-80XCM",
+        "name": "KAREN MİLA LED Ayna 80 cm",
+        "supplierPrice": "1300.00",
+        "previousPrice": "1820.00",
+        "previousDealerPrice": "1274.00",
+        "nextPrice": "1820.00",
+        "nextDealerPrice": "1820.00",
+        "currency": "TRY"
+      }
+    ]
+  }
+}
