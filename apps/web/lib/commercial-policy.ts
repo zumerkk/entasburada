@@ -44,6 +44,38 @@ const BRAND_PRICE_POLICIES: Array<BrandPricePolicy & { aliases: string[] }> = [
   { canonicalBrand: "Tricraft", aliases: ["TRICRAFT"], action: "discount", rate: 22, ruleLabel: "Tricraft liste fiyatı - %22" }
 ];
 
+/**
+ * Kaynak bazli fiyat politikasi istisnalari (marka kuralindan once bakilir).
+ *
+ * NEDEN: Marka kurallari `listPrice`in bir SATIS LISTE FIYATI oldugunu varsayip
+ * uzerine bayi iskontosu uygular. KAREN LED ayna listesi ise tedarikcinin ALIS
+ * fiyat listesidir; Karen markasinin -%30 kurali uygulaninca bayi alis fiyatinin
+ * %30 altini goruyordu (2026-08-25 denetim bulgusu, 19 urunde birim basina
+ * -8.520 TL). Bu kaynakta `listPrice` artik NET satis fiyatidir (alis + %40 kar),
+ * iskonto uygulanmaz.
+ *
+ * DIKKAT: Anahtar `sourceKey`dir. Ayni urunler yeni bir kaynak anahtariyla tekrar
+ * ice aktarilirsa buraya da eklenmelidir; aksi halde sessizce marka iskontosuna
+ * geri doner ve zarar tekrarlanir. `customer-pricing.test.ts` bunu sabitler.
+ */
+const SOURCE_PRICE_POLICIES: Record<string, BrandPricePolicy> = {
+  "catalog-pdf-karen-led-ayna-2026": {
+    canonicalBrand: "Karen LED Ayna",
+    action: "net",
+    rate: 0,
+    ruleLabel: "Karen LED ayna net fiyati",
+    priceLabel: "Net"
+  }
+};
+
+/**
+ * Bir urunun fiyat politikasi: once kaynak istisnasi, yoksa marka kurali.
+ * Fiyat hesaplayan her yol bu fonksiyonu kullanmalidir.
+ */
+export function resolveProductPricePolicy(sourceKey: string, brand: string): BrandPricePolicy {
+  return SOURCE_PRICE_POLICIES[sourceKey] ?? resolveBrandPricePolicy(brand);
+}
+
 export function resolveBrandPricePolicy(brand: string): BrandPricePolicy {
   const normalizedBrand = normalizeBrand(brand);
   const matched = BRAND_PRICE_POLICIES.find((policy) =>

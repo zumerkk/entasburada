@@ -1,0 +1,1246 @@
+[
+  {
+    "sourceKey": "catalog-pdf-karen-led-ayna-2026",
+    "sourceName": "KAREN LED Ayna Fiyat Listesi 2026",
+    "externalId": "KRN-AYN-SILVA-60X80XCM",
+    "sku": "KRN-AYN-SILVA-60X80XCM",
+    "manufacturerCode": "KRN-AYN-SILVA-60X80XCM",
+    "productName": "KAREN SİLVA LED Ayna 60x80 cm",
+    "brandName": "KAREN",
+    "categoryPath": [
+      "Banyo & Vitrifiye",
+      "Banyo Aksesuarları"
+    ],
+    "categoryName": "Banyo Aksesuarları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "2800.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "SİLVA LED banyo aynası; beyaz ışık, dokunmatik kontrol, buğu önleyici, 220v direkt bağlantı. Gösterilen fiyat net satış fiyatıdır; ayrıca iskonto uygulanmaz, KDV dahildir.",
+    "technicalSpecs": [
+      {
+        "label": "Model",
+        "value": "SİLVA"
+      },
+      {
+        "label": "Ölçü",
+        "value": "60x80 cm"
+      },
+      {
+        "label": "Özellik",
+        "value": "Beyaz ışık"
+      },
+      {
+        "label": "Özellik",
+        "value": "Dokunmatik kontrol"
+      },
+      {
+        "label": "Özellik",
+        "value": "Buğu önleyici"
+      },
+      {
+        "label": "Özellik",
+        "value": "220V direkt bağlantı"
+      },
+      {
+        "label": "Fiyat",
+        "value": "Net (iskonto uygulanmaz)"
+      },
+      {
+        "label": "KDV",
+        "value": "Dahil (%20)"
+      },
+      {
+        "label": "Stok",
+        "value": "Stokta var; gerçek adet kaynak listede belirtilmemiştir"
+      },
+      {
+        "label": "Kaynak Sayfa",
+        "value": "1"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/karen-banyo-2026-1/products/ayna-silva.webp?iv=square-v1",
+    "sourceUrl": "AYNA FİYAT LİSTESİ.pdf#page=1",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-pdf-karen-led-ayna-2026",
+    "sourceName": "KAREN LED Ayna Fiyat Listesi 2026",
+    "externalId": "KRN-AYN-ASTER-50XCM",
+    "sku": "KRN-AYN-ASTER-50XCM",
+    "manufacturerCode": "KRN-AYN-ASTER-50XCM",
+    "productName": "KAREN ASTER LED Ayna 50 cm",
+    "brandName": "KAREN",
+    "categoryPath": [
+      "Banyo & Vitrifiye",
+      "Banyo Aksesuarları"
+    ],
+    "categoryName": "Banyo Aksesuarları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "1190.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "ASTER LED banyo aynası; gün ışığı, dokunmatik kontrol, 220v direkt bağlantı. Gösterilen fiyat net satış fiyatıdır; ayrıca iskonto uygulanmaz, KDV dahildir.",
+    "technicalSpecs": [
+      {
+        "label": "Model",
+        "value": "ASTER"
+      },
+      {
+        "label": "Ölçü",
+        "value": "50 cm"
+      },
+      {
+        "label": "Özellik",
+        "value": "Gün ışığı"
+      },
+      {
+        "label": "Özellik",
+        "value": "Dokunmatik kontrol"
+      },
+      {
+        "label": "Özellik",
+        "value": "220V direkt bağlantı"
+      },
+      {
+        "label": "Fiyat",
+        "value": "Net (iskonto uygulanmaz)"
+      },
+      {
+        "label": "KDV",
+        "value": "Dahil (%20)"
+      },
+      {
+        "label": "Stok",
+        "value": "Stokta var; gerçek adet kaynak listede belirtilmemiştir"
+      },
+      {
+        "label": "Kaynak Sayfa",
+        "value": "1"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/karen-banyo-2026-1/products/ayna-aster.webp?iv=square-v1",
+    "sourceUrl": "AYNA FİYAT LİSTESİ.pdf#page=1",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-pdf-karen-led-ayna-2026",
+    "sourceName": "KAREN LED Ayna Fiyat Listesi 2026",
+    "externalId": "KRN-AYN-ASTER-60XCM",
+    "sku": "KRN-AYN-ASTER-60XCM",
+    "manufacturerCode": "KRN-AYN-ASTER-60XCM",
+    "productName": "KAREN ASTER LED Ayna 60 cm",
+    "brandName": "KAREN",
+    "categoryPath": [
+      "Banyo & Vitrifiye",
+      "Banyo Aksesuarları"
+    ],
+    "categoryName": "Banyo Aksesuarları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "1400.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "ASTER LED banyo aynası; gün ışığı, dokunmatik kontrol, 220v direkt bağlantı. Gösterilen fiyat net satış fiyatıdır; ayrıca iskonto uygulanmaz, KDV dahildir.",
+    "technicalSpecs": [
+      {
+        "label": "Model",
+        "value": "ASTER"
+      },
+      {
+        "label": "Ölçü",
+        "value": "60 cm"
+      },
+      {
+        "label": "Özellik",
+        "value": "Gün ışığı"
+      },
+      {
+        "label": "Özellik",
+        "value": "Dokunmatik kontrol"
+      },
+      {
+        "label": "Özellik",
+        "value": "220V direkt bağlantı"
+      },
+      {
+        "label": "Fiyat",
+        "value": "Net (iskonto uygulanmaz)"
+      },
+      {
+        "label": "KDV",
+        "value": "Dahil (%20)"
+      },
+      {
+        "label": "Stok",
+        "value": "Stokta var; gerçek adet kaynak listede belirtilmemiştir"
+      },
+      {
+        "label": "Kaynak Sayfa",
+        "value": "1"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/karen-banyo-2026-1/products/ayna-aster.webp?iv=square-v1",
+    "sourceUrl": "AYNA FİYAT LİSTESİ.pdf#page=1",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-pdf-karen-led-ayna-2026",
+    "sourceName": "KAREN LED Ayna Fiyat Listesi 2026",
+    "externalId": "KRN-AYN-ASTER-80XCM",
+    "sku": "KRN-AYN-ASTER-80XCM",
+    "manufacturerCode": "KRN-AYN-ASTER-80XCM",
+    "productName": "KAREN ASTER LED Ayna 80 cm",
+    "brandName": "KAREN",
+    "categoryPath": [
+      "Banyo & Vitrifiye",
+      "Banyo Aksesuarları"
+    ],
+    "categoryName": "Banyo Aksesuarları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "1960.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "ASTER LED banyo aynası; gün ışığı, dokunmatik kontrol, 220v direkt bağlantı. Gösterilen fiyat net satış fiyatıdır; ayrıca iskonto uygulanmaz, KDV dahildir.",
+    "technicalSpecs": [
+      {
+        "label": "Model",
+        "value": "ASTER"
+      },
+      {
+        "label": "Ölçü",
+        "value": "80 cm"
+      },
+      {
+        "label": "Özellik",
+        "value": "Gün ışığı"
+      },
+      {
+        "label": "Özellik",
+        "value": "Dokunmatik kontrol"
+      },
+      {
+        "label": "Özellik",
+        "value": "220V direkt bağlantı"
+      },
+      {
+        "label": "Fiyat",
+        "value": "Net (iskonto uygulanmaz)"
+      },
+      {
+        "label": "KDV",
+        "value": "Dahil (%20)"
+      },
+      {
+        "label": "Stok",
+        "value": "Stokta var; gerçek adet kaynak listede belirtilmemiştir"
+      },
+      {
+        "label": "Kaynak Sayfa",
+        "value": "1"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/karen-banyo-2026-1/products/ayna-aster.webp?iv=square-v1",
+    "sourceUrl": "AYNA FİYAT LİSTESİ.pdf#page=1",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-pdf-karen-led-ayna-2026",
+    "sourceName": "KAREN LED Ayna Fiyat Listesi 2026",
+    "externalId": "KRN-AYN-AQUA-60X80XCM",
+    "sku": "KRN-AYN-AQUA-60X80XCM",
+    "manufacturerCode": "KRN-AYN-AQUA-60X80XCM",
+    "productName": "KAREN AQUA LED Ayna 60x80 cm",
+    "brandName": "KAREN",
+    "categoryPath": [
+      "Banyo & Vitrifiye",
+      "Banyo Aksesuarları"
+    ],
+    "categoryName": "Banyo Aksesuarları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "2240.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "AQUA LED banyo aynası; beyaz ışık, 220v direkt bağlantı. Gösterilen fiyat net satış fiyatıdır; ayrıca iskonto uygulanmaz, KDV dahildir.",
+    "technicalSpecs": [
+      {
+        "label": "Model",
+        "value": "AQUA"
+      },
+      {
+        "label": "Ölçü",
+        "value": "60x80 cm"
+      },
+      {
+        "label": "Özellik",
+        "value": "Beyaz ışık"
+      },
+      {
+        "label": "Özellik",
+        "value": "220V direkt bağlantı"
+      },
+      {
+        "label": "Fiyat",
+        "value": "Net (iskonto uygulanmaz)"
+      },
+      {
+        "label": "KDV",
+        "value": "Dahil (%20)"
+      },
+      {
+        "label": "Stok",
+        "value": "Stokta var; gerçek adet kaynak listede belirtilmemiştir"
+      },
+      {
+        "label": "Kaynak Sayfa",
+        "value": "1"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/karen-banyo-2026-1/products/ayna-aqua.webp?iv=square-v1",
+    "sourceUrl": "AYNA FİYAT LİSTESİ.pdf#page=1",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-pdf-karen-led-ayna-2026",
+    "sourceName": "KAREN LED Ayna Fiyat Listesi 2026",
+    "externalId": "KRN-AYN-ALKA-60X80XCM",
+    "sku": "KRN-AYN-ALKA-60X80XCM",
+    "manufacturerCode": "KRN-AYN-ALKA-60X80XCM",
+    "productName": "KAREN ALKA LED Ayna 60x80 cm",
+    "brandName": "KAREN",
+    "categoryPath": [
+      "Banyo & Vitrifiye",
+      "Banyo Aksesuarları"
+    ],
+    "categoryName": "Banyo Aksesuarları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "2520.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "ALKA LED banyo aynası; gün ışığı, buğu önleyici, 220v direkt bağlantı. Gösterilen fiyat net satış fiyatıdır; ayrıca iskonto uygulanmaz, KDV dahildir.",
+    "technicalSpecs": [
+      {
+        "label": "Model",
+        "value": "ALKA"
+      },
+      {
+        "label": "Ölçü",
+        "value": "60x80 cm"
+      },
+      {
+        "label": "Özellik",
+        "value": "Gün ışığı"
+      },
+      {
+        "label": "Özellik",
+        "value": "Buğu önleyici"
+      },
+      {
+        "label": "Özellik",
+        "value": "220V direkt bağlantı"
+      },
+      {
+        "label": "Fiyat",
+        "value": "Net (iskonto uygulanmaz)"
+      },
+      {
+        "label": "KDV",
+        "value": "Dahil (%20)"
+      },
+      {
+        "label": "Stok",
+        "value": "Stokta var; gerçek adet kaynak listede belirtilmemiştir"
+      },
+      {
+        "label": "Kaynak Sayfa",
+        "value": "1"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/karen-banyo-2026-1/products/ayna-alka.webp?iv=square-v1",
+    "sourceUrl": "AYNA FİYAT LİSTESİ.pdf#page=1",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-pdf-karen-led-ayna-2026",
+    "sourceName": "KAREN LED Ayna Fiyat Listesi 2026",
+    "externalId": "KRN-AYN-TETRA-80X60XCM",
+    "sku": "KRN-AYN-TETRA-80X60XCM",
+    "manufacturerCode": "KRN-AYN-TETRA-80X60XCM",
+    "productName": "KAREN TETRA LED Ayna 80x60 cm",
+    "brandName": "KAREN",
+    "categoryPath": [
+      "Banyo & Vitrifiye",
+      "Banyo Aksesuarları"
+    ],
+    "categoryName": "Banyo Aksesuarları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "2520.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "TETRA LED banyo aynası; gün ışığı, buğu önleyici, 220v direkt bağlantı. Gösterilen fiyat net satış fiyatıdır; ayrıca iskonto uygulanmaz, KDV dahildir.",
+    "technicalSpecs": [
+      {
+        "label": "Model",
+        "value": "TETRA"
+      },
+      {
+        "label": "Ölçü",
+        "value": "80x60 cm"
+      },
+      {
+        "label": "Özellik",
+        "value": "Gün ışığı"
+      },
+      {
+        "label": "Özellik",
+        "value": "Buğu önleyici"
+      },
+      {
+        "label": "Özellik",
+        "value": "220V direkt bağlantı"
+      },
+      {
+        "label": "Fiyat",
+        "value": "Net (iskonto uygulanmaz)"
+      },
+      {
+        "label": "KDV",
+        "value": "Dahil (%20)"
+      },
+      {
+        "label": "Stok",
+        "value": "Stokta var; gerçek adet kaynak listede belirtilmemiştir"
+      },
+      {
+        "label": "Kaynak Sayfa",
+        "value": "1"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/karen-banyo-2026-1/products/ayna-tetra.webp?iv=square-v1",
+    "sourceUrl": "AYNA FİYAT LİSTESİ.pdf#page=1",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-pdf-karen-led-ayna-2026",
+    "sourceName": "KAREN LED Ayna Fiyat Listesi 2026",
+    "externalId": "KRN-AYN-HAZE-60X80XCM",
+    "sku": "KRN-AYN-HAZE-60X80XCM",
+    "manufacturerCode": "KRN-AYN-HAZE-60X80XCM",
+    "productName": "KAREN HAZE LED Ayna 60x80 cm",
+    "brandName": "KAREN",
+    "categoryPath": [
+      "Banyo & Vitrifiye",
+      "Banyo Aksesuarları"
+    ],
+    "categoryName": "Banyo Aksesuarları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "2240.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "HAZE LED banyo aynası; beyaz ışık, 220v direkt bağlantı. Gösterilen fiyat net satış fiyatıdır; ayrıca iskonto uygulanmaz, KDV dahildir.",
+    "technicalSpecs": [
+      {
+        "label": "Model",
+        "value": "HAZE"
+      },
+      {
+        "label": "Ölçü",
+        "value": "60x80 cm"
+      },
+      {
+        "label": "Özellik",
+        "value": "Beyaz ışık"
+      },
+      {
+        "label": "Özellik",
+        "value": "220V direkt bağlantı"
+      },
+      {
+        "label": "Fiyat",
+        "value": "Net (iskonto uygulanmaz)"
+      },
+      {
+        "label": "KDV",
+        "value": "Dahil (%20)"
+      },
+      {
+        "label": "Stok",
+        "value": "Stokta var; gerçek adet kaynak listede belirtilmemiştir"
+      },
+      {
+        "label": "Kaynak Sayfa",
+        "value": "2"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/karen-banyo-2026-1/products/ayna-haze.webp?iv=square-v1",
+    "sourceUrl": "AYNA FİYAT LİSTESİ.pdf#page=2",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-pdf-karen-led-ayna-2026",
+    "sourceName": "KAREN LED Ayna Fiyat Listesi 2026",
+    "externalId": "KRN-AYN-SORA-60XCM",
+    "sku": "KRN-AYN-SORA-60XCM",
+    "manufacturerCode": "KRN-AYN-SORA-60XCM",
+    "productName": "KAREN SORA LED Ayna 60 cm",
+    "brandName": "KAREN",
+    "categoryPath": [
+      "Banyo & Vitrifiye",
+      "Banyo Aksesuarları"
+    ],
+    "categoryName": "Banyo Aksesuarları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "1750.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "SORA LED banyo aynası; gün ışığı, 220v direkt bağlantı. Gösterilen fiyat net satış fiyatıdır; ayrıca iskonto uygulanmaz, KDV dahildir.",
+    "technicalSpecs": [
+      {
+        "label": "Model",
+        "value": "SORA"
+      },
+      {
+        "label": "Ölçü",
+        "value": "60 cm"
+      },
+      {
+        "label": "Özellik",
+        "value": "Gün ışığı"
+      },
+      {
+        "label": "Özellik",
+        "value": "220V direkt bağlantı"
+      },
+      {
+        "label": "Fiyat",
+        "value": "Net (iskonto uygulanmaz)"
+      },
+      {
+        "label": "KDV",
+        "value": "Dahil (%20)"
+      },
+      {
+        "label": "Stok",
+        "value": "Stokta var; gerçek adet kaynak listede belirtilmemiştir"
+      },
+      {
+        "label": "Kaynak Sayfa",
+        "value": "2"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/karen-banyo-2026-1/products/ayna-sora.webp?iv=square-v1",
+    "sourceUrl": "AYNA FİYAT LİSTESİ.pdf#page=2",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-pdf-karen-led-ayna-2026",
+    "sourceName": "KAREN LED Ayna Fiyat Listesi 2026",
+    "externalId": "KRN-AYN-SORA-70XCM",
+    "sku": "KRN-AYN-SORA-70XCM",
+    "manufacturerCode": "KRN-AYN-SORA-70XCM",
+    "productName": "KAREN SORA LED Ayna 70 cm",
+    "brandName": "KAREN",
+    "categoryPath": [
+      "Banyo & Vitrifiye",
+      "Banyo Aksesuarları"
+    ],
+    "categoryName": "Banyo Aksesuarları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "2030.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "SORA LED banyo aynası; gün ışığı, 220v direkt bağlantı. Gösterilen fiyat net satış fiyatıdır; ayrıca iskonto uygulanmaz, KDV dahildir.",
+    "technicalSpecs": [
+      {
+        "label": "Model",
+        "value": "SORA"
+      },
+      {
+        "label": "Ölçü",
+        "value": "70 cm"
+      },
+      {
+        "label": "Özellik",
+        "value": "Gün ışığı"
+      },
+      {
+        "label": "Özellik",
+        "value": "220V direkt bağlantı"
+      },
+      {
+        "label": "Fiyat",
+        "value": "Net (iskonto uygulanmaz)"
+      },
+      {
+        "label": "KDV",
+        "value": "Dahil (%20)"
+      },
+      {
+        "label": "Stok",
+        "value": "Stokta var; gerçek adet kaynak listede belirtilmemiştir"
+      },
+      {
+        "label": "Kaynak Sayfa",
+        "value": "2"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/karen-banyo-2026-1/products/ayna-sora.webp?iv=square-v1",
+    "sourceUrl": "AYNA FİYAT LİSTESİ.pdf#page=2",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-pdf-karen-led-ayna-2026",
+    "sourceName": "KAREN LED Ayna Fiyat Listesi 2026",
+    "externalId": "KRN-AYN-SORA-80XCM",
+    "sku": "KRN-AYN-SORA-80XCM",
+    "manufacturerCode": "KRN-AYN-SORA-80XCM",
+    "productName": "KAREN SORA LED Ayna 80 cm",
+    "brandName": "KAREN",
+    "categoryPath": [
+      "Banyo & Vitrifiye",
+      "Banyo Aksesuarları"
+    ],
+    "categoryName": "Banyo Aksesuarları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "2520.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "SORA LED banyo aynası; gün ışığı, 220v direkt bağlantı. Gösterilen fiyat net satış fiyatıdır; ayrıca iskonto uygulanmaz, KDV dahildir.",
+    "technicalSpecs": [
+      {
+        "label": "Model",
+        "value": "SORA"
+      },
+      {
+        "label": "Ölçü",
+        "value": "80 cm"
+      },
+      {
+        "label": "Özellik",
+        "value": "Gün ışığı"
+      },
+      {
+        "label": "Özellik",
+        "value": "220V direkt bağlantı"
+      },
+      {
+        "label": "Fiyat",
+        "value": "Net (iskonto uygulanmaz)"
+      },
+      {
+        "label": "KDV",
+        "value": "Dahil (%20)"
+      },
+      {
+        "label": "Stok",
+        "value": "Stokta var; gerçek adet kaynak listede belirtilmemiştir"
+      },
+      {
+        "label": "Kaynak Sayfa",
+        "value": "2"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/karen-banyo-2026-1/products/ayna-sora.webp?iv=square-v1",
+    "sourceUrl": "AYNA FİYAT LİSTESİ.pdf#page=2",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-pdf-karen-led-ayna-2026",
+    "sourceName": "KAREN LED Ayna Fiyat Listesi 2026",
+    "externalId": "KRN-AYN-SORA-90XCM",
+    "sku": "KRN-AYN-SORA-90XCM",
+    "manufacturerCode": "KRN-AYN-SORA-90XCM",
+    "productName": "KAREN SORA LED Ayna 90 cm",
+    "brandName": "KAREN",
+    "categoryPath": [
+      "Banyo & Vitrifiye",
+      "Banyo Aksesuarları"
+    ],
+    "categoryName": "Banyo Aksesuarları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "2940.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "SORA LED banyo aynası; gün ışığı, 220v direkt bağlantı. Gösterilen fiyat net satış fiyatıdır; ayrıca iskonto uygulanmaz, KDV dahildir.",
+    "technicalSpecs": [
+      {
+        "label": "Model",
+        "value": "SORA"
+      },
+      {
+        "label": "Ölçü",
+        "value": "90 cm"
+      },
+      {
+        "label": "Özellik",
+        "value": "Gün ışığı"
+      },
+      {
+        "label": "Özellik",
+        "value": "220V direkt bağlantı"
+      },
+      {
+        "label": "Fiyat",
+        "value": "Net (iskonto uygulanmaz)"
+      },
+      {
+        "label": "KDV",
+        "value": "Dahil (%20)"
+      },
+      {
+        "label": "Stok",
+        "value": "Stokta var; gerçek adet kaynak listede belirtilmemiştir"
+      },
+      {
+        "label": "Kaynak Sayfa",
+        "value": "2"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/karen-banyo-2026-1/products/ayna-sora.webp?iv=square-v1",
+    "sourceUrl": "AYNA FİYAT LİSTESİ.pdf#page=2",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-pdf-karen-led-ayna-2026",
+    "sourceName": "KAREN LED Ayna Fiyat Listesi 2026",
+    "externalId": "KRN-AYN-VITA-60XCM",
+    "sku": "KRN-AYN-VITA-60XCM",
+    "manufacturerCode": "KRN-AYN-VITA-60XCM",
+    "productName": "KAREN VİTA LED Ayna 60 cm",
+    "brandName": "KAREN",
+    "categoryPath": [
+      "Banyo & Vitrifiye",
+      "Banyo Aksesuarları"
+    ],
+    "categoryName": "Banyo Aksesuarları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "1820.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "VİTA LED banyo aynası; gün ışığı, 220v direkt bağlantı. Gösterilen fiyat net satış fiyatıdır; ayrıca iskonto uygulanmaz, KDV dahildir.",
+    "technicalSpecs": [
+      {
+        "label": "Model",
+        "value": "VİTA"
+      },
+      {
+        "label": "Ölçü",
+        "value": "60 cm"
+      },
+      {
+        "label": "Özellik",
+        "value": "Gün ışığı"
+      },
+      {
+        "label": "Özellik",
+        "value": "220V direkt bağlantı"
+      },
+      {
+        "label": "Fiyat",
+        "value": "Net (iskonto uygulanmaz)"
+      },
+      {
+        "label": "KDV",
+        "value": "Dahil (%20)"
+      },
+      {
+        "label": "Stok",
+        "value": "Stokta var; gerçek adet kaynak listede belirtilmemiştir"
+      },
+      {
+        "label": "Kaynak Sayfa",
+        "value": "2"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/karen-banyo-2026-1/products/ayna-vita.webp?iv=square-v1",
+    "sourceUrl": "AYNA FİYAT LİSTESİ.pdf#page=2",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-pdf-karen-led-ayna-2026",
+    "sourceName": "KAREN LED Ayna Fiyat Listesi 2026",
+    "externalId": "KRN-AYN-VITA-70XCM",
+    "sku": "KRN-AYN-VITA-70XCM",
+    "manufacturerCode": "KRN-AYN-VITA-70XCM",
+    "productName": "KAREN VİTA LED Ayna 70 cm",
+    "brandName": "KAREN",
+    "categoryPath": [
+      "Banyo & Vitrifiye",
+      "Banyo Aksesuarları"
+    ],
+    "categoryName": "Banyo Aksesuarları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "2100.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "VİTA LED banyo aynası; gün ışığı, 220v direkt bağlantı. Gösterilen fiyat net satış fiyatıdır; ayrıca iskonto uygulanmaz, KDV dahildir.",
+    "technicalSpecs": [
+      {
+        "label": "Model",
+        "value": "VİTA"
+      },
+      {
+        "label": "Ölçü",
+        "value": "70 cm"
+      },
+      {
+        "label": "Özellik",
+        "value": "Gün ışığı"
+      },
+      {
+        "label": "Özellik",
+        "value": "220V direkt bağlantı"
+      },
+      {
+        "label": "Fiyat",
+        "value": "Net (iskonto uygulanmaz)"
+      },
+      {
+        "label": "KDV",
+        "value": "Dahil (%20)"
+      },
+      {
+        "label": "Stok",
+        "value": "Stokta var; gerçek adet kaynak listede belirtilmemiştir"
+      },
+      {
+        "label": "Kaynak Sayfa",
+        "value": "2"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/karen-banyo-2026-1/products/ayna-vita.webp?iv=square-v1",
+    "sourceUrl": "AYNA FİYAT LİSTESİ.pdf#page=2",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-pdf-karen-led-ayna-2026",
+    "sourceName": "KAREN LED Ayna Fiyat Listesi 2026",
+    "externalId": "KRN-AYN-VITA-80XCM",
+    "sku": "KRN-AYN-VITA-80XCM",
+    "manufacturerCode": "KRN-AYN-VITA-80XCM",
+    "productName": "KAREN VİTA LED Ayna 80 cm",
+    "brandName": "KAREN",
+    "categoryPath": [
+      "Banyo & Vitrifiye",
+      "Banyo Aksesuarları"
+    ],
+    "categoryName": "Banyo Aksesuarları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "2590.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "VİTA LED banyo aynası; gün ışığı, 220v direkt bağlantı. Gösterilen fiyat net satış fiyatıdır; ayrıca iskonto uygulanmaz, KDV dahildir.",
+    "technicalSpecs": [
+      {
+        "label": "Model",
+        "value": "VİTA"
+      },
+      {
+        "label": "Ölçü",
+        "value": "80 cm"
+      },
+      {
+        "label": "Özellik",
+        "value": "Gün ışığı"
+      },
+      {
+        "label": "Özellik",
+        "value": "220V direkt bağlantı"
+      },
+      {
+        "label": "Fiyat",
+        "value": "Net (iskonto uygulanmaz)"
+      },
+      {
+        "label": "KDV",
+        "value": "Dahil (%20)"
+      },
+      {
+        "label": "Stok",
+        "value": "Stokta var; gerçek adet kaynak listede belirtilmemiştir"
+      },
+      {
+        "label": "Kaynak Sayfa",
+        "value": "2"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/karen-banyo-2026-1/products/ayna-vita.webp?iv=square-v1",
+    "sourceUrl": "AYNA FİYAT LİSTESİ.pdf#page=2",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-pdf-karen-led-ayna-2026",
+    "sourceName": "KAREN LED Ayna Fiyat Listesi 2026",
+    "externalId": "KRN-AYN-VITA-90XCM",
+    "sku": "KRN-AYN-VITA-90XCM",
+    "manufacturerCode": "KRN-AYN-VITA-90XCM",
+    "productName": "KAREN VİTA LED Ayna 90 cm",
+    "brandName": "KAREN",
+    "categoryPath": [
+      "Banyo & Vitrifiye",
+      "Banyo Aksesuarları"
+    ],
+    "categoryName": "Banyo Aksesuarları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "3010.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "VİTA LED banyo aynası; gün ışığı, 220v direkt bağlantı. Gösterilen fiyat net satış fiyatıdır; ayrıca iskonto uygulanmaz, KDV dahildir.",
+    "technicalSpecs": [
+      {
+        "label": "Model",
+        "value": "VİTA"
+      },
+      {
+        "label": "Ölçü",
+        "value": "90 cm"
+      },
+      {
+        "label": "Özellik",
+        "value": "Gün ışığı"
+      },
+      {
+        "label": "Özellik",
+        "value": "220V direkt bağlantı"
+      },
+      {
+        "label": "Fiyat",
+        "value": "Net (iskonto uygulanmaz)"
+      },
+      {
+        "label": "KDV",
+        "value": "Dahil (%20)"
+      },
+      {
+        "label": "Stok",
+        "value": "Stokta var; gerçek adet kaynak listede belirtilmemiştir"
+      },
+      {
+        "label": "Kaynak Sayfa",
+        "value": "2"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/karen-banyo-2026-1/products/ayna-vita.webp?iv=square-v1",
+    "sourceUrl": "AYNA FİYAT LİSTESİ.pdf#page=2",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-pdf-karen-led-ayna-2026",
+    "sourceName": "KAREN LED Ayna Fiyat Listesi 2026",
+    "externalId": "KRN-AYN-MILA-50XCM",
+    "sku": "KRN-AYN-MILA-50XCM",
+    "manufacturerCode": "KRN-AYN-MILA-50XCM",
+    "productName": "KAREN MİLA LED Ayna 50 cm",
+    "brandName": "KAREN",
+    "categoryPath": [
+      "Banyo & Vitrifiye",
+      "Banyo Aksesuarları"
+    ],
+    "categoryName": "Banyo Aksesuarları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "1050.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "MİLA LED banyo aynası; gün ışığı, 220v direkt bağlantı. Gösterilen fiyat net satış fiyatıdır; ayrıca iskonto uygulanmaz, KDV dahildir.",
+    "technicalSpecs": [
+      {
+        "label": "Model",
+        "value": "MİLA"
+      },
+      {
+        "label": "Ölçü",
+        "value": "50 cm"
+      },
+      {
+        "label": "Özellik",
+        "value": "Gün ışığı"
+      },
+      {
+        "label": "Özellik",
+        "value": "220V direkt bağlantı"
+      },
+      {
+        "label": "Fiyat",
+        "value": "Net (iskonto uygulanmaz)"
+      },
+      {
+        "label": "KDV",
+        "value": "Dahil (%20)"
+      },
+      {
+        "label": "Stok",
+        "value": "Stokta var; gerçek adet kaynak listede belirtilmemiştir"
+      },
+      {
+        "label": "Kaynak Sayfa",
+        "value": "2"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/karen-banyo-2026-1/products/ayna-mila.webp?iv=square-v1",
+    "sourceUrl": "AYNA FİYAT LİSTESİ.pdf#page=2",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-pdf-karen-led-ayna-2026",
+    "sourceName": "KAREN LED Ayna Fiyat Listesi 2026",
+    "externalId": "KRN-AYN-MILA-60XCM",
+    "sku": "KRN-AYN-MILA-60XCM",
+    "manufacturerCode": "KRN-AYN-MILA-60XCM",
+    "productName": "KAREN MİLA LED Ayna 60 cm",
+    "brandName": "KAREN",
+    "categoryPath": [
+      "Banyo & Vitrifiye",
+      "Banyo Aksesuarları"
+    ],
+    "categoryName": "Banyo Aksesuarları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "1260.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "MİLA LED banyo aynası; gün ışığı, 220v direkt bağlantı. Gösterilen fiyat net satış fiyatıdır; ayrıca iskonto uygulanmaz, KDV dahildir.",
+    "technicalSpecs": [
+      {
+        "label": "Model",
+        "value": "MİLA"
+      },
+      {
+        "label": "Ölçü",
+        "value": "60 cm"
+      },
+      {
+        "label": "Özellik",
+        "value": "Gün ışığı"
+      },
+      {
+        "label": "Özellik",
+        "value": "220V direkt bağlantı"
+      },
+      {
+        "label": "Fiyat",
+        "value": "Net (iskonto uygulanmaz)"
+      },
+      {
+        "label": "KDV",
+        "value": "Dahil (%20)"
+      },
+      {
+        "label": "Stok",
+        "value": "Stokta var; gerçek adet kaynak listede belirtilmemiştir"
+      },
+      {
+        "label": "Kaynak Sayfa",
+        "value": "2"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/karen-banyo-2026-1/products/ayna-mila.webp?iv=square-v1",
+    "sourceUrl": "AYNA FİYAT LİSTESİ.pdf#page=2",
+    "priceVisibleToPublic": false
+  },
+  {
+    "sourceKey": "catalog-pdf-karen-led-ayna-2026",
+    "sourceName": "KAREN LED Ayna Fiyat Listesi 2026",
+    "externalId": "KRN-AYN-MILA-80XCM",
+    "sku": "KRN-AYN-MILA-80XCM",
+    "manufacturerCode": "KRN-AYN-MILA-80XCM",
+    "productName": "KAREN MİLA LED Ayna 80 cm",
+    "brandName": "KAREN",
+    "categoryPath": [
+      "Banyo & Vitrifiye",
+      "Banyo Aksesuarları"
+    ],
+    "categoryName": "Banyo Aksesuarları",
+    "unitType": "ADET",
+    "taxRate": "20",
+    "currency": "TRY",
+    "listPrice": "1820.00",
+    "stockQuantity": 1,
+    "stockStatus": "in_stock",
+    "stockQuantityKnown": false,
+    "description": "MİLA LED banyo aynası; gün ışığı, 220v direkt bağlantı. Gösterilen fiyat net satış fiyatıdır; ayrıca iskonto uygulanmaz, KDV dahildir.",
+    "technicalSpecs": [
+      {
+        "label": "Model",
+        "value": "MİLA"
+      },
+      {
+        "label": "Ölçü",
+        "value": "80 cm"
+      },
+      {
+        "label": "Özellik",
+        "value": "Gün ışığı"
+      },
+      {
+        "label": "Özellik",
+        "value": "220V direkt bağlantı"
+      },
+      {
+        "label": "Fiyat",
+        "value": "Net (iskonto uygulanmaz)"
+      },
+      {
+        "label": "KDV",
+        "value": "Dahil (%20)"
+      },
+      {
+        "label": "Stok",
+        "value": "Stokta var; gerçek adet kaynak listede belirtilmemiştir"
+      },
+      {
+        "label": "Kaynak Sayfa",
+        "value": "2"
+      }
+    ],
+    "minOrder": 1,
+    "packageQuantity": 1,
+    "cartonQuantity": 1,
+    "palletQuantity": 1,
+    "warrantyMonths": 0,
+    "imageUrl": "/uploads/catalog-imports/karen-banyo-2026-1/products/ayna-mila.webp?iv=square-v1",
+    "sourceUrl": "AYNA FİYAT LİSTESİ.pdf#page=2",
+    "priceVisibleToPublic": false
+  }
+]

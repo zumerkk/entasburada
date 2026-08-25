@@ -1,6 +1,6 @@
 import type { CatalogProductRecord } from "@entas/catalog";
 import type { CustomerAccount } from "./customer-auth";
-import { includedVatAmount, priceMultiplier, resolveBrandPricePolicy, roundMoney } from "./commercial-policy";
+import { includedVatAmount, priceMultiplier, resolveProductPricePolicy, roundMoney } from "./commercial-policy";
 
 export interface CustomerPrice {
   visible: true;
@@ -19,7 +19,7 @@ export function priceProductForCustomer(product: CatalogProductRecord, customer:
     return null;
   }
 
-  const policy = resolveBrandPricePolicy(product.brand);
+  const policy = resolveProductPricePolicy(product.sourceKey, product.brand);
   if (policy.action === "hidden") {
     return null;
   }
@@ -45,8 +45,8 @@ export function priceProductForCustomer(product: CatalogProductRecord, customer:
   };
 }
 
-export function priceUnavailableMessage(product: Pick<CatalogProductRecord, "brand">): string | undefined {
-  const policy = resolveBrandPricePolicy(product.brand);
+export function priceUnavailableMessage(product: Pick<CatalogProductRecord, "brand" | "sourceKey">): string | undefined {
+  const policy = resolveProductPricePolicy(product.sourceKey, product.brand);
   return policy.action === "hidden" ? `${policy.canonicalBrand} ürünlerinde fiyat bilgisi verilmiyor.` : undefined;
 }
 

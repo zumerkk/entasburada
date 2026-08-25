@@ -127,4 +127,41 @@ describe("common brand pricing", () => {
   it("keeps prices closed for non-approved accounts", () => {
     expect(priceProductForCustomer(product, { ...customer, status: "suspended" })).toBeNull();
   });
+
+  // Regresyon kilidi: KAREN LED ayna listesi tedarikci ALIS fiyatidir. Karen
+  // markasinin -%30 kurali buraya sizarsa bayi alisin altini gorur (zarar).
+  // Kaynak anahtari degisirse bu test kirilir; commercial-policy.ts guncellenmeli.
+  it("prices Karen LED mirrors as net and never applies the Karen -30% brand rule", () => {
+    const mirror = {
+      ...product,
+      sourceKey: "catalog-pdf-karen-led-ayna-2026",
+      brand: "KAREN",
+      sku: "KRN-AYN-SILVA-60X80XCM",
+      listPrice: "2800.00"
+    };
+    const price = priceProductForCustomer(mirror, customer);
+
+    expect(price).toMatchObject({
+      unitNetPrice: "2800.00",
+      priceLabel: "Net",
+      ruleLabel: "Karen LED ayna net fiyati"
+    });
+    expect(price?.discountRate).toBeUndefined();
+    expect(price?.listPrice).toBeUndefined();
+  });
+
+  it("still discounts Karen bathroom furniture by 30% from its own source", () => {
+    const cabinet = {
+      ...product,
+      sourceKey: "catalog-pdf-karen-banyo-2026-1-revize",
+      brand: "KAREN",
+      sku: "KRN-BNY-LIANA-80"
+    };
+
+    expect(priceProductForCustomer(cabinet, customer)).toMatchObject({
+      unitNetPrice: "140.00",
+      discountRate: "30%",
+      ruleLabel: "Karen liste fiyatı - %30"
+    });
+  });
 });

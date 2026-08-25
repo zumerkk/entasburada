@@ -24,6 +24,7 @@
     "euromix:portal:build": "node --import tsx scripts/build-euromix-portal-release.ts",
     "euromix:pricing-v2:build": "node --import tsx scripts/build-euromix-pricing-v2-release.ts",
     "price:markup:build": "node --import tsx scripts/build-price-markup-release.ts",
+    "karen:led-ayna:build": "node --import tsx scripts/build-karen-led-ayna-net-release.ts",
     "images:normalize": "node --import tsx scripts/normalize-product-images.ts",
     "catalog:sync": "tsx scripts/sync-catalog-store.ts",
     "supplier:status": "node --import tsx scripts/set-supplier-status.ts",
