@@ -123,6 +123,101 @@ describe("@entas/catalog", () => {
     expect(adminProduct.stockQuantity).toBe(11);
   });
 
+  it("finds products despite a Turkish typing error", () => {
+    const faucet: ImportedSupplierProduct = {
+      ...imported,
+      externalId: "BATARYA-1",
+      sku: "BATARYA-1",
+      productName: "Krom Lavabo Bataryası",
+      categoryPath: ["Bataryalar"],
+      categoryName: "Bataryalar"
+    };
+    const merged = mergeImportedProducts(createEmptyCatalogStore(), [faucet]);
+    const store = publishProducts(merged, merged.products.map((product) => product.id), "admin").store;
+
+    const result = searchCatalogRecords(store, { q: "batrya", publicOnly: true });
+
+    expect(result.total).toBe(1);
+    expect(result.items[0]?.sku).toBe("BATARYA-1");
+    expect(result.searchMode).toBe("fuzzy");
+  });
+
+  it("understands technical synonyms such as flex and spiral", () => {
+    const hose: ImportedSupplierProduct = {
+      ...imported,
+      externalId: "SPIRAL-1",
+      sku: "SPIRAL-1",
+      productName: "Paslanmaz Duş Spirali 150 cm",
+      categoryPath: ["Duş Hortumları"],
+      categoryName: "Duş Hortumları"
+    };
+    const merged = mergeImportedProducts(createEmptyCatalogStore(), [hose]);
+    const store = publishProducts(merged, merged.products.map((product) => product.id), "admin").store;
+
+    const result = searchCatalogRecords(store, { q: "flex hortum", publicOnly: true });
+
+    expect(result.total).toBe(1);
+    expect(result.items[0]?.sku).toBe("SPIRAL-1");
+    expect(result.searchMode).toBe("synonym");
+  });
+
+  it("does not ignore an unmatched token in a multi-word query", () => {
+    const faucet: ImportedSupplierProduct = {
+      ...imported,
+      externalId: "STEEL-1",
+      sku: "STEEL-1",
+      productName: "Paslanmaz Lavabo Bataryası"
+    };
+    const merged = mergeImportedProducts(createEmptyCatalogStore(), [faucet]);
+    const store = publishProducts(merged, merged.products.map((product) => product.id), "admin").store;
+
+    const result = searchCatalogRecords(store, { q: "paslanmaz zzzzbulunmaz", publicOnly: true });
+
+    expect(result.total).toBe(0);
+  });
+
+  it("does not fuzzy-match long query tokens through a two-letter unit", () => {
+    const tool: ImportedSupplierProduct = {
+      ...imported,
+      externalId: "TOOL-NM",
+      sku: "TOOL-NM",
+      productName: "Havalı Somun Sökme 1200 Nm"
+    };
+    const merged = mergeImportedProducts(createEmptyCatalogStore(), [tool]);
+    const store = publishProducts(merged, merged.products.map((product) => product.id), "admin").store;
+
+    const result = searchCatalogRecords(store, { q: "paslanmaz zzzzbulunmaz", publicOnly: true });
+
+    expect(result.total).toBe(0);
+  });
+
+  it("filters technical dimensions, connection and material", () => {
+    const fitting: ImportedSupplierProduct = {
+      ...imported,
+      externalId: "FITTING-1",
+      sku: "FITTING-1",
+      productName: "PPRC Dişli Dirsek",
+      categoryPath: ["PPRC"],
+      categoryName: "PPRC",
+      technicalSpecs: [
+        { label: "Ölçü", value: "25 mm" },
+        { label: "Bağlantı", value: "İç diş" },
+        { label: "Malzeme", value: "PPRC" }
+      ]
+    };
+    const merged = mergeImportedProducts(createEmptyCatalogStore(), [fitting]);
+    const store = publishProducts(merged, merged.products.map((product) => product.id), "admin").store;
+
+    const result = searchCatalogRecords(store, {
+      size: "25 mm",
+      connection: "iç diş",
+      material: "pprc",
+      publicOnly: true
+    });
+
+    expect(result.total).toBe(1);
+  });
+
   it("marks zero-price products as representative quote only", () => {
     const zeroPriceProduct: ImportedSupplierProduct = { ...imported, externalId: "ZERO-1", sku: "ZERO-1", listPrice: "0.0000" };
     const store = mergeImportedProducts(createEmptyCatalogStore(), [zeroPriceProduct], "2026-07-07T01:00:00.000Z");

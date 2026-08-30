@@ -41,6 +41,7 @@ export default async function OrderPackingSlipPage({ params }: { params: Promise
       </div>
 
       <article className="packingSlip">
+        {order.blindShipping ? <p className="dispatchBlindWarning">İÇ OPERASYON — KÖR KARGO: BU BELGEYİ MÜŞTERİ PAKETİNE KOYMAYIN</p> : null}
         <header className="packingSlipHead">
           <div className="packingSlipBrand">
             {brand.headerLogoUrl ? <img src={brand.headerLogoUrl} alt="" /> : null}
@@ -80,11 +81,11 @@ export default async function OrderPackingSlipPage({ params }: { params: Promise
           </div>
           <div>
             <span className="packingSlipLabel">Alıcı</span>
-            <strong>{order.companyName}</strong>
-            <p>{order.dealerUser}</p>
+            <strong>{order.fulfillmentType === "DROPSHIP" ? order.recipientName : order.companyName}</strong>
+            <p>{order.fulfillmentType === "DROPSHIP" ? `Dropshipping alıcısı · ${order.sellerOrderReference}` : order.dealerUser}</p>
             <p>{order.deliveryAddress}</p>
             <p>
-              {order.phone}
+              {order.fulfillmentType === "DROPSHIP" ? order.recipientPhone : order.phone}
               {order.email ? ` · ${order.email}` : ""}
             </p>
           </div>

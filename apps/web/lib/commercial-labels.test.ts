@@ -7,6 +7,7 @@ import type { OrderStatus, QuoteStatus } from "./commercial-repository";
 const ORDER_STATUSES: OrderStatus[] = [
   "DRAFT",
   "PAYMENT_PENDING",
+  "DEALER_APPROVAL_PENDING",
   "APPROVAL_PENDING",
   "FINANCE_APPROVAL_PENDING",
   "STOCK_WAITING",

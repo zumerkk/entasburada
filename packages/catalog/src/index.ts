@@ -60,6 +60,8 @@ export interface ImportedSupplierProduct {
   stockQuantity: number;
   stockStatus: StockStatus;
   stockQuantityKnown?: boolean;
+  expectedStockAt?: string;
+  warehouseStocks?: Array<{ warehouse: string; quantity: number }>;
   description?: string;
   technicalSpecs?: Array<{ label: string; value: string }>;
   minOrder?: number;
@@ -93,6 +95,8 @@ export interface CatalogProductRecord {
   stockQuantity: number;
   stockStatus: StockStatus;
   stockQuantityKnown?: boolean;
+  expectedStockAt?: string;
+  warehouseStocks?: Array<{ warehouse: string; quantity: number }>;
   description?: string;
   technicalSpecs?: Array<{ label: string; value: string }>;
   minOrder?: number;
@@ -170,6 +174,10 @@ export interface PublicCatalogProduct {
   stockTone: StockStatus;
   stockLabel: string;
   stockQuantityKnown: boolean;
+  stockRange: string;
+  deliveryEstimate: string;
+  warehouseAvailability: string;
+  expectedStockAt?: string;
   badges: string[];
   unitType: string;
   minOrder: number;
@@ -209,6 +217,12 @@ export interface CatalogSearchFilters {
   view?: string;
   brand?: string;
   sourceKey?: string;
+  /** Teknik filtreler serbest metin veya katalog teknik ozellik degerleriyle eslesir. */
+  size?: string;
+  diameter?: string;
+  connection?: string;
+  material?: string;
+  usage?: string;
   stockStatus?: StockStatus | "all";
   status?: ProductStatus | "all";
   /** Veri kalitesi suzgeci: fiyati girilmemis urunleri bulmak icin. */
@@ -235,6 +249,7 @@ export interface CatalogSearchResult<T> {
   items: T[];
   fallback?: CatalogSearchFallback;
   appliedCategoryLabel?: string;
+  searchMode?: "exact" | "synonym" | "fuzzy";
 }
 
 const FALLBACK_IMAGE = "/images/industrial-hero.png";
@@ -741,8 +756,15 @@ export function searchCatalogRecords(store: CatalogStore, filters: CatalogSearch
   const categoryGroup = resolveCatalogGroup(filters.categoryGroup ?? filters.view ?? "");
   const brand = normalizeSearch(filters.brand ?? "");
   const sourceKey = normalizeSearch(filters.sourceKey ?? "");
+  const technicalFilters = {
+    size: normalizeSearch(filters.size ?? ""),
+    diameter: normalizeSearch(filters.diameter ?? ""),
+    connection: normalizeSearch(filters.connection ?? ""),
+    material: normalizeSearch(filters.material ?? ""),
+    usage: normalizeSearch(filters.usage ?? "")
+  };
 
-  const withoutCategory = store.products.filter((product) => {
+  const candidates = store.products.filter((product) => {
     if (filters.publicOnly && (product.status !== "ACTIVE" || !product.isVisible)) {
       return false;
     }
@@ -775,18 +797,31 @@ export function searchCatalogRecords(store: CatalogStore, filters: CatalogSearch
       if (filters.imageState === "without" && hasImage) return false;
     }
 
-    if (!term) {
-      return true;
-    }
-
-    return [product.name, product.brand, product.sku, product.barcode ?? "", product.manufacturerCode ?? "", product.category]
-      .map(normalizeSearch)
-      .some((entry) => entry.includes(term));
+    return productMatchesTechnicalFilters(product, technicalFilters);
   });
+
+  const scored = term
+    ? candidates
+        .map((product) => ({ product, ...smartProductSearchScore(product, term) }))
+        .filter((entry) => entry.score > 0)
+        .sort((a, b) => b.score - a.score || a.product.name.localeCompare(b.product.name, "tr"))
+    : candidates.map((product) => ({ product, score: 0, mode: "exact" as const }));
+  const withoutCategory = scored.map((entry) => entry.product);
 
   const categoryFiltered = applyCategoryFilters(withoutCategory, category, categoryGroup);
   const filtered = categoryFiltered.items;
   const fallback = categoryFiltered.fallback;
+  const visibleIds = new Set(filtered.map((product) => product.id));
+  const visibleSearchModes = scored.filter((entry) => visibleIds.has(entry.product.id)).map((entry) => entry.mode);
+  const searchMode = term
+    ? visibleSearchModes.includes("exact")
+      ? "exact"
+      : visibleSearchModes.includes("synonym")
+        ? "synonym"
+        : visibleSearchModes.includes("fuzzy")
+          ? "fuzzy"
+          : undefined
+    : undefined;
 
   const offset = requestedOffset >= filtered.length && filtered.length > 0 ? 0 : requestedOffset;
 
@@ -796,8 +831,164 @@ export function searchCatalogRecords(store: CatalogStore, filters: CatalogSearch
     offset,
     items: filtered.slice(offset, offset + limit),
     ...(fallback ? { fallback } : {}),
+    ...(searchMode ? { searchMode } : {}),
     ...(categoryGroup ? { appliedCategoryLabel: categoryGroup.label } : category ? { appliedCategoryLabel: filters.category } : {})
   };
+}
+
+type TechnicalSearchFilters = Record<"size" | "diameter" | "connection" | "material" | "usage", string>;
+
+const TECHNICAL_LABELS: Record<keyof TechnicalSearchFilters, string[]> = {
+  size: ["olcu", "ebat", "boyut", "uzunluk", "genislik", "yukseklik"],
+  diameter: ["cap", "diameter", "dn", "inc"],
+  connection: ["baglanti", "dis", "ic dis", "rekor", "soket", "flans"],
+  material: ["malzeme", "materyal", "govde", "hammadde"],
+  usage: ["kullanim", "uygulama", "alan", "uygunluk"]
+};
+
+const SEARCH_SYNONYM_GROUPS = [
+  ["spiral", "fleks", "flex", "flex hortum", "fleks hortum", "baglanti hortumu"],
+  ["batarya", "musluk", "mix", "armatür", "armatur"],
+  ["dirsek", "elbow"],
+  ["vana", "valf", "valve"],
+  ["conta", "oring", "o ring", "sızdırmazlık", "sizdirmazlik"],
+  ["dalgic", "dalgıç", "submersible"],
+  ["hidrofor", "basinc pompasi", "basınç pompası"],
+  ["klozet", "wc", "tuvalet"],
+  ["dus", "duş", "shower"],
+  ["cap", "çap", "diameter", "dn"]
+].map((group) => group.map(normalizeSearch));
+
+function productMatchesTechnicalFilters(product: CatalogProductRecord, filters: TechnicalSearchFilters): boolean {
+  const entries = product.technicalSpecs ?? [];
+  const broadText = normalizeSearch([
+    product.name,
+    product.description ?? "",
+    product.category,
+    ...product.categoryPath,
+    ...entries.flatMap((entry) => [entry.label, entry.value])
+  ].join(" "));
+
+  return (Object.entries(filters) as Array<[keyof TechnicalSearchFilters, string]>).every(([key, requested]) => {
+    if (!requested) return true;
+    const labels = TECHNICAL_LABELS[key];
+    const scopedValues = entries
+      .filter((entry) => labels.some((label) => normalizeSearch(entry.label).includes(label)))
+      .map((entry) => normalizeSearch(entry.value));
+    return scopedValues.some((value) => value.includes(requested)) || broadText.includes(requested);
+  });
+}
+
+function smartProductSearchScore(
+  product: CatalogProductRecord,
+  term: string
+): { score: number; mode: "exact" | "synonym" | "fuzzy" } {
+  const identifiers = [product.sku, product.barcode ?? "", product.manufacturerCode ?? ""].map(normalizeSearch).filter(Boolean);
+  if (identifiers.some((value) => value === term)) return { score: 1_500, mode: "exact" };
+  if (identifiers.some((value) => value.startsWith(term))) return { score: 1_250, mode: "exact" };
+  if (identifiers.some((value) => value.includes(term))) return { score: 1_050, mode: "exact" };
+
+  const name = normalizeSearch(product.name);
+  const brand = normalizeSearch(product.brand);
+  const category = normalizeSearch([product.category, ...product.categoryPath].join(" "));
+  const specs = normalizeSearch((product.technicalSpecs ?? []).flatMap((entry) => [entry.label, entry.value]).join(" "));
+  const description = normalizeSearch(product.description ?? "");
+  const searchable = `${name} ${brand} ${category} ${specs} ${description}`.trim();
+
+  if (name === term) return { score: 1_000, mode: "exact" };
+  if (name.startsWith(term)) return { score: 900, mode: "exact" };
+  if (name.includes(term)) return { score: 820, mode: "exact" };
+  if (brand.includes(term)) return { score: 720, mode: "exact" };
+  if (category.includes(term)) return { score: 620, mode: "exact" };
+  if (specs.includes(term) || description.includes(term)) return { score: 520, mode: "exact" };
+
+  const queryTokens = term.split(" ").filter(Boolean);
+  if (queryTokens.length > 1 && queryTokens.every((token) => searchable.includes(token))) {
+    return { score: 470, mode: "exact" };
+  }
+
+  const synonymPhrases = expandSynonymPhrases(term);
+  const matchingSynonyms = synonymPhrases.filter((phrase) => phrase !== term);
+  const synonymFields: Array<[string, number]> = [
+    [name, 490],
+    [category, 460],
+    [brand, 440],
+    [specs, 420],
+    [description, 400]
+  ];
+  for (const [field, baseScore] of synonymFields) {
+    const matchingSynonym = matchingSynonyms.find((phrase) => field.includes(phrase));
+    if (matchingSynonym) {
+      return { score: baseScore + Math.min(30, matchingSynonym.length), mode: "synonym" };
+    }
+  }
+
+  const fuzzyFields: Array<[string, number]> = [
+    [name, 380],
+    [category, 340],
+    [brand, 320],
+    [specs, 280],
+    [description, 260]
+  ];
+  for (const [field, score] of fuzzyFields) {
+    if (fuzzyTokensMatch(queryTokens, field)) return { score, mode: "fuzzy" };
+  }
+
+  return { score: 0, mode: "exact" };
+}
+
+function fuzzyTokensMatch(queryTokens: string[], field: string): boolean {
+  if (queryTokens.length === 0 || !field) return false;
+  const words = Array.from(new Set(field.split(" ").filter((word) => word.length >= 2))).slice(0, 180);
+  return queryTokens.every((token) => words.some((word) => isFuzzyTokenMatch(token, word)));
+}
+
+function expandSynonymPhrases(term: string): string[] {
+  const phrases = new Set([term]);
+  for (const group of SEARCH_SYNONYM_GROUPS) {
+    if (group.some((entry) => term.includes(entry) || entry.includes(term))) {
+      group.forEach((entry) => phrases.add(entry));
+    }
+  }
+  return [...phrases];
+}
+
+function isFuzzyTokenMatch(query: string, candidate: string): boolean {
+  if (candidate.includes(query)) return true;
+  if (query.length < 4 || candidate.length < 4) return false;
+  if (query[0] !== candidate[0]) return false;
+  const maxDistance = Math.max(query.length, candidate.length) >= 8 ? 2 : 1;
+  if (query.includes(candidate) && query.length - candidate.length <= maxDistance) return true;
+  const candidateForms = new Set([candidate]);
+  // Uzun urun kelimelerinde (bataryasi gibi) kullanicinin yazdigi kok kadar
+  // on eki de karsilastir. Boylece "batrya" -> "batarya" tek hatayla bulunur.
+  for (let length = Math.max(4, query.length - maxDistance); length <= Math.min(candidate.length, query.length + maxDistance); length += 1) {
+    candidateForms.add(candidate.slice(0, length));
+  }
+  return [...candidateForms].some((form) =>
+    Math.abs(query.length - form.length) <= maxDistance && boundedLevenshtein(query, form, maxDistance) <= maxDistance
+  );
+}
+
+function boundedLevenshtein(left: string, right: string, maxDistance: number): number {
+  let previous = Array.from({ length: right.length + 1 }, (_, index) => index);
+  for (let row = 1; row <= left.length; row += 1) {
+    const current = [row];
+    let rowMinimum = row;
+    for (let column = 1; column <= right.length; column += 1) {
+      const cost = left[row - 1] === right[column - 1] ? 0 : 1;
+      const value = Math.min(
+        (current[column - 1] ?? maxDistance + 1) + 1,
+        (previous[column] ?? maxDistance + 1) + 1,
+        (previous[column - 1] ?? maxDistance + 1) + cost
+      );
+      current[column] = value;
+      rowMinimum = Math.min(rowMinimum, value);
+    }
+    if (rowMinimum > maxDistance) return maxDistance + 1;
+    previous = current;
+  }
+  return previous[right.length] ?? maxDistance + 1;
 }
 
 export function toPublicProduct(product: CatalogProductRecord): PublicCatalogProduct {
@@ -830,6 +1021,10 @@ export function toPublicProduct(product: CatalogProductRecord): PublicCatalogPro
     stockTone: product.stockStatus,
     stockLabel: stockLabel(product.stockStatus, product.stockQuantityKnown !== false),
     stockQuantityKnown: product.stockQuantityKnown !== false,
+    stockRange: stockRange(product.stockStatus, product.stockQuantity, product.stockQuantityKnown !== false),
+    deliveryEstimate: deliveryEstimate(product.stockStatus, product.stockQuantityKnown !== false, product.expectedStockAt),
+    warehouseAvailability: warehouseAvailability(product),
+    expectedStockAt: product.expectedStockAt,
     badges: product.priceDisplayMode === "CONTACT_REP" ? [product.sourceName, "Temsilci fiyatı"] : [product.sourceName],
     unitType: product.unitType,
     minOrder: positiveInteger(product.minOrder, 1),
@@ -1027,6 +1222,8 @@ function toCatalogRecord(imported: ImportedSupplierProduct, now: string, slug: s
     stockQuantity: imported.stockQuantity,
     stockStatus: imported.stockStatus,
     stockQuantityKnown: imported.stockQuantityKnown,
+    expectedStockAt: imported.expectedStockAt ?? existing?.expectedStockAt,
+    warehouseStocks: imported.warehouseStocks ?? existing?.warehouseStocks,
     description: imported.description,
     technicalSpecs: imported.technicalSpecs,
     minOrder: imported.minOrder,
@@ -1103,6 +1300,32 @@ function stockLabel(status: StockStatus, quantityKnown = true): string {
   }
 
   return "Stok yok";
+}
+
+function stockRange(status: StockStatus, quantity: number, quantityKnown = true): string {
+  if (!quantityKnown) return "Teyit gerekli";
+  if (status === "out_of_stock") return "0";
+  if (status === "incoming") return "Yolda";
+  if (quantity <= 4) return "1–4 adet";
+  if (quantity <= 10) return "5–10 adet";
+  if (quantity <= 25) return "11–25 adet";
+  if (quantity <= 50) return "26–50 adet";
+  return "50+ adet";
+}
+
+function deliveryEstimate(status: StockStatus, quantityKnown = true, expectedStockAt?: string): string {
+  if (!quantityKnown) return "Stok teyidi sonrası";
+  if (status === "in_stock" || status === "low_stock") return "Bugün kargoda";
+  if (status === "incoming" && expectedStockAt && Number.isFinite(Date.parse(expectedStockAt))) return `${new Date(expectedStockAt).toLocaleDateString("tr-TR")} tarihinde stokta`;
+  if (status === "incoming") return "3–5 iş günü";
+  return "Termin için temsilcinize sorun";
+}
+
+function warehouseAvailability(product: CatalogProductRecord): string {
+  if (product.stockQuantityKnown === false) return "Depo teyidi gerekli";
+  const available = (product.warehouseStocks ?? []).filter((entry) => entry.quantity > 0).map((entry) => entry.warehouse.trim()).filter(Boolean);
+  if (available.length === 0) return product.stockStatus === "out_of_stock" ? "Depolarda stok yok" : "Ana Depo";
+  return available.slice(0, 3).join(" · ");
 }
 
 function importedKey(product: ImportedSupplierProduct): string {

@@ -1,4 +1,4 @@
-import { ArrowRight, BadgePercent, Bell, BellRing, Clock3, CreditCard, FileSpreadsheet, FileText, Gauge, Heart, PackageCheck, ShieldCheck, ShoppingCart, TrendingDown, TrendingUp, Truck, WalletCards } from "lucide-react";
+import { ArrowRight, BadgeCheck, BadgePercent, Bell, BellRing, Building2, Clock3, CreditCard, FileSpreadsheet, FileText, Gauge, Heart, PackageCheck, ShieldCheck, ShoppingCart, TrendingDown, TrendingUp, Truck, UsersRound, WalletCards } from "lucide-react";
 import { orderStatusLabel, quoteStatusLabel } from "../../lib/commercial-labels";
 import { StatusPill } from "@entas/ui";
 import { loadPricedCart } from "../../lib/cart-repository";
@@ -11,6 +11,7 @@ import { listFavorites } from "../../lib/favorites-repository";
 import { listStockSubscriptions } from "../../lib/stock-notify-repository";
 import { customerLogoutAction } from "../login/actions";
 import { changePasswordAction, toggleFavoriteAction, unsubscribeStockAction } from "./actions";
+import { addFavoritesToCartAction } from "../order-templates/actions";
 import { FREE_SHIPPING_THRESHOLD_TRY } from "../../lib/commercial-policy";
 
 export const dynamic = "force-dynamic";
@@ -79,6 +80,12 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
       </section>
 
       <section className="shell accountQuickActions" aria-label="Bayi hızlı aksiyonları">
+        {customer.sellerAccess?.enabled ? (
+          <a href="/satici">
+            <Gauge size={19} aria-hidden="true" />
+            <span>Satıcı Paneli</span>
+          </a>
+        ) : null}
         <a href="/quick-order">
           <ShoppingCart size={19} aria-hidden="true" />
           <span>Hızlı Sipariş</span>
@@ -102,6 +109,22 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
         <a href="/account/debt-payment">
           <CreditCard size={19} aria-hidden="true" />
           <span>Cari Ödeme</span>
+        </a>
+        <a href="/projects">
+          <Building2 size={19} aria-hidden="true" />
+          <span>Projeler</span>
+        </a>
+        <a href="/order-templates">
+          <FileSpreadsheet size={19} aria-hidden="true" />
+          <span>Şablonlar</span>
+        </a>
+        <a href="/account/team">
+          <UsersRound size={19} aria-hidden="true" />
+          <span>Firma Ekibi</span>
+        </a>
+        <a href="/account/approvals">
+          <BadgeCheck size={19} aria-hidden="true" />
+          <span>Onaylar</span>
         </a>
       </section>
 
@@ -353,6 +376,12 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
               <Heart size={20} aria-hidden="true" />
             </div>
             <div className="favoriteList">
+              {favorites.length > 0 ? (
+                <form action={addFavoritesToCartAction} className="favoritesBulkAction">
+                  <button className="btn btnSecondary btnSmall" type="submit">Tümünü Sepete Ekle</button>
+                  <a className="textLink" href="/order-templates">Sipariş şablonları</a>
+                </form>
+              ) : null}
               {favorites.map((favorite) => (
                 <div className="favoriteRow" key={favorite.productSlug || favorite.sku}>
                   <div className="favoriteInfo">

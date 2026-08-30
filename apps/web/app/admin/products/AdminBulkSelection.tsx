@@ -12,6 +12,7 @@ interface AdminBulkSelectionProps {
   filterTouchesSyncedSource: boolean;
   bulkSetStatusAction: (formData: FormData) => Promise<void>;
   bulkPriceOperationAction: (formData: FormData) => Promise<void>;
+  previewBulkPriceOperationAction: (formData: FormData) => Promise<void>;
   bulkDeleteProductsAction: (formData: FormData) => Promise<void>;
 }
 
@@ -54,6 +55,7 @@ export function AdminBulkSelection({
   filterTouchesSyncedSource,
   bulkSetStatusAction,
   bulkPriceOperationAction,
+  previewBulkPriceOperationAction,
   bulkDeleteProductsAction
 }: AdminBulkSelectionProps) {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -183,6 +185,14 @@ export function AdminBulkSelection({
               Tam sayıya yuvarla
             </label>
           )}
+          <button
+            className="btn btnGhost dark"
+            type="submit"
+            formAction={previewBulkPriceOperationAction}
+            disabled={disabled}
+          >
+            Önizle
+          </button>
           <button
             className={priceMode === "clear" ? "btn btnGhost dark" : "btn btnPrimary"}
             type="submit"

@@ -1,10 +1,10 @@
-import { Filter, Search, SlidersHorizontal } from "lucide-react";
+import { Filter, Search, SlidersHorizontal, Sparkles } from "lucide-react";
 import { EmptyState, ProductCard, StatusPill } from "@entas/ui";
 import { AddToCartControl } from "../../components/AddToCartControl";
 import { CatalogSearchTracker } from "../../components/AnalyticsTracker";
 import { BulkQuoteCampaign } from "../../components/BulkQuoteCampaign";
 import { FreeShippingBanner } from "../../components/FreeShippingBanner";
-import { getCatalogFacets, getCatalogNavigation, getPricedPublicProducts } from "../../lib/catalog-repository";
+import { getAlternativePricedProducts, getCatalogFacets, getCatalogNavigation, getCatalogTechnicalFacets, getPricedPublicProducts } from "../../lib/catalog-repository";
 import { getCurrentCustomer } from "../../lib/customer-auth";
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -21,16 +21,23 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
   const view = getParam(params, "view");
   const brand = getParam(params, "brand");
   const sourceKey = getParam(params, "sourceKey");
+  const size = getParam(params, "size");
+  const diameter = getParam(params, "diameter");
+  const connection = getParam(params, "connection");
+  const material = getParam(params, "material");
+  const usage = getParam(params, "usage");
   const page = Math.max(1, Number(getParam(params, "page") || "1"));
   const limit = CATALOG_PAGE_SIZE;
   const offset = (page - 1) * limit;
 
   const customer = await getCurrentCustomer();
-  const [facets, navigation, products] = await Promise.all([
+  const [facets, technicalFacets, navigation, products] = await Promise.all([
     getCatalogFacets(true),
+    getCatalogTechnicalFacets(true),
     getCatalogNavigation(),
-    getPricedPublicProducts({ q, category, categoryGroup: group, view, brand, sourceKey, limit, offset }, customer)
+    getPricedPublicProducts({ q, category, categoryGroup: group, view, brand, sourceKey, size, diameter, connection, material, usage, limit, offset }, customer)
   ]);
+  const alternatives = products.items.length === 0 && q ? await getAlternativePricedProducts(q, customer, 8) : null;
   const safePage = Math.floor(products.offset / products.limit) + 1;
   const pageCount = Math.max(1, Math.ceil(products.total / products.limit));
   const visibleStart = products.total > 0 ? products.offset + 1 : 0;
@@ -91,6 +98,34 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
                 ))}
               </select>
             </label>
+            <details className="advancedFilters" open={Boolean(size || diameter || connection || material || usage)}>
+              <summary>Teknik özellik filtreleri</summary>
+              <label>
+                Ölçü / ebat
+                <input name="size" defaultValue={size} list="catalog-size-options" placeholder="Örn. 25 mm, 1/2" />
+              </label>
+              <label>
+                Çap
+                <input name="diameter" defaultValue={diameter} list="catalog-diameter-options" placeholder="Örn. DN50" />
+              </label>
+              <label>
+                Bağlantı tipi
+                <input name="connection" defaultValue={connection} list="catalog-connection-options" placeholder="Örn. iç diş" />
+              </label>
+              <label>
+                Malzeme
+                <input name="material" defaultValue={material} list="catalog-material-options" placeholder="Örn. pirinç, PPRC" />
+              </label>
+              <label>
+                Kullanım alanı
+                <input name="usage" defaultValue={usage} list="catalog-usage-options" placeholder="Örn. bahçe, sıcak su" />
+              </label>
+            </details>
+            <FacetOptions id="catalog-size-options" values={technicalFacets.sizes} />
+            <FacetOptions id="catalog-diameter-options" values={technicalFacets.diameters} />
+            <FacetOptions id="catalog-connection-options" values={technicalFacets.connections} />
+            <FacetOptions id="catalog-material-options" values={technicalFacets.materials} />
+            <FacetOptions id="catalog-usage-options" values={technicalFacets.usages} />
             <button className="btn btnPrimary" type="submit">
               <Search size={17} aria-hidden="true" />
               Filtrele
@@ -128,9 +163,11 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
             </a>
           </div>
           <div className="activeFilters">
-            <StatusPill tone="success">Tüm ürünler: Stokta var</StatusPill>
+            <StatusPill tone="success">Gerçek stok ve termin görünümü</StatusPill>
             <StatusPill tone={customer ? "success" : "warning"}>{customer ? "Fiyat görünümü: ortak, KDV dahil" : "Fiyat görünümü: bayi girişi gerekli"}</StatusPill>
             {q ? <StatusPill tone="neutral">Arama: {q}</StatusPill> : null}
+            {products.searchMode === "fuzzy" ? <StatusPill tone="info">Yazım hatası düzeltilerek eşleştirildi</StatusPill> : null}
+            {products.searchMode === "synonym" ? <StatusPill tone="info">Teknik eş anlamlılarla eşleştirildi</StatusPill> : null}
             {category ? <StatusPill tone="neutral">Kategori: {category}</StatusPill> : null}
             {group ? <StatusPill tone="neutral">Grup: {products.appliedCategoryLabel ?? group}</StatusPill> : null}
           </div>
@@ -168,16 +205,41 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
                 />
               ))}
             </div>
+          ) : alternatives && alternatives.items.length > 0 ? (
+            <section className="searchAlternatives">
+              <div className="searchAlternativesHeader">
+                <Sparkles size={20} aria-hidden="true" />
+                <div>
+                  <h2>Yakın alternatifler</h2>
+                  <p>Aradığınız ifade birebir bulunamadı. Teknik olarak yakın ürünleri ve ilgili kategorileri gösteriyoruz.</p>
+                </div>
+              </div>
+              <div className="productGrid dense catalogProductGrid">
+                {alternatives.items.map((product) => (
+                  <ProductCard
+                    key={product.slug}
+                    href={`/products/${product.slug}`}
+                    brand={product.brand}
+                    name={product.name}
+                    sku={product.sku}
+                    category={product.category}
+                    image={product.image}
+                    stockTone={product.stockTone}
+                    stockLabel={product.stockLabel}
+                    badges={[...product.badges, product.deliveryEstimate]}
+                    isApprovedDealer={Boolean(customer)}
+                    price={product.price}
+                    listPrice={product.listPrice}
+                    discountRate={product.discountRate}
+                    priceLabel={product.priceLabel}
+                    priceUnavailableMessage={product.priceUnavailableMessage}
+                    cartAction={<AddToCartControl slug={product.slug} sku={product.sku} name={product.name} unit={product.unitType} minOrder={product.minOrder} isAuthenticated={Boolean(customer)} />}
+                  />
+                ))}
+              </div>
+            </section>
           ) : (
-            <EmptyState
-              title="Bu filtrelerle ürün bulunamadı"
-              body="Aramanızı sadeleştirin veya ana katalogdaki tüm aktif ürünlere dönün."
-              action={
-                <a className="btn btnPrimary" href="/catalog">
-                  Ana Katalog
-                </a>
-              }
-            />
+            <EmptyState title="Bu filtrelerle ürün bulunamadı" body="Aramanızı sadeleştirin veya ana katalogdaki tüm aktif ürünlere dönün." action={<a className="btn btnPrimary" href="/catalog">Ana Katalog</a>} />
           )}
           <nav className="pagination" aria-label="Katalog sayfalama">
             <a className={safePage <= 1 ? "disabled" : ""} href={safePage <= 1 ? "#" : pageHref(params, safePage - 1)}>
@@ -194,6 +256,10 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
       </section>
     </main>
   );
+}
+
+function FacetOptions({ id, values }: { id: string; values: string[] }) {
+  return <datalist id={id}>{values.map((value) => <option value={value} key={value} />)}</datalist>;
 }
 
 function getParam(params: SearchParams, key: string): string {

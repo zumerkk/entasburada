@@ -10,7 +10,7 @@ import { getClientAddress, safeInternalRedirect } from "../../lib/security";
 export async function customerLoginAction(formData: FormData): Promise<void> {
   const email = getString(formData, "email");
   const password = getString(formData, "password");
-  const next = getString(formData, "next") || "/account";
+  const requestedNext = getString(formData, "next");
   const requestHeaders = await headers();
   const clientAddress = getClientAddress(requestHeaders);
   const ipLimit = await consumeRateLimit("customer-login-ip", clientAddress, { limit: 12, windowMs: 15 * 60 * 1000 });
@@ -38,7 +38,8 @@ export async function customerLoginAction(formData: FormData): Promise<void> {
     maxAge: CUSTOMER_SESSION_MAX_AGE_SECONDS
   });
 
-  redirect(customer.mustChangePassword ? "/account?passwordChangeRequired=1#security" : safeInternalRedirect(next, "/account"));
+  const defaultWorkspace = customer.sellerAccess?.enabled ? "/satici" : "/account";
+  redirect(customer.mustChangePassword ? "/account?passwordChangeRequired=1#security" : safeInternalRedirect(requestedNext, defaultWorkspace));
 }
 
 export async function customerLogoutAction(): Promise<void> {

@@ -26,7 +26,7 @@ export default async function QuickOrderPage({ searchParams }: { searchParams: P
         <div>
           <span className="eyebrow dark">Hızlı sipariş</span>
           <h1>SKU, barkod veya ürün adıyla toplu giriş</h1>
-          <p>Satırları doldurun veya CSV/TSV yükleyin; ürünler bayi sepetinize fiyatlı olarak eklensin.</p>
+          <p>Satırları doldurun veya Excel/CSV/TSV yükleyin; ürünler bayi sepetinize fiyatlı olarak eklensin.</p>
         </div>
       </section>
 
@@ -56,8 +56,8 @@ export default async function QuickOrderPage({ searchParams }: { searchParams: P
           <fieldset>
             <legend>Dosya ile yükle</legend>
             <label>
-              CSV/TSV ürün listesi
-              <input type="file" name="quickOrderFile" accept=".csv,.tsv,text/csv,text/tab-separated-values" />
+              Excel/CSV/TSV ürün listesi
+              <input type="file" name="quickOrderFile" accept=".xlsx,.csv,.tsv,text/csv,text/tab-separated-values,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />
             </label>
             <div className="fileUploadHint spanTwo">
               <FileSpreadsheet size={18} aria-hidden="true" />

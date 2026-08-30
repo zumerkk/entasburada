@@ -6,12 +6,14 @@ import path from "node:path";
 import type { CatalogProductRecord } from "@entas/catalog";
 import { loadCatalogStore } from "./catalog-repository";
 import { createNotification } from "./notification-repository";
+import { canApproveCompanyOrders, getCompanyMembers, type CustomerAccount } from "./customer-auth";
 
 export type QuoteStatus = "DRAFT" | "SUBMITTED" | "ASSIGNED" | "PRICED" | "APPROVED" | "REJECTED" | "EXPIRED" | "CONVERTED";
 export type OrderStatus =
   | "DRAFT"
   | "PAYMENT_PENDING"
   | "APPROVAL_PENDING"
+  | "DEALER_APPROVAL_PENDING"
   | "FINANCE_APPROVAL_PENDING"
   | "STOCK_WAITING"
   | "PREPARING"
@@ -51,6 +53,24 @@ export interface QuoteItem {
   currency: string;
   stockStatus?: string;
   catalogListPrice?: string;
+  customerDecision?: "PENDING" | "ACCEPTED" | "REJECTED";
+}
+
+export interface QuoteRevision {
+  number: number;
+  createdAt: string;
+  actorName: string;
+  validUntil: string;
+  totalAmount: string;
+  items: Array<{ itemId: string; sku: string; quantity: number; quotedUnitPrice: string; lineTotal: string }>;
+}
+
+export interface QuoteMessage {
+  id: string;
+  createdAt: string;
+  actor: CommercialActor;
+  author: string;
+  body: string;
 }
 
 export interface OrderItem {
@@ -91,6 +111,15 @@ export interface AdminQuote {
   paymentPreference: string;
   customerNote: string;
   internalNote: string;
+  revisionNumber: number;
+  revisions: QuoteRevision[];
+  messages: QuoteMessage[];
+  allowPartialShipment: boolean;
+  fulfillmentType?: "STANDARD" | "DROPSHIP";
+  recipientName?: string;
+  recipientPhone?: string;
+  sellerOrderReference?: string;
+  blindShipping?: boolean;
   convertedToOrder: boolean;
   convertedOrderId?: string;
   items: QuoteItem[];
@@ -123,6 +152,19 @@ export interface AdminOrder {
   warehouse: string;
   customerNote: string;
   internalNote: string;
+  allowPartialShipment: boolean;
+  fulfillmentType?: "STANDARD" | "DROPSHIP";
+  recipientName?: string;
+  recipientPhone?: string;
+  sellerOrderReference?: string;
+  blindShipping?: boolean;
+  partialQuoteConversion: boolean;
+  requestedByCustomerId?: string;
+  requestedByName?: string;
+  companyApprovalStatus: "NOT_REQUIRED" | "PENDING" | "APPROVED" | "REJECTED";
+  companyApprovalNote?: string;
+  companyApprovedBy?: string;
+  companyApprovedAt?: string;
   items: OrderItem[];
   history: CommercialHistoryEntry[];
 }
@@ -147,6 +189,12 @@ export interface CreateQuoteInput {
   deliveryAddress?: string;
   paymentPreference?: string;
   notes?: string;
+  allowPartialShipment?: boolean;
+  fulfillmentType?: "STANDARD" | "DROPSHIP";
+  recipientName?: string;
+  recipientPhone?: string;
+  sellerOrderReference?: string;
+  blindShipping?: boolean;
   items: CreateQuoteItemInput[];
 }
 
@@ -155,7 +203,15 @@ export interface PriceQuoteInput {
   validUntil?: string | undefined;
   salesRepresentative?: string | undefined;
   internalNote?: string | undefined;
+  publicNote?: string | undefined;
   prices: Array<{ itemId: string; quotedUnitPrice: string }>;
+}
+
+export interface QuoteCustomerResponseInput {
+  quoteId: string;
+  acceptedItemIds: string[];
+  note?: string;
+  requestRevision?: boolean;
 }
 
 export interface OrderOperationInput {
@@ -215,12 +271,32 @@ export function priceQuote(input: PriceQuoteInput, actorName: string): Promise<A
   return enqueueCommercialMutation(() => priceQuoteUnlocked(input, actorName));
 }
 
-export function convertQuoteToOrder(id: string, actorName: string, actor: CommercialActor = "admin"): Promise<AdminOrder> {
-  return enqueueCommercialMutation(() => convertQuoteToOrderUnlocked(id, actorName, actor));
+export function convertQuoteToOrder(id: string, actorName: string, actor: CommercialActor = "admin", selectedItemIds?: string[]): Promise<AdminOrder> {
+  return enqueueCommercialMutation(() => convertQuoteToOrderUnlocked(id, actorName, actor, selectedItemIds));
+}
+
+export function recordQuoteCustomerResponse(input: QuoteCustomerResponseInput, actorName: string): Promise<AdminQuote> {
+  return enqueueCommercialMutation(() => recordQuoteCustomerResponseUnlocked(input, actorName));
 }
 
 export function updateOrderOperation(input: OrderOperationInput, actorName: string): Promise<AdminOrder> {
   return enqueueCommercialMutation(() => updateOrderOperationUnlocked(input, actorName));
+}
+
+export function applyOrderCompanyApprovalPolicy(orderId: string, requester: CustomerAccount): Promise<AdminOrder> {
+  return enqueueCommercialMutation(() => applyOrderCompanyApprovalPolicyUnlocked(orderId, requester));
+}
+
+export function respondToCompanyOrderApproval(orderId: string, approver: CustomerAccount, approved: boolean, note = ""): Promise<AdminOrder> {
+  return enqueueCommercialMutation(() => respondToCompanyOrderApprovalUnlocked(orderId, approver, approved, note));
+}
+
+export async function listCompanyApprovalOrders(customer: CustomerAccount): Promise<AdminOrder[]> {
+  const [orders, members] = await Promise.all([loadOrders(), getCompanyMembers(customer)]);
+  const emails = new Set(members.map((member) => normalize(member.email)));
+  return orders
+    .filter((order) => emails.has(normalize(order.email)) && order.companyApprovalStatus === "PENDING")
+    .sort((a, b) => b.orderedAt.localeCompare(a.orderedAt));
 }
 const DEFAULT_CURRENCY = "TRY";
 const DEFAULT_REPRESENTATIVE = "Atanmadi";
@@ -254,6 +330,15 @@ async function createQuoteUnlocked(input: CreateQuoteInput): Promise<AdminQuote>
     paymentPreference: normalized.paymentPreference,
     customerNote: normalized.notes,
     internalNote: "",
+    revisionNumber: 0,
+    revisions: [],
+    messages: normalized.notes ? [{ id: `quote-message-${randomUUID()}`, createdAt: now, actor: "customer", author: normalized.authorizedPerson, body: normalized.notes }] : [],
+    allowPartialShipment: Boolean(input.allowPartialShipment),
+    fulfillmentType: normalized.fulfillmentType,
+    recipientName: normalized.recipientName,
+    recipientPhone: normalized.recipientPhone,
+    sellerOrderReference: normalized.sellerOrderReference,
+    blindShipping: normalized.blindShipping,
     convertedToOrder: false,
     items,
     history: [historyEntry("customer", normalized.authorizedPerson, "Teklif talebi olusturuldu.", undefined, "SUBMITTED", now)]
@@ -388,6 +473,25 @@ async function priceQuoteUnlocked(input: PriceQuoteInput, actorName: string): Pr
   });
 
   const total = items.reduce((sum, item) => sum + parseMoney(item.lineTotal ?? "0"), 0);
+  const hadPreviousPricing = quote.items.some((item) => parseMoney(item.quotedUnitPrice ?? "0") > 0);
+  const previousRevision: QuoteRevision | null = hadPreviousPricing
+    ? {
+        number: Math.max(1, quote.revisionNumber || 1),
+        createdAt: quote.lastActionAt || quote.requestedAt,
+        actorName: quote.salesRepresentative || actorName,
+        validUntil: quote.validUntil,
+        totalAmount: quote.totalAmount,
+        items: quote.items.map((item) => ({
+          itemId: item.id,
+          sku: item.sku,
+          quantity: item.quantity,
+          quotedUnitPrice: item.quotedUnitPrice ?? "0.00",
+          lineTotal: item.lineTotal ?? "0.00"
+        }))
+      }
+    : null;
+  const revisionNumber = hadPreviousPricing ? Math.max(1, quote.revisionNumber || 1) + 1 : 1;
+  const publicNote = clean(input.publicNote);
   const nextQuote: AdminQuote = {
     ...quote,
     items,
@@ -396,8 +500,13 @@ async function priceQuoteUnlocked(input: PriceQuoteInput, actorName: string): Pr
     validUntil: input.validUntil ? new Date(`${input.validUntil}T23:59:59.999Z`).toISOString() : quote.validUntil,
     salesRepresentative: clean(input.salesRepresentative) || quote.salesRepresentative || actorName,
     internalNote: clean(input.internalNote) || quote.internalNote,
+    revisionNumber,
+    revisions: previousRevision ? [previousRevision, ...quote.revisions] : quote.revisions,
+    messages: publicNote
+      ? [{ id: `quote-message-${randomUUID()}`, createdAt: now, actor: "admin", author: clean(input.salesRepresentative) || actorName, body: publicNote }, ...quote.messages]
+      : quote.messages,
     lastActionAt: now,
-    history: [historyEntry("admin", actorName, "Teklif fiyatlandirildi.", quote.status, "PRICED", now), ...quote.history]
+    history: [historyEntry("admin", actorName, `Teklif fiyatlandırıldı (Revizyon ${revisionNumber}).`, quote.status, "PRICED", now), ...quote.history]
   };
 
   quotes[index] = nextQuote;
@@ -413,7 +522,54 @@ async function priceQuoteUnlocked(input: PriceQuoteInput, actorName: string): Pr
   return nextQuote;
 }
 
-async function convertQuoteToOrderUnlocked(id: string, actorName: string, actor: CommercialActor = "admin"): Promise<AdminOrder> {
+async function recordQuoteCustomerResponseUnlocked(input: QuoteCustomerResponseInput, actorName: string): Promise<AdminQuote> {
+  const quotes = await loadQuotes();
+  const index = quotes.findIndex((quote) => quote.id === input.quoteId);
+  if (index < 0) throw new Error("Teklif bulunamadı.");
+  const quote = quotes[index]!;
+  if (!["PRICED", "APPROVED", "ASSIGNED"].includes(quote.status)) throw new Error("Bu teklif yanıtlanabilir durumda değil.");
+  const accepted = new Set(input.acceptedItemIds);
+  const now = new Date().toISOString();
+  const note = clean(input.note).slice(0, 2_000);
+  const requestRevision = Boolean(input.requestRevision);
+  const nextStatus: QuoteStatus = requestRevision ? "ASSIGNED" : "APPROVED";
+  const nextQuote: AdminQuote = {
+    ...quote,
+    status: nextStatus,
+    items: quote.items.map((item) => ({
+      ...item,
+      customerDecision: accepted.has(item.id) ? "ACCEPTED" : "REJECTED"
+    })),
+    messages: note
+      ? [{ id: `quote-message-${randomUUID()}`, createdAt: now, actor: "customer", author: actorName, body: note }, ...quote.messages]
+      : quote.messages,
+    lastActionAt: now,
+    history: [
+      historyEntry(
+        "customer",
+        actorName,
+        requestRevision ? `Müşteri Revizyon ${quote.revisionNumber || 1} için değişiklik istedi${note ? `: ${note}` : "."}` : `Müşteri ${accepted.size} satırı onayladı.`,
+        quote.status,
+        nextStatus,
+        now
+      ),
+      ...quote.history
+    ]
+  };
+  quotes[index] = nextQuote;
+  await saveQuotes(quotes);
+  await createNotification({
+    recipientType: "admin",
+    recipientKey: "admin",
+    level: requestRevision ? "warning" : "success",
+    title: requestRevision ? "Teklif revizyon talebi" : "Teklif satırları onaylandı",
+    body: `${nextQuote.companyName}, ${nextQuote.quoteNo} için yanıt verdi.`,
+    href: `/admin/quotes/${nextQuote.id}`
+  });
+  return nextQuote;
+}
+
+async function convertQuoteToOrderUnlocked(id: string, actorName: string, actor: CommercialActor = "admin", selectedItemIds?: string[]): Promise<AdminOrder> {
   const [quotes, orders] = await Promise.all([loadQuotes(), loadOrders()]);
   const quoteIndex = quotes.findIndex((quote) => quote.id === id);
   if (quoteIndex === -1) {
@@ -431,9 +587,12 @@ async function convertQuoteToOrderUnlocked(id: string, actorName: string, actor:
     }
   }
 
+  const selectedSet = selectedItemIds ? new Set(selectedItemIds) : null;
+  const selectedQuoteItems = selectedSet ? quote.items.filter((item) => selectedSet.has(item.id)) : quote.items;
+  if (selectedQuoteItems.length === 0) throw new Error("Siparişe çevirmek için en az bir teklif satırı seçin.");
   const now = new Date().toISOString();
   const orderNo = nextNumber("SIP", orders.length + 1, now);
-  const items = quote.items.map<OrderItem>((item) => {
+  const items = selectedQuoteItems.map<OrderItem>((item) => {
     const unitPrice = parseMoney(item.quotedUnitPrice ?? item.targetPrice ?? "0");
     return stripUndefined({
       id: `order-item-${randomUUID()}`,
@@ -471,13 +630,21 @@ async function convertQuoteToOrderUnlocked(id: string, actorName: string, actor:
     currency: quote.currency,
     salesRepresentative: quote.salesRepresentative || actorName,
     deliveryAddress: quote.deliveryAddress || quote.deliveryCity || "Adres teyidi bekliyor",
-    source: actor === "customer" ? "Musteri teklif onayi" : "Admin teklif donusumu",
+    source: quote.fulfillmentType === "DROPSHIP" ? "Dropshipping siparişi" : actor === "customer" ? "Musteri teklif onayi" : "Admin teklif donusumu",
     warehouse: "Ana Depo",
     customerNote: quote.customerNote,
     internalNote: "",
+    allowPartialShipment: quote.allowPartialShipment,
+    fulfillmentType: quote.fulfillmentType ?? "STANDARD",
+    ...(quote.recipientName ? { recipientName: quote.recipientName } : {}),
+    ...(quote.recipientPhone ? { recipientPhone: quote.recipientPhone } : {}),
+    ...(quote.sellerOrderReference ? { sellerOrderReference: quote.sellerOrderReference } : {}),
+    blindShipping: Boolean(quote.blindShipping),
+    partialQuoteConversion: selectedQuoteItems.length < quote.items.length,
+    companyApprovalStatus: "NOT_REQUIRED",
     items,
     history: [
-      historyEntry(actor, actorName, `${quote.quoteNo} teklifinden siparis olusturuldu.`, undefined, "FINANCE_APPROVAL_PENDING", now)
+      historyEntry(actor, actorName, `${quote.quoteNo} teklifinden ${selectedQuoteItems.length}/${quote.items.length} satırla sipariş oluşturuldu.`, undefined, "FINANCE_APPROVAL_PENDING", now)
     ]
   };
 
@@ -555,6 +722,9 @@ export async function searchAdminOrders(filters: AdminListFilters = {}): Promise
       row.salesRepresentative,
       row.status,
       row.source,
+      row.sellerOrderReference ?? "",
+      row.recipientName ?? "",
+      row.recipientPhone ?? "",
       ...row.items.flatMap((item) => [item.sku, item.productName, item.brand ?? "", item.category ?? ""])
     ].some((value) => normalize(value).includes(term));
   });
@@ -575,6 +745,14 @@ export async function getOrderByTrackingCode(code: string): Promise<AdminOrder |
 
   const rows = await loadOrders();
   return rows.find((row) => normalize(row.trackingCode) === normalized) ?? null;
+}
+
+export async function getOrderBySellerReference(email: string, sellerOrderReference: string): Promise<AdminOrder | null> {
+  const normalizedEmail = normalize(email);
+  const normalizedReference = normalize(sellerOrderReference);
+  if (!normalizedEmail || !normalizedReference) return null;
+  const rows = await loadOrders();
+  return rows.find((row) => normalize(row.email) === normalizedEmail && normalize(row.sellerOrderReference ?? "") === normalizedReference) ?? null;
 }
 
 async function updateOrderOperationUnlocked(input: OrderOperationInput, actorName: string): Promise<AdminOrder> {
@@ -617,6 +795,86 @@ async function updateOrderOperationUnlocked(input: OrderOperationInput, actorNam
   return nextOrder;
 }
 
+async function applyOrderCompanyApprovalPolicyUnlocked(orderId: string, requester: CustomerAccount): Promise<AdminOrder> {
+  const orders = await loadOrders();
+  const index = orders.findIndex((order) => order.id === orderId);
+  if (index < 0) throw new Error("Sipariş bulunamadı.");
+  const order = orders[index]!;
+  const approvalLimit = parseMoney(requester.approvalLimit ?? "0");
+  const exceedsLimit = approvalLimit > 0 && parseMoney(order.totalAmount) > approvalLimit;
+  const roleRequiresApproval = ["PURCHASE_STAFF", "VIEWER", "WAREHOUSE_RECEIVER"].includes(requester.companyRole ?? "COMPANY_OWNER");
+  const required = Boolean(requester.orderApprovalRequired || exceedsLimit || roleRequiresApproval);
+  const now = new Date().toISOString();
+  const reason = exceedsLimit
+    ? `Sipariş ${requester.approvalLimit} TRY kullanıcı onay limitini aşıyor.`
+    : roleRequiresApproval
+      ? "Kullanıcı rolü firma içi onay gerektiriyor."
+      : requester.orderApprovalRequired
+        ? "Firma politikası gereği yönetici onayı gerekiyor."
+        : "Firma içi onay gerekmiyor.";
+  const nextOrder: AdminOrder = {
+    ...order,
+    requestedByCustomerId: requester.id,
+    requestedByName: requester.authorizedPerson,
+    companyApprovalStatus: required ? "PENDING" : "NOT_REQUIRED",
+    status: required ? "DEALER_APPROVAL_PENDING" : order.status,
+    history: [historyEntry("customer", requester.authorizedPerson, reason, order.status, required ? "DEALER_APPROVAL_PENDING" : order.status, now), ...order.history]
+  };
+  orders[index] = nextOrder;
+  await saveOrders(orders);
+  if (required) {
+    const members = await getCompanyMembers(requester);
+    await Promise.all(
+      members.filter(canApproveCompanyOrders).map((member) => createNotification({
+        recipientType: "customer",
+        recipientKey: member.email,
+        level: "warning",
+        title: "Firma sipariş onayı bekliyor",
+        body: `${requester.authorizedPerson}, ${order.orderNo} siparişini onayınıza gönderdi.`,
+        href: "/account/approvals"
+      }))
+    );
+  }
+  return nextOrder;
+}
+
+async function respondToCompanyOrderApprovalUnlocked(orderId: string, approver: CustomerAccount, approved: boolean, note: string): Promise<AdminOrder> {
+  if (!canApproveCompanyOrders(approver)) throw new Error("Sipariş onaylama yetkiniz yok.");
+  const [orders, members] = await Promise.all([loadOrders(), getCompanyMembers(approver)]);
+  const memberIds = new Set(members.map((member) => member.id));
+  const index = orders.findIndex((order) => order.id === orderId && (!order.requestedByCustomerId || memberIds.has(order.requestedByCustomerId)));
+  if (index < 0) throw new Error("Onaylanacak firma siparişi bulunamadı.");
+  const order = orders[index]!;
+  if (order.companyApprovalStatus !== "PENDING") throw new Error("Bu sipariş daha önce yanıtlanmış.");
+  const now = new Date().toISOString();
+  const nextStatus: OrderStatus = approved ? "FINANCE_APPROVAL_PENDING" : "CANCELLED";
+  const cleanNote = clean(note).slice(0, 1_000);
+  const nextOrder: AdminOrder = {
+    ...order,
+    status: nextStatus,
+    companyApprovalStatus: approved ? "APPROVED" : "REJECTED",
+    companyApprovalNote: cleanNote,
+    companyApprovedBy: approver.authorizedPerson,
+    companyApprovedAt: now,
+    history: [
+      historyEntry("customer", approver.authorizedPerson, approved ? `Firma siparişi onaylandı${cleanNote ? `: ${cleanNote}` : "."}` : `Firma siparişi reddedildi${cleanNote ? `: ${cleanNote}` : "."}`, order.status, nextStatus, now),
+      ...order.history
+    ]
+  };
+  orders[index] = nextOrder;
+  await saveOrders(orders);
+  const requester = members.find((member) => member.id === order.requestedByCustomerId);
+  if (requester) await createNotification({
+    recipientType: "customer",
+    recipientKey: requester.email,
+    level: approved ? "success" : "danger",
+    title: approved ? "Siparişiniz firma tarafından onaylandı" : "Siparişiniz firma tarafından reddedildi",
+    body: `${order.orderNo}, ${approver.authorizedPerson} tarafından yanıtlandı.`,
+    href: `/orders/${order.trackingCode}`
+  });
+  return nextOrder;
+}
+
 export async function ensureCommercialDataFiles(): Promise<void> {
   await mkdir(dataDir, { recursive: true });
 
@@ -639,6 +897,11 @@ export async function loadCommercialStats() {
     openOrders: orders.filter((order) => !["DELIVERED", "COMPLETED", "CANCELLED"].includes(order.status)).length,
     orderRevenue: money(orders.reduce((sum, order) => sum + parseMoney(order.totalAmount), 0))
   };
+}
+
+export async function loadCommercialRecordsForAnalytics(): Promise<{ quotes: AdminQuote[]; orders: AdminOrder[] }> {
+  const [quotes, orders] = await Promise.all([loadQuotes(), loadOrders()]);
+  return { quotes, orders };
 }
 
 async function loadQuotes(): Promise<AdminQuote[]> {
@@ -682,6 +945,12 @@ function normalizeCreateQuoteInput(input: CreateQuoteInput): Required<CreateQuot
     deliveryAddress: boundedText(input.deliveryAddress, 600),
     paymentPreference: boundedText(input.paymentPreference, 80) || "Havale/EFT",
     notes: boundedText(input.notes, 2_000),
+    allowPartialShipment: Boolean(input.allowPartialShipment),
+    fulfillmentType: input.fulfillmentType === "DROPSHIP" ? "DROPSHIP" : "STANDARD",
+    recipientName: boundedText(input.recipientName, 140),
+    recipientPhone: boundedText(input.recipientPhone, 32),
+    sellerOrderReference: boundedText(input.sellerOrderReference, 100),
+    blindShipping: Boolean(input.blindShipping),
     items: Array.isArray(input.items) ? input.items.slice(0, 200) : []
   };
 
@@ -703,6 +972,15 @@ function normalizeCreateQuoteInput(input: CreateQuoteInput): Required<CreateQuot
 
   if (!normalized.items.some((item) => clean(item.sku) || clean(item.productName))) {
     throw new Error("En az bir urun satiri girilmelidir.");
+  }
+
+  if (normalized.fulfillmentType === "DROPSHIP") {
+    if (normalized.recipientName.length < 2 || normalized.recipientPhone.length < 10) {
+      throw new Error("Dropshipping siparişi için alıcı adı ve telefonu zorunludur.");
+    }
+    if (normalized.deliveryCity.length < 2 || normalized.deliveryAddress.length < 10) {
+      throw new Error("Dropshipping siparişi için geçerli teslimat ili ve adresi zorunludur.");
+    }
   }
 
   return normalized;
@@ -767,7 +1045,7 @@ function findCatalogProduct(products: CatalogProductRecord[], sku: string, produ
 }
 
 function normalizeStoredQuote(row: AdminQuote): AdminQuote {
-  return {
+  const normalized = {
     ...row,
     trackingCode: row.trackingCode ?? row.quoteNo,
     authorizedPerson: row.authorizedPerson ?? row.dealerName ?? "",
@@ -780,10 +1058,21 @@ function normalizeStoredQuote(row: AdminQuote): AdminQuote {
     paymentPreference: row.paymentPreference ?? "Havale/EFT",
     customerNote: row.customerNote ?? "",
     internalNote: row.internalNote ?? "",
+    revisionNumber: row.revisionNumber ?? (row.items?.some((item) => item.quotedUnitPrice) ? 1 : 0),
+    revisions: row.revisions ?? [],
+    messages: row.messages ?? [],
+    allowPartialShipment: Boolean(row.allowPartialShipment),
+    fulfillmentType: row.fulfillmentType ?? "STANDARD",
+    recipientName: row.recipientName ?? "",
+    recipientPhone: row.recipientPhone ?? "",
+    sellerOrderReference: row.sellerOrderReference ?? "",
+    blindShipping: Boolean(row.blindShipping),
     convertedToOrder: Boolean(row.convertedToOrder),
     items: row.items ?? [],
     history: row.history ?? []
   };
+  if (normalized.status === "PRICED" && Date.parse(normalized.validUntil) < Date.now()) return { ...normalized, status: "EXPIRED" };
+  return normalized;
 }
 
 function normalizeStoredOrder(row: AdminOrder): AdminOrder {
@@ -795,6 +1084,14 @@ function normalizeStoredOrder(row: AdminOrder): AdminOrder {
     quoteNo: row.quoteNo ?? "",
     customerNote: row.customerNote ?? "",
     internalNote: row.internalNote ?? "",
+    allowPartialShipment: Boolean(row.allowPartialShipment),
+    fulfillmentType: row.fulfillmentType ?? "STANDARD",
+    recipientName: row.recipientName ?? "",
+    recipientPhone: row.recipientPhone ?? "",
+    sellerOrderReference: row.sellerOrderReference ?? "",
+    blindShipping: Boolean(row.blindShipping),
+    partialQuoteConversion: Boolean(row.partialQuoteConversion),
+    companyApprovalStatus: row.companyApprovalStatus ?? "NOT_REQUIRED",
     items: row.items ?? [],
     history: row.history ?? []
   };

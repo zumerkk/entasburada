@@ -1,7 +1,7 @@
 import "server-only";
 import { clearCart, loadPricedCart, type CartSummary } from "./cart-repository";
 import type { CustomerAccount } from "./customer-auth";
-import { convertQuoteToOrder, createQuote, priceQuote, updateQuoteStatus, type AdminOrder, type AdminQuote } from "./commercial-repository";
+import { applyOrderCompanyApprovalPolicy, convertQuoteToOrder, createQuote, priceQuote, updateQuoteStatus, type AdminOrder, type AdminQuote } from "./commercial-repository";
 
 export async function createQuoteFromCustomerCart(customer: CustomerAccount): Promise<AdminQuote> {
   const cart = await loadPricedCart(customer);
@@ -17,7 +17,8 @@ export async function createOrderFromCustomerCart(customer: CustomerAccount): Pr
   }
   const quote = await createQuoteFromCart(customer, cart);
   await updateQuoteStatus(quote.id, "APPROVED", customer.authorizedPerson, "Bayi sepetten siparisi onayladi.");
-  const order = await convertQuoteToOrder(quote.id, customer.authorizedPerson, "customer");
+  const createdOrder = await convertQuoteToOrder(quote.id, customer.authorizedPerson, "customer");
+  const order = await applyOrderCompanyApprovalPolicy(createdOrder.id, customer);
   await clearCart(customer);
   return order;
 }

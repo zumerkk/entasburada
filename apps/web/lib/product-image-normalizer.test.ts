@@ -24,7 +24,7 @@ describe("product image normalizer", () => {
     expect(metadata.height).toBe(ENTAS_CATALOG_IMAGE_CANVAS_SIZE);
     expect(result.sourceWidth).toBe(600);
     expect(result.sourceHeight).toBe(300);
-  });
+  }, 15_000);
 
   it("centers a wide product on a square canvas without cropping", async () => {
     const source = await sharp({

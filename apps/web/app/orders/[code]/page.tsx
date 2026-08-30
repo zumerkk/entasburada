@@ -94,6 +94,11 @@ export default async function OrderTrackingPage({
               <strong>{order.financeApproval}</strong>
             </div>
             <div>
+              <span>Firma onayı</span>
+              <strong>{companyApprovalLabel(order.companyApprovalStatus)}</strong>
+              {order.companyApprovedBy ? <small>{order.companyApprovedBy}</small> : null}
+            </div>
+            <div>
               <span>Stok</span>
               <strong>{order.stockStatus}</strong>
             </div>
@@ -130,11 +135,29 @@ export default async function OrderTrackingPage({
               <span>Teslimat adresi</span>
               <strong>{order.deliveryAddress}</strong>
             </div>
+            {order.fulfillmentType === "DROPSHIP" ? (
+              <>
+                <div>
+                  <span>Alıcı</span>
+                  <strong>{order.recipientName}</strong>
+                  <small>{order.recipientPhone}</small>
+                </div>
+                <div>
+                  <span>Mağaza sipariş no</span>
+                  <strong>{order.sellerOrderReference}</strong>
+                </div>
+                <div>
+                  <span>Gönderim</span>
+                  <strong>{order.blindShipping ? "Kör kargo" : "Standart dropshipping"}</strong>
+                </div>
+              </>
+            ) : null}
           </div>
 
           {notice ? (
             <StatusPill tone={notice.tone === "success" ? "success" : "danger"}>{notice.text}</StatusPill>
           ) : null}
+          {order.companyApprovalStatus === "PENDING" ? <div className="cartAlert warning"><span>Bu sipariş firma yöneticinizin onayını bekliyor. Onaylanmadan finans ve stok operasyonuna geçmez.</span></div> : null}
 
           {order.status === "PAYMENT_PENDING" ? (
             <div className="payWithCard">
@@ -207,4 +230,8 @@ function parseAmount(value: string): number {
 
 function formatTryAmount(value: number): string {
   return new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY" }).format(value);
+}
+
+function companyApprovalLabel(status: string): string {
+  return ({ NOT_REQUIRED: "Gerekli değil", PENDING: "Yönetici bekleniyor", APPROVED: "Onaylandı", REJECTED: "Reddedildi" } as Record<string, string>)[status] ?? status;
 }

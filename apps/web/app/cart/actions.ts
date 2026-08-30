@@ -7,6 +7,7 @@ import { createOrderFromCustomerCart, createQuoteFromCustomerCart } from "../../
 import { getOrderByTrackingCode, updateOrderOperation } from "../../lib/commercial-repository";
 import { trackCartEvent } from "../../lib/analytics-repository";
 import { requireCustomer } from "../../lib/customer-auth";
+import { parseMaterialListFile } from "../../lib/material-list-parser";
 
 export async function addQuickOrderItemsAction(formData: FormData): Promise<void> {
   const customer = await requireCustomer();
@@ -163,52 +164,12 @@ async function itemsFromUpload(formData: FormData): Promise<CartItemInput[]> {
   if (!(file instanceof File) || file.size === 0) {
     return [];
   }
-  if (file.size > 1024 * 1024) throw new Error("Hızlı sipariş dosyası en fazla 1 MB olabilir.");
-
-  const text = await file.text();
-  return parseDelimitedItems(text);
-}
-
-function parseDelimitedItems(text: string): CartItemInput[] {
-  const lines = text
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean);
-
-  if (lines.length === 0) {
-    return [];
-  }
-
-  const headerLine = lines[0] ?? "";
-  const delimiter = headerLine.includes("\t") ? "\t" : headerLine.includes(";") ? ";" : ",";
-  const first = splitDelimitedLine(headerLine, delimiter).map((cell) => cell.toLocaleLowerCase("tr-TR"));
-  const hasHeader = first.some((cell) => ["sku", "urun", "ürün", "adet", "quantity", "miktar"].includes(cell));
-  const rows = (hasHeader ? lines.slice(1) : lines).slice(0, 500);
-  const indexOf = (names: string[], fallback: number) => {
-    const index = first.findIndex((cell) => names.includes(cell));
-    return index === -1 ? fallback : index;
-  };
-
-  const skuIndex = hasHeader ? indexOf(["sku", "kod", "urun kodu", "ürün kodu", "barkod"], 0) : 0;
-  const nameIndex = hasHeader ? indexOf(["urun", "ürün", "urun adi", "ürün adı", "product"], 1) : 1;
-  const quantityIndex = hasHeader ? indexOf(["adet", "miktar", "quantity"], 2) : 2;
-  const unitIndex = hasHeader ? indexOf(["birim", "unit"], 3) : 3;
-
-  return rows
-    .map((line) => {
-      const cells = splitDelimitedLine(line, delimiter);
-      return {
-        sku: cells[skuIndex] ?? "",
-        productName: cells[nameIndex] ?? "",
-        quantity: Number(cells[quantityIndex] ?? "1"),
-        unit: cells[unitIndex] || "Adet"
-      };
-    })
-    .filter((item) => getClean(item.sku) || getClean(item.productName));
-}
-
-function splitDelimitedLine(line: string, delimiter: string): string[] {
-  return line.split(delimiter).slice(0, 20).map((cell) => cell.trim().replace(/^"|"$/g, "").slice(0, 500));
+  return (await parseMaterialListFile(file)).map((row) => ({
+    sku: row.sku,
+    productName: row.productName,
+    quantity: row.quantity,
+    unit: row.unit
+  }));
 }
 
 function getString(formData: FormData, key: string): string {

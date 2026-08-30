@@ -1,4 +1,4 @@
-import { Building2, FileText, Menu, PhoneCall, Search, ShieldCheck, ShoppingCart, Truck, UserRound } from "lucide-react";
+import { Building2, FileText, PhoneCall, ShieldCheck, ShoppingCart, Store, Truck, UserRound } from "lucide-react";
 import { loadCustomerCart } from "../lib/cart-repository";
 import { getBrandSettings } from "../lib/brand-settings";
 import { getCatalogTree } from "../lib/catalog-repository";
@@ -7,6 +7,7 @@ import { getCurrentCustomer } from "../lib/customer-auth";
 import { CartBadge } from "./CartBadge";
 import { MegaMenu } from "./MegaMenu";
 import { QuoteBadge } from "./QuoteBadge";
+import { SearchAutocomplete } from "./SearchAutocomplete";
 
 export async function Header() {
   const [catalogTree, customer, brandSettings] = await Promise.all([getCatalogTree(), getCurrentCustomer(), getBrandSettings()]);
@@ -24,7 +25,8 @@ export async function Header() {
           <span>Teknik destek</span>
           <a href="/orders">Sipariş takibi</a>
           <a href={customer ? "/quick-order" : "/login?next=/quick-order"}>Hızlı sipariş</a>
-          <a href={customer ? "/account" : "/login"}>{customer ? customer.companyName : "Bayi girişi"}</a>
+          <a href={customer ? "/projects" : "/login?next=/projects"}>Projeler</a>
+          <a href={customer?.sellerAccess?.enabled ? "/satici" : customer ? "/account" : "/login"}>{customer ? customer.companyName : "Bayi girişi"}</a>
           <a href="/dealer-application">Bayi başvurusu</a>
         </div>
       </div>
@@ -42,19 +44,7 @@ export async function Header() {
           <a className="catalogCta" href="/catalog">
             Ana Katalog
           </a>
-          <form className="searchBox" action="/catalog">
-            <button type="button" className="categoryButton">
-              <Menu size={18} aria-hidden="true" />
-              Kategori
-            </button>
-            <label className="srOnly" htmlFor="site-search">
-              Ürün, SKU, barkod veya teknik özellik ara
-            </label>
-            <input id="site-search" name="q" type="search" placeholder="Ürün, SKU, barkod, marka veya teknik özellik ara" />
-            <button type="submit" className="searchButton" aria-label="Ara">
-              <Search size={20} aria-hidden="true" />
-            </button>
-          </form>
+          <SearchAutocomplete />
           <div className="headerActions">
             <a className="supportLink" href={COMPANY_CONTACT.technicalSupportPhoneHref}>
               <PhoneCall size={18} aria-hidden="true" />
@@ -63,8 +53,8 @@ export async function Header() {
                 <strong>{COMPANY_CONTACT.technicalSupportPhone}</strong>
               </span>
             </a>
-            <a className="headerIcon" href={customer ? "/account" : "/login"} title="Bayi hesabım">
-              <UserRound size={20} aria-hidden="true" />
+            <a className="headerIcon" href={customer?.sellerAccess?.enabled ? "/satici" : customer ? "/account" : "/login"} title="Bayi hesabım">
+              {customer?.sellerAccess?.enabled ? <Store size={20} aria-hidden="true" /> : <UserRound size={20} aria-hidden="true" />}
             </a>
             <a className="headerIcon quoteIconWrap" href="/quote" title="Teklif listem">
               <QuoteBadge />
@@ -100,8 +90,8 @@ export async function Header() {
           <a className="headerIcon" href="/dealer-application" title="Bayi başvurusu">
             <Building2 size={20} aria-hidden="true" />
           </a>
-          <a className="headerIcon" href={customer ? "/account" : "/login"} title="Bayi girişi">
-            <ShieldCheck size={20} aria-hidden="true" />
+          <a className="headerIcon" href={customer?.sellerAccess?.enabled ? "/satici" : customer ? "/account" : "/login"} title="Bayi girişi">
+            {customer?.sellerAccess?.enabled ? <Store size={20} aria-hidden="true" /> : <ShieldCheck size={20} aria-hidden="true" />}
           </a>
           <a
             className="headerIcon cartIconWrap"
@@ -114,12 +104,7 @@ export async function Header() {
           </a>
         </div>
       </div>
-      <form className="mobileSearch" action="/catalog">
-        <input name="q" type="search" placeholder="SKU, barkod veya ürün ara" />
-        <button type="submit" aria-label="Ara">
-          <Search size={18} aria-hidden="true" />
-        </button>
-      </form>
+      <SearchAutocomplete mobile />
     </header>
   );
 }

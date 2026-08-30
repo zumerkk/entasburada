@@ -53,7 +53,6 @@ const baseUrl = process.env.ENTAS_BASE_URL ?? "http://localhost:3000";
 const adminSecret = process.env.ADMIN_SESSION_SECRET?.trim() || "local-development-admin-session-secret-only";
 const adminEmail = (process.env.ADMIN_EMAIL || "admin@entasburada.local").trim().toLowerCase();
 const adminCookie = `entas_admin_session=${encodeURIComponent(createSessionToken(`admin:${adminEmail}`, adminSecret, 60 * 60 * 8))}`;
-const customerCookie = await createSmokeCustomerCookie();
 const requestOrigin = new URL(baseUrl).origin;
 const mutableFiles = ["data/quotes.json", "data/orders.json", "data/carts.json", "data/notifications.json"];
 
@@ -72,6 +71,7 @@ async function main(): Promise<void> {
   const backups = await backupMutableFiles();
   const runId = Date.now();
   const report: Record<string, unknown> = {};
+  const customerCookie = await createSmokeCustomerCookie();
 
   try {
     const sku = await firstPricedSku();
@@ -128,6 +128,14 @@ async function main(): Promise<void> {
     });
     assert(pricedQuote.body.quote.status === "PRICED", "Admin fiyatlandirma PRICED durumuna getirmeli.");
     assert(Number(pricedQuote.body.quote.totalAmount) > 0, "Fiyatlanan teklif toplam tutar uretmeli.");
+
+    for (const format of ["pdf", "xlsx"] as const) {
+      const exported = await fetch(`${baseUrl}/api/quotes/${createdQuote.body.trackingCode}/export?format=${format}`);
+      assert(exported.status === 200, `Teklif ${format.toUpperCase()} ciktisi 200 donmeli.`);
+      const expectedType = format === "pdf" ? "application/pdf" : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+      assert(exported.headers.get("content-type")?.includes(expectedType), `Teklif ${format.toUpperCase()} icerik tipi dogru olmali.`);
+      assert((await exported.arrayBuffer()).byteLength > 500, `Teklif ${format.toUpperCase()} ciktisi bos olmamali.`);
+    }
 
     const converted = await requestJson<{ order: AdminOrderList["items"][number] }>("/api/admin/quotes", {
       method: "POST",
@@ -187,7 +195,20 @@ async function main(): Promise<void> {
     const emptiedCart = await requestJson<CartResponse>("/api/cart", { headers: { Cookie: customerCookie } });
     assert(emptiedCart.body.cart.items.length === 0, "Checkout sonrasi sepet temizlenmeli.");
 
-    for (const route of ["/admin/quotes", "/admin/orders", "/admin/integrations", "/account", `/orders/${checkoutOrder.body.trackingCode}`]) {
+    for (const route of [
+      "/admin/quotes",
+      "/admin/orders",
+      "/admin/integrations",
+      "/admin/analytics",
+      "/account",
+      "/account/team",
+      "/account/approvals",
+      "/projects",
+      "/projects/new",
+      "/order-templates",
+      `/quote/${createdQuote.body.trackingCode}`,
+      `/orders/${checkoutOrder.body.trackingCode}`
+    ]) {
       const page = await fetch(`${baseUrl}${route}`, { headers: { Cookie: `${adminCookie}; ${customerCookie}` } });
       assert(page.status === 200, `${route} sayfasi 200 donmeli; gelen ${page.status}.`);
     }

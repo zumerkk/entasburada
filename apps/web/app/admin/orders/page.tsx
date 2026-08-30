@@ -8,7 +8,7 @@ import { AdminFrame } from "../AdminFrame";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
-const orderStatuses = ["all", "DRAFT", "PAYMENT_PENDING", "APPROVAL_PENDING", "FINANCE_APPROVAL_PENDING", "STOCK_WAITING", "PREPARING", "READY_TO_SHIP", "SHIPPED", "DELIVERED", "CANCELLED", "COMPLETED"];
+const orderStatuses = ["all", "DRAFT", "PAYMENT_PENDING", "APPROVAL_PENDING", "DEALER_APPROVAL_PENDING", "FINANCE_APPROVAL_PENDING", "STOCK_WAITING", "PREPARING", "READY_TO_SHIP", "SHIPPED", "DELIVERED", "CANCELLED", "COMPLETED"];
 const financeStatuses = ["all", "Bekliyor", "Onaylandı", "Reddedildi"];
 const warehouses = ["all", "Ana Depo", "Tedarikçi Deposu"];
 

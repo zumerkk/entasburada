@@ -32,6 +32,12 @@ export function proxy(request: NextRequest): NextResponse {
     return NextResponse.next({ headers: responseHeaders });
   }
 
+  // Satıcı sipariş API'si sunucudan sunucuya Bearer anahtarıyla çağrılır ve
+  // tarayıcı Origin başlığı taşımaz. Asıl anahtar/yetki doğrulaması route içinde yapılır.
+  if (pathname.startsWith("/api/reseller/v1/") && /^Bearer\s+entas_live_[A-Za-z0-9_-]{40,}$/i.test(request.headers.get("authorization") ?? "")) {
+    return NextResponse.next({ headers: responseHeaders });
+  }
+
   const fetchSite = request.headers.get("sec-fetch-site")?.toLowerCase();
   if (fetchSite === "cross-site") {
     return NextResponse.json({ error: "Cross-site request rejected" }, { status: 403, headers: responseHeaders });

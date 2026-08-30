@@ -67,7 +67,7 @@ export default async function AdminDashboardPage() {
             <div>
               <Truck size={20} aria-hidden="true" />
               <strong>Stok görünümü</strong>
-              <span>Müşteri tarafındaki bütün aktif ürünler “Stokta var” olarak gösterilir.</span>
+              <span>Müşteri tarafında güvenli stok aralığı, depo ve tahmini teslim süresi gösterilir.</span>
             </div>
           </div>
         </div>

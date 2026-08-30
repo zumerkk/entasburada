@@ -4,7 +4,7 @@ import { existsSync } from "node:fs";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { loadPricedCart } from "./cart-repository";
-import { formatCatalogMoney, loadCatalogStore } from "./catalog-repository";
+import { formatCatalogMoney, getCatalogSearchSuggestions, loadCatalogStore } from "./catalog-repository";
 import { getCustomers, type CustomerAccount } from "./customer-auth";
 
 export type UserEventType = "product_view" | "category_view" | "search" | "cart_add" | "cart_remove" | "cart_clear" | "favorite" | "quote_intent" | "order_create";
@@ -98,6 +98,7 @@ export interface SearchMissRow {
   lastSearchedAt: string;
   suggestedCategory: string;
   purchaseOpportunity: string;
+  suggestedProducts: Array<{ label: string; href: string }>;
 }
 
 export interface SalesOpportunity {
@@ -398,14 +399,18 @@ export async function getSearchMissesReport(): Promise<{ generatedAt: string; ro
     grouped.set(key, [...(grouped.get(key) ?? []), event]);
   }
 
-  const rows = Array.from(grouped.entries()).map(([term, itemEvents]) => ({
-    term,
-    searchCount: itemEvents.length,
-    resultCount: 0,
-    companyCount: new Set(itemEvents.map((event) => event.companyName ?? event.customerId ?? event.sessionId ?? "anon")).size,
-    lastSearchedAt: mostRecent(itemEvents)?.occurredAt ?? "",
-    suggestedCategory: suggestCategory(term),
-    purchaseOpportunity: itemEvents.length >= 2 ? "Ürün ekleme ve satın alma fırsatı" : "Satın alma kontrolü"
+  const rows = await Promise.all(Array.from(grouped.entries()).map(async ([term, itemEvents]) => {
+    const suggestionResult = await getCatalogSearchSuggestions(term, 5);
+    return {
+      term,
+      searchCount: itemEvents.length,
+      resultCount: 0,
+      companyCount: new Set(itemEvents.map((event) => event.companyName ?? event.customerId ?? event.sessionId ?? "anon")).size,
+      lastSearchedAt: mostRecent(itemEvents)?.occurredAt ?? "",
+      suggestedCategory: suggestionResult.suggestions.find((item) => item.type === "category")?.label ?? suggestCategory(term),
+      purchaseOpportunity: itemEvents.length >= 2 ? "Ürün ekleme ve satın alma fırsatı" : "Satın alma kontrolü",
+      suggestedProducts: suggestionResult.suggestions.filter((item) => item.type === "product").slice(0, 3).map((item) => ({ label: item.label, href: item.href }))
+    };
   }));
 
   return { generatedAt: new Date().toISOString(), rows: rows.sort((a, b) => b.searchCount - a.searchCount) };

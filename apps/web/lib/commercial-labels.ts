@@ -23,6 +23,7 @@ const ORDER_STATUS: Record<OrderStatus, StatusLabel> = {
   DRAFT: { label: "Taslak", tone: "neutral", hint: "Sipariş henüz tamamlanmadı." },
   PAYMENT_PENDING: { label: "Ödeme bekliyor", tone: "warning", hint: "Kart ödemesi tamamlanmayı bekliyor." },
   APPROVAL_PENDING: { label: "Onay bekliyor", tone: "warning", hint: "Sipariş ekip onayına düştü." },
+  DEALER_APPROVAL_PENDING: { label: "Firma onayı bekliyor", tone: "warning", hint: "Sipariş firma yöneticisinin onayını bekliyor." },
   FINANCE_APPROVAL_PENDING: { label: "Finans onayı bekliyor", tone: "warning", hint: "Cari hesap limiti ve ödeme koşulu inceleniyor." },
   STOCK_WAITING: { label: "Stok bekliyor", tone: "warning", hint: "Ürünlerin tedariki bekleniyor." },
   PREPARING: { label: "Hazırlanıyor", tone: "info", hint: "Sipariş depoda hazırlanıyor." },

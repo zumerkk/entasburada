@@ -12,6 +12,7 @@ import {
   getAdminProductIdsByFilter,
   publishDraftProducts,
   publishProductIds,
+  previewBulkPriceOperation,
   syncImportedProducts,
   updateCatalogProduct
 } from "../../lib/catalog-repository";
@@ -32,7 +33,14 @@ import {
   type DealerApplicationStatus
 } from "../../lib/dealer-application-repository";
 import { dealerProfile, provisionDealerAccount } from "../../lib/dealer-provisioning";
-import { updateCustomerAccount, type CustomerSegment } from "../../lib/customer-auth";
+import {
+  getCustomers,
+  normalizeSellerAccess,
+  updateCustomerAccount,
+  type CustomerSegment,
+  type CustomerStatus,
+  type SellerMode
+} from "../../lib/customer-auth";
 
 export async function syncImportAction(): Promise<void> {
   await requireAdmin();
@@ -176,6 +184,28 @@ export async function bulkPriceOperationAction(formData: FormData): Promise<void
   redirectWith(returnTo, "ok", parts.join(" "));
 }
 
+export async function previewBulkPriceOperationAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+  const returnTo = bulkReturnTo(formData);
+  const operation = priceOperationFromForm(formData);
+  const ids = await resolveBulkTargetIds(formData);
+  if (ids.length === 0) redirectWith(returnTo, "error", "Önizleme için ürün seçilmedi.");
+  const preview = await previewBulkPriceOperation(ids, operation, { rounding: getString(formData, "rounding") === "integer" ? "integer" : "none" }).catch((error: unknown) => {
+    redirectWith(returnTo, "error", error instanceof Error ? error.message : "Fiyat önizlemesi oluşturulamadı.");
+  });
+  const samples = preview.samples.map((sample) => `${sample.sku}: ${sample.before} → ${sample.after} ${sample.currency}`).join(" | ");
+  redirectWith(returnTo, "ok", `ÖNİZLEME — ${preview.targeted.toLocaleString("tr-TR")} hedef, ${preview.updated.toLocaleString("tr-TR")} fiyat değişecek, ${preview.skippedZeroPrice.toLocaleString("tr-TR")} fiyatsız satır atlanacak.${samples ? ` Örnekler: ${samples}` : ""}`);
+}
+
+function priceOperationFromForm(formData: FormData): PriceOperation {
+  const mode = getString(formData, "priceMode");
+  const rawValue = getString(formData, "priceValue").replace(",", ".");
+  const value = Number(rawValue);
+  if (mode === "clear") return { mode: "clear" };
+  if ((mode === "percent" || mode === "amount" || mode === "set") && rawValue && Number.isFinite(value)) return { mode, value };
+  throw new Error("Önizleme için geçerli bir fiyat işlemi girin.");
+}
+
 export async function bulkDeleteProductsAction(formData: FormData): Promise<void> {
   await requireAdmin();
   const returnTo = bulkReturnTo(formData);
@@ -252,6 +282,7 @@ export async function updateProductAction(formData: FormData): Promise<void> {
         listPrice: getString(formData, "listPrice"),
         currency: getString(formData, "currency"),
         stockQuantity: Number(getString(formData, "stockQuantity")),
+        expectedStockAt: getString(formData, "expectedStockAt"),
         unitType: getString(formData, "unitType"),
         imageUrl: getString(formData, "imageUrl"),
         description: getString(formData, "description"),
@@ -306,6 +337,7 @@ export async function priceQuoteAction(formData: FormData): Promise<void> {
       validUntil: getString(formData, "validUntil"),
       salesRepresentative: getString(formData, "salesRepresentative"),
       internalNote: getString(formData, "internalNote"),
+      publicNote: getString(formData, "publicNote"),
       prices: itemIds.map((itemId) => ({
         itemId,
         quotedUnitPrice: getString(formData, `price:${itemId}`)
@@ -438,6 +470,8 @@ export async function createManualDealerApplicationAction(formData: FormData): P
 }
 
 const DEALER_SEGMENTS: CustomerSegment[] = ["standard", "industrial", "project"];
+const CUSTOMER_STATUSES: CustomerStatus[] = ["approved", "pending", "suspended"];
+const SELLER_MODES: SellerMode[] = ["reseller", "dropshipping", "hybrid"];
 
 /**
  * Mevcut bir bayinin firma adı / yetkili / segment (kademe) bilgisini günceller.
@@ -450,21 +484,46 @@ export async function updateDealerAccountAction(formData: FormData): Promise<voi
   const authorizedPerson = getString(formData, "authorizedPerson");
   const rawSegment = getString(formData, "segment");
   const segment = DEALER_SEGMENTS.includes(rawSegment as CustomerSegment) ? (rawSegment as CustomerSegment) : "standard";
+  const rawStatus = getString(formData, "status");
+  const status = CUSTOMER_STATUSES.includes(rawStatus as CustomerStatus) ? (rawStatus as CustomerStatus) : "approved";
 
   if (!customerId) {
     redirect("/admin/dealers?error=" + encodeURIComponent("Bayi seçilmedi."));
   }
 
+  const current = (await getCustomers()).find((customer) => customer.id === customerId);
+  if (!current) redirect("/admin/dealers?error=" + encodeURIComponent("Bayi hesabı bulunamadı."));
+  const rawSellerMode = getString(formData, "sellerMode");
+  const sellerMode = SELLER_MODES.includes(rawSellerMode as SellerMode) ? (rawSellerMode as SellerMode) : "reseller";
+  const sellerEnabled = getString(formData, "sellerEnabled") === "on";
+  const markup = Number(getString(formData, "defaultMarkupRate").replace(",", "."));
+
   await updateCustomerAccount(customerId, {
     ...(companyName ? { companyName } : {}),
     ...(authorizedPerson ? { authorizedPerson } : {}),
+    ...(getString(formData, "phone") ? { phone: getString(formData, "phone") } : {}),
+    ...(getString(formData, "city") ? { city: getString(formData, "city") } : {}),
+    ...(getString(formData, "deliveryAddress") ? { deliveryAddress: getString(formData, "deliveryAddress") } : {}),
+    status,
     segment,
     // Segment hizmet/vade profilini değiştirir; ortak marka fiyatı bütün müşterilerde aynıdır.
-    ...dealerProfile(segment)
+    ...dealerProfile(segment),
+    sellerAccess: normalizeSellerAccess({
+      ...current.sellerAccess,
+      enabled: sellerEnabled,
+      mode: sellerMode,
+      productFeedEnabled: sellerEnabled && getString(formData, "productFeedEnabled") === "on",
+      apiEnabled: sellerEnabled && getString(formData, "apiEnabled") === "on",
+      exactStockEnabled: sellerEnabled && getString(formData, "exactStockEnabled") === "on",
+      orderApiEnabled: sellerEnabled && getString(formData, "orderApiEnabled") === "on",
+      blindShippingEnabled: sellerEnabled && getString(formData, "blindShippingEnabled") === "on",
+      defaultMarkupRate: Number.isFinite(markup) ? markup : current.sellerAccess?.defaultMarkupRate ?? 30
+    })
   });
 
   revalidatePath("/admin/dealers");
   revalidatePath("/account");
+  revalidatePath("/satici");
   redirect("/admin/dealers?ok=" + encodeURIComponent("Bayi güncellendi."));
 }
 
@@ -517,6 +576,7 @@ function toOrderStatus(value: string): OrderStatus {
     "DRAFT",
     "PAYMENT_PENDING",
     "APPROVAL_PENDING",
+    "DEALER_APPROVAL_PENDING",
     "FINANCE_APPROVAL_PENDING",
     "STOCK_WAITING",
     "PREPARING",

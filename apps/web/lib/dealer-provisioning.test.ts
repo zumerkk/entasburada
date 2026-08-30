@@ -11,7 +11,18 @@ const mocks = vi.hoisted(() => ({
 vi.mock("./customer-auth", () => ({
   createCustomerAccount: mocks.createCustomerAccount,
   findCustomerByEmail: mocks.findCustomerByEmail,
-  updateCustomerAccount: vi.fn()
+  updateCustomerAccount: vi.fn(),
+  normalizeSellerAccess: vi.fn((access = {}) => ({
+    enabled: false,
+    mode: "reseller",
+    productFeedEnabled: false,
+    apiEnabled: false,
+    exactStockEnabled: false,
+    orderApiEnabled: false,
+    blindShippingEnabled: false,
+    defaultMarkupRate: 30,
+    ...access
+  }))
 }));
 
 vi.mock("./mailer", () => ({ sendMail: mocks.sendMail }));

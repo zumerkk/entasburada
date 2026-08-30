@@ -68,6 +68,22 @@ export interface CatalogFacets {
   sources: Array<{ key: string; name: string; count: number }>;
 }
 
+export interface CatalogTechnicalFacets {
+  sizes: string[];
+  diameters: string[];
+  connections: string[];
+  materials: string[];
+  usages: string[];
+}
+
+export interface CatalogSearchSuggestion {
+  type: "product" | "category";
+  label: string;
+  secondary: string;
+  href: string;
+  image?: string;
+}
+
 export interface CatalogNavigationItem {
   label: string;
   slug: string;
@@ -201,6 +217,7 @@ export interface UpdateCatalogProductInput {
   listPrice?: string;
   currency?: string;
   stockQuantity?: number;
+  expectedStockAt?: string;
   unitType?: string;
   imageUrl?: string;
   description?: string;
@@ -334,6 +351,17 @@ export async function updateCatalogProduct(
     }
   }
 
+  if (input.expectedStockAt !== undefined) {
+    const raw = input.expectedStockAt.trim();
+    if (raw && !/^\d{4}-\d{2}-\d{2}$/.test(raw)) throw new Error("Beklenen stok tarihi geçersiz.");
+    const normalized = raw ? new Date(`${raw}T12:00:00.000Z`).toISOString() : undefined;
+    if (normalized !== current.expectedStockAt) {
+      if (normalized) next.expectedStockAt = normalized;
+      else delete next.expectedStockAt;
+      changes.push(`beklenen stok tarihi ${normalized ? raw : "kaldırıldı"}`);
+    }
+  }
+
   if (input.status !== undefined && input.status !== current.status) {
     next.status = input.status;
     changes.push(`durum ${current.status} → ${input.status}`);
@@ -408,6 +436,40 @@ export interface BulkPriceOutcome {
   skippedZeroPrice: number;
   skippedNegative: number;
   currencies: string[];
+}
+
+export interface BulkPricePreview extends BulkPriceOutcome {
+  targeted: number;
+  samples: Array<{ name: string; sku: string; currency: string; before: string; after: string }>;
+}
+
+export async function previewBulkPriceOperation(
+  ids: string[],
+  operation: PriceOperation,
+  options: { rounding?: PriceRounding } = {}
+): Promise<BulkPricePreview> {
+  const store = await loadCatalogStore();
+  const result = applyPriceOperation(store, ids, operation, options, "preview");
+  const beforeById = new Map(store.products.map((product) => [product.id, product]));
+  const idSet = new Set(ids);
+  const samples = result.store.products
+    .filter((product) => idSet.has(product.id) && beforeById.get(product.id)?.listPrice !== product.listPrice)
+    .slice(0, 8)
+    .map((product) => ({
+      name: product.name,
+      sku: product.sku,
+      currency: product.currency,
+      before: beforeById.get(product.id)?.listPrice ?? "0",
+      after: product.listPrice
+    }));
+  return {
+    targeted: ids.length,
+    updated: result.updated,
+    skippedZeroPrice: result.skippedZeroPrice,
+    skippedNegative: result.skippedNegative,
+    currencies: result.currencies,
+    samples
+  };
 }
 
 export async function bulkApplyPriceOperation(
@@ -609,6 +671,119 @@ export async function getCatalogFacets(publicOnly = true): Promise<CatalogFacets
   };
 }
 
+export async function getCatalogTechnicalFacets(publicOnly = true): Promise<CatalogTechnicalFacets> {
+  const store = await loadCatalogStore();
+  const products = publicOnly ? store.products.filter((product) => product.status === "ACTIVE" && product.isVisible) : store.products;
+  const buckets: Record<keyof CatalogTechnicalFacets, Map<string, number>> = {
+    sizes: new Map(),
+    diameters: new Map(),
+    connections: new Map(),
+    materials: new Map(),
+    usages: new Map()
+  };
+
+  const labelGroups: Record<keyof CatalogTechnicalFacets, string[]> = {
+    sizes: ["olcu", "ebat", "boyut", "uzunluk", "genislik", "yukseklik"],
+    diameters: ["cap", "diameter", "dn", "inc"],
+    connections: ["baglanti", "dis", "rekor", "soket", "flans"],
+    materials: ["malzeme", "materyal", "govde", "hammadde"],
+    usages: ["kullanim", "uygulama", "uygunluk", "alan"]
+  };
+
+  for (const product of products) {
+    for (const spec of product.technicalSpecs ?? []) {
+      const normalizedLabel = normalizeCatalogSearchText(spec.label);
+      const value = spec.value.trim().replace(/\s+/g, " ").slice(0, 80);
+      if (!value || value.length < 2) continue;
+      for (const [bucket, labels] of Object.entries(labelGroups) as Array<[keyof CatalogTechnicalFacets, string[]]>) {
+        if (labels.some((label) => normalizedLabel.includes(label))) {
+          buckets[bucket].set(value, (buckets[bucket].get(value) ?? 0) + 1);
+        }
+      }
+    }
+  }
+
+  const popular = (values: Map<string, number>) => [...values.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "tr"))
+    .slice(0, 40)
+    .map(([value]) => value);
+
+  return {
+    sizes: popular(buckets.sizes),
+    diameters: popular(buckets.diameters),
+    connections: popular(buckets.connections),
+    materials: popular(buckets.materials),
+    usages: popular(buckets.usages)
+  };
+}
+
+export async function getCatalogSearchSuggestions(query: string, limit = 8): Promise<{
+  mode?: "exact" | "synonym" | "fuzzy";
+  suggestions: CatalogSearchSuggestion[];
+}> {
+  const cleanQuery = query.trim().slice(0, 120);
+  if (cleanQuery.length < 2) return { suggestions: [] };
+
+  const [products, navigation] = await Promise.all([
+    getPublicProducts({ q: cleanQuery, limit: Math.min(6, limit) }),
+    getCatalogNavigation()
+  ]);
+  const normalizedQuery = normalizeCatalogSearchText(cleanQuery);
+  const productSuggestions: CatalogSearchSuggestion[] = products.items.map((product) => ({
+    type: "product",
+    label: product.name,
+    secondary: `${product.brand} · ${product.sku}`,
+    href: `/products/${product.slug}`,
+    image: product.image
+  }));
+  const seenCategories = new Set<string>();
+  const categorySuggestions: CatalogSearchSuggestion[] = [
+    ...products.items.map((product) => ({ label: product.category, href: `/catalog?category=${encodeURIComponent(product.category)}` })),
+    ...navigation.map((item) => ({ label: item.label, href: item.href }))
+  ]
+    .filter((item) => normalizeCatalogSearchText(item.label).includes(normalizedQuery) || productSuggestions.length > 0)
+    .filter((item) => {
+      const key = normalizeCatalogSearchText(item.label);
+      if (!key || seenCategories.has(key)) return false;
+      seenCategories.add(key);
+      return true;
+    })
+    .slice(0, Math.max(0, limit - productSuggestions.length))
+    .map((item) => ({ type: "category", label: item.label, secondary: "Kategori", href: item.href }));
+
+  return {
+    ...(products.searchMode ? { mode: products.searchMode } : {}),
+    suggestions: [...productSuggestions, ...categorySuggestions].slice(0, limit)
+  };
+}
+
+export async function getAlternativePricedProducts(
+  query: string,
+  customer: CustomerAccount | null,
+  limit = 8
+): Promise<CatalogSearchResult<PricedPublicCatalogProduct>> {
+  // Tam sorgunun sonucunun boş olduğu katalog sayfasından çağrılır; aynı pahalı
+  // aramayı tekrarlamak yerine anlamlı kelimeler üzerinden yakın ürün toplar.
+  const phrases = query.split(/\s+/).map((token) => token.trim()).filter((token) => token.length >= 3);
+  const items: PricedPublicCatalogProduct[] = [];
+  const seen = new Set<string>();
+
+  for (const phrase of phrases) {
+    if (!phrase) continue;
+    const result = await getPricedPublicProducts({ q: phrase, limit }, customer);
+    for (const product of result.items) {
+      if (seen.has(product.slug)) continue;
+      seen.add(product.slug);
+      items.push(product);
+      if (items.length >= limit) break;
+    }
+    if (items.length >= limit) break;
+  }
+
+  if (items.length === 0) return getFeaturedPublicProducts(limit, customer);
+  return { total: items.length, limit, offset: 0, items };
+}
+
 export async function getCatalogNavigation(): Promise<CatalogNavigationItem[]> {
   const store = await loadCatalogStore();
   return navigationItemsFromStats(buildCatalogNavigationStats(store));
@@ -622,6 +797,20 @@ function navigationItemsFromStats(stats: CatalogNavigationStats): CatalogNavigat
     count: group.slug === "tum-urunler" ? stats.total : stats.groupCounts.get(group.slug) ?? 0,
     imageUrl: categoryVisuals[group.slug] ?? stats.representativeImages.get(group.slug) ?? "/images/hero-tools-v2.webp"
   })).filter((item) => item.slug === "tum-urunler" || item.count > 0);
+}
+
+function normalizeCatalogSearchText(value: string): string {
+  return value
+    .trim()
+    .toLocaleLowerCase("tr-TR")
+    .replace(/[ç]/g, "c")
+    .replace(/[ğ]/g, "g")
+    .replace(/[ı]/g, "i")
+    .replace(/[ö]/g, "o")
+    .replace(/[ş]/g, "s")
+    .replace(/[ü]/g, "u")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
 }
 
 export interface CatalogTreeNavLeaf {

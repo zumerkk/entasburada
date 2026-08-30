@@ -64,6 +64,10 @@ export default async function AdminQuoteDetailPage({ params }: { params: Promise
           <strong>{formatDate(quote.validUntil)}</strong>
         </div>
         <div>
+          <span>Revizyon</span>
+          <strong>Revizyon {quote.revisionNumber || 0}</strong>
+        </div>
+        <div>
           <span>Takip kodu</span>
           <strong>{quote.trackingCode}</strong>
         </div>
@@ -129,6 +133,10 @@ export default async function AdminQuoteDetailPage({ params }: { params: Promise
               İç not
               <textarea name="internalNote" defaultValue={quote.internalNote} />
             </label>
+            <label className="spanTwo">
+              Müşteriye görünen temsilci notu
+              <textarea name="publicNote" placeholder="Fiyat, termin veya muadil açıklaması..." />
+            </label>
             <button className="btn btnPrimary" type="submit" disabled={quote.status === "CONVERTED" || quote.status === "REJECTED"}>
               <FileText size={17} aria-hidden="true" />
               Fiyatı Kaydet
@@ -136,6 +144,22 @@ export default async function AdminQuoteDetailPage({ params }: { params: Promise
           </div>
         </form>
       </section>
+
+      {quote.messages.length > 0 ? (
+        <section className="panel">
+          <div className="panelHeader compact"><h2>Müşteri–temsilci yazışmaları</h2></div>
+          <div className="quoteMessageList">
+            {quote.messages.map((message) => <div className={message.actor} key={message.id}><strong>{message.author}</strong><p>{message.body}</p><small>{new Date(message.createdAt).toLocaleString("tr-TR")}</small></div>)}
+          </div>
+        </section>
+      ) : null}
+
+      {quote.revisions.length > 0 ? (
+        <section className="panel">
+          <div className="panelHeader compact"><h2>Önceki revizyonlar</h2></div>
+          <div className="revisionList">{quote.revisions.map((revision) => <div key={`${revision.number}-${revision.createdAt}`}><strong>Revizyon {revision.number} · {revision.totalAmount} {quote.currency}</strong><span>{revision.actorName} · {new Date(revision.createdAt).toLocaleString("tr-TR")}</span><small>{revision.items.length} satır · {formatDate(revision.validUntil)} tarihine kadar</small></div>)}</div>
+        </section>
+      ) : null}
 
       <section className="panel">
         <div className="panelHeader compact">

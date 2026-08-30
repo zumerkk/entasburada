@@ -1,4 +1,4 @@
-import { Building2, KeyRound, Mail, MapPin, MessageCircle, PhoneCall } from "lucide-react";
+import { Building2, KeyRound, Mail, MapPin, MessageCircle, PhoneCall, Store } from "lucide-react";
 import { EmptyState, StatusPill } from "@entas/ui";
 import { requireAdmin } from "../../../lib/admin-auth";
 import {
@@ -15,6 +15,8 @@ import {
   updateDealerApplicationStatusAction
 } from "../actions";
 import { AdminFrame } from "../AdminFrame";
+import { AdminSellerAccountCreator } from "./AdminSellerAccountCreator";
+import { SellerCredentialActions } from "./SellerCredentialActions";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -45,6 +47,8 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
           .some((value) => value.toLocaleLowerCase("tr-TR").includes(accountTerm))
       : true
   );
+  const sellerAccounts = customers.filter((customer) => customer.sellerAccess?.enabled);
+  const apiAccounts = sellerAccounts.filter((customer) => customer.sellerAccess?.apiEnabled);
 
   return (
     <AdminFrame active="dealers">
@@ -77,6 +81,21 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
         </form>
       </section>
 
+      <section className="panel sellerAdminOverview">
+        <div className="panelHeader compact">
+          <div>
+            <h2>Satıcı kanalı</h2>
+            <small>Al-sat ve dropshipping kullanıcıları için panel, ürün beslemesi ve sipariş API erişimi</small>
+          </div>
+        </div>
+        <div className="sellerAdminStats">
+          <div><Store size={18} /><span>Aktif satıcı</span><strong>{sellerAccounts.length.toLocaleString("tr-TR")}</strong></div>
+          <div><KeyRound size={18} /><span>API erişimli</span><strong>{apiAccounts.length.toLocaleString("tr-TR")}</strong></div>
+          <div><Building2 size={18} /><span>Toplam ticari hesap</span><strong>{customers.length.toLocaleString("tr-TR")}</strong></div>
+        </div>
+        <AdminSellerAccountCreator />
+      </section>
+
       <section className="panel">
         <div className="panelHeader compact">
           <div>
@@ -91,9 +110,9 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
             <div className="adminTableHead dealerAccountRows">
               <span>Firma</span>
               <span>İletişim</span>
-              <span>Konum</span>
-              <span>Segment</span>
-              <span>Fiyat</span>
+              <span>Satış kanalı</span>
+              <span>Veri / stok</span>
+              <span>API</span>
               <span>Durum</span>
             </div>
             {visibleCustomers.map((customer) => (
@@ -105,19 +124,19 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
                   </span>
                   <span>
                     <strong>{customer.email}</strong>
-                    <small>{customer.phone}</small>
+                    <small>{customer.phone} · {customer.city}</small>
                   </span>
                   <span>
-                    <strong>{customer.city}</strong>
-                    <small>{customer.deliveryAddress}</small>
+                    <strong>{customer.sellerAccess?.enabled ? sellerModeLabel(customer.sellerAccess.mode) : "Standart bayi"}</strong>
+                    <small>{customer.tierName ?? segmentLabel(customer.segment)}</small>
                   </span>
                   <span>
-                    <strong>{customer.tierName ?? segmentLabel(customer.segment)}</strong>
-                    <small>{customer.tierRank ?? segmentLabel(customer.segment)}</small>
+                    <strong>{customer.sellerAccess?.productFeedEnabled ? "Besleme açık" : "Panel kataloğu"}</strong>
+                    <small>{customer.sellerAccess?.exactStockEnabled ? "Net stok görünür" : "Stok aralığı"}</small>
                   </span>
                   <span>
-                    <strong>Ortak</strong>
-                    <small>Müşteri iskontosu %0</small>
+                    <strong>{customer.sellerAccess?.apiEnabled ? "Açık" : "Kapalı"}</strong>
+                    <small>{customer.sellerAccess?.apiKeyPrefix ? `${customer.sellerAccess.apiKeyPrefix}…` : "Anahtar yok"}</small>
                   </span>
                   <StatusPill tone={customer.status === "approved" ? "success" : customer.status === "suspended" ? "danger" : "warning"}>
                     {customer.status === "approved" ? "Aktif" : customer.status === "suspended" ? "Askıda" : "Beklemede"}
@@ -136,6 +155,22 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
                       <input name="authorizedPerson" defaultValue={customer.authorizedPerson} />
                     </label>
                     <label>
+                      Telefon
+                      <input name="phone" defaultValue={customer.phone} />
+                    </label>
+                    <label>
+                      İl
+                      <input name="city" defaultValue={customer.city} />
+                    </label>
+                    <label>
+                      Hesap durumu
+                      <select name="status" defaultValue={customer.status}>
+                        <option value="approved">Aktif</option>
+                        <option value="pending">Beklemede</option>
+                        <option value="suspended">Askıda</option>
+                      </select>
+                    </label>
+                    <label>
                       Segment / kademe
                       <select name="segment" defaultValue={customer.segment}>
                         <option value="standard">Standart Bayi (Bronz)</option>
@@ -143,10 +178,41 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
                         <option value="project">Kurumsal Proje (Platin) — en üst</option>
                       </select>
                     </label>
+                    <label>
+                      Satıcı tipi
+                      <select name="sellerMode" defaultValue={customer.sellerAccess?.mode ?? "reseller"}>
+                        <option value="reseller">Al-sat bayi</option>
+                        <option value="dropshipping">Dropshipping</option>
+                        <option value="hybrid">Al-sat + dropshipping</option>
+                      </select>
+                    </label>
+                    <label>
+                      Varsayılan kâr (%)
+                      <input name="defaultMarkupRate" type="number" min="0" max="500" step="0.1" defaultValue={customer.sellerAccess?.defaultMarkupRate ?? 30} />
+                    </label>
+                    <label className="spanTwo">
+                      Teslimat adresi
+                      <textarea name="deliveryAddress" rows={2} defaultValue={customer.deliveryAddress} />
+                    </label>
+                    <div className="sellerPermissionGrid spanTwo">
+                      <label><input type="checkbox" name="sellerEnabled" defaultChecked={customer.sellerAccess?.enabled} /> Satıcı paneli</label>
+                      <label><input type="checkbox" name="productFeedEnabled" defaultChecked={customer.sellerAccess?.productFeedEnabled} /> Ürün beslemesi</label>
+                      <label><input type="checkbox" name="exactStockEnabled" defaultChecked={customer.sellerAccess?.exactStockEnabled} /> Net stok</label>
+                      <label><input type="checkbox" name="apiEnabled" defaultChecked={customer.sellerAccess?.apiEnabled} /> API</label>
+                      <label><input type="checkbox" name="orderApiEnabled" defaultChecked={customer.sellerAccess?.orderApiEnabled} /> API siparişi</label>
+                      <label><input type="checkbox" name="blindShippingEnabled" defaultChecked={customer.sellerAccess?.blindShippingEnabled} /> Kör kargo</label>
+                    </div>
                     <button className="btn btnPrimary" type="submit">
                       Kaydet
                     </button>
                   </form>
+                  {customer.sellerAccess?.enabled ? (
+                    <SellerCredentialActions
+                      customerId={customer.id}
+                      apiEnabled={Boolean(customer.sellerAccess.apiEnabled)}
+                      {...(customer.sellerAccess.apiKeyPrefix ? { apiKeyPrefix: customer.sellerAccess.apiKeyPrefix } : {})}
+                    />
+                  ) : null}
                 </details>
               </div>
             ))}
@@ -383,4 +449,10 @@ function segmentLabel(segment: CustomerSegment): string {
   if (segment === "industrial") return "Sanayi";
   if (segment === "project") return "Proje";
   return "Standart bayi";
+}
+
+function sellerModeLabel(mode: "reseller" | "dropshipping" | "hybrid"): string {
+  if (mode === "dropshipping") return "Dropshipping";
+  if (mode === "hybrid") return "Al-sat + Dropshipping";
+  return "Al-sat bayi";
 }

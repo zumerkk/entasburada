@@ -87,7 +87,31 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
           <span>Teslimat adresi</span>
           <strong>{order.deliveryAddress}</strong>
         </div>
+        {order.fulfillmentType === "DROPSHIP" ? (
+          <>
+            <div>
+              <span>Alıcı</span>
+              <strong>{order.recipientName}</strong>
+              <small>{order.recipientPhone}</small>
+            </div>
+            <div>
+              <span>Mağaza referansı</span>
+              <strong>{order.sellerOrderReference}</strong>
+            </div>
+            <div>
+              <span>Paketleme</span>
+              <StatusPill tone={order.blindShipping ? "warning" : "info"}>{order.blindShipping ? "Kör kargo" : "Standart dropshipping"}</StatusPill>
+            </div>
+          </>
+        ) : null}
       </section>
+
+      {order.blindShipping ? (
+        <section className="panel cartAlert warning">
+          <strong>Kör kargo talebi:</strong>
+          <span>Pakete ENTAŞBURADA fiyatı, faturası veya markalı evrak koymayın. Sevk öncesi paketleme ekibinin teyidi zorunludur.</span>
+        </section>
+      ) : null}
 
       <section className="panel">
         <div className="panelHeader compact">

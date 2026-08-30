@@ -7,9 +7,11 @@ import { BulkQuoteCampaign } from "../../../components/BulkQuoteCampaign";
 import { FavoriteButton } from "../../../components/FavoriteButton";
 import { ProductViewTracker } from "../../../components/AnalyticsTracker";
 import { FreeShippingBanner } from "../../../components/FreeShippingBanner";
+import { StockAlertButton } from "../../../components/StockAlertButton";
 import { getPricedPublicProductBySlug, getPublicProductBySlug } from "../../../lib/catalog-repository";
 import { getCurrentCustomer } from "../../../lib/customer-auth";
 import { isFavorite } from "../../../lib/favorites-repository";
+import { isSubscribedToStock } from "../../../lib/stock-notify-repository";
 
 export const dynamic = "force-dynamic";
 
@@ -32,7 +34,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     notFound();
   }
 
-  const favorited = customer ? await isFavorite(customer.id, product.sku, product.slug) : false;
+  const [favorited, subscribedToStock] = customer
+    ? await Promise.all([
+        isFavorite(customer.id, product.sku, product.slug),
+        isSubscribedToStock(customer.id, product.sku, product.slug)
+      ])
+    : [false, false];
 
   return (
     <main className="productDetailPage">
@@ -96,6 +103,15 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           </div>
 
           <StockBadge tone={product.stockTone} label={product.stockLabel} />
+          {product.stockTone === "out_of_stock" || product.stockTone === "incoming" ? (
+            <StockAlertButton
+              sku={product.sku}
+              name={product.name}
+              slug={product.slug}
+              isSubscribed={subscribedToStock}
+              isAuthenticated={Boolean(customer)}
+            />
+          ) : null}
 
           <PriceGate
             isApprovedDealer={Boolean(customer)}
@@ -118,13 +134,13 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             </div>
             <div>
               <PackageCheck size={18} aria-hidden="true" />
-              <span>Stok görünümü</span>
-              <strong>{product.stockLabel}</strong>
+              <span>{product.warehouseAvailability}</span>
+              <strong>{product.stockLabel} · {product.stockRange}</strong>
             </div>
             <div>
               <Truck size={18} aria-hidden="true" />
-              <span>Teslimat</span>
-              <strong>10.000 TL üzeri kargo bizden</strong>
+              <span>Tahmini termin</span>
+              <strong>{product.deliveryEstimate}</strong>
             </div>
             <div>
               <Scale size={18} aria-hidden="true" />

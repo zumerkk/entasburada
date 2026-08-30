@@ -31,7 +31,9 @@ export default async function HomePage() {
         metrics={{
           activeProducts: formatCount(overview.store.importSummary.active),
           pricedProducts: formatCount(overview.store.importSummary.priced),
-          stockedProducts: formatCount(overview.store.importSummary.active)
+          stockedProducts: formatCount(overview.store.products.filter(
+            (product) => product.status === "ACTIVE" && ["in_stock", "low_stock"].includes(product.stockStatus)
+          ).length)
         }}
       />
       <BulkQuoteCampaign variant="home" />
@@ -155,7 +157,7 @@ export default async function HomePage() {
         <div className="opItem">
           <Truck size={22} aria-hidden="true" />
           <strong>Stok görünürlüğü</strong>
-          <span>Müşteri kataloğundaki bütün aktif ürünler “Stokta var” olarak gösterilir.</span>
+          <span>Gerçek stok durumu, güvenli stok aralığı, depo ve tahmini teslim süresi gösterilir.</span>
         </div>
         <div className="opItem">
           <FileText size={22} aria-hidden="true" />

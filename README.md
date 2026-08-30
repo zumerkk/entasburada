@@ -5,6 +5,7 @@ Modern, bayi onaylı fiyat gösterimi üzerine kurulu hırdavat ve yapı market 
 ## Kapsam
 
 - `apps/web`: Public katalog, ürün detay, bayi başvuru, teklif talebi, `/admin` operasyon paneli ve fiyat gizleme deneyimi.
+- `/satici`: Adminin yetkilendirdiği al-sat/dropshipping hesapları için canlı ürün, net stok, KDV dahil alış fiyatı, kâr görünümü, ürün beslemeleri ve sipariş çalışma alanı.
 - `apps/admin`: Eski ayrı admin uygulaması; aktif geliştirme paneli ana uygulamadaki `/admin` rotasındadır.
 - `apps/worker`: BullMQ tabanlı import, bildirim, analitik ve terk edilmiş sepet job iskeleti.
 - `packages/database`: PostgreSQL/Prisma veri modeli.
@@ -26,6 +27,8 @@ pnpm dev:web
 Web: http://localhost:3000
 
 Admin: http://localhost:3000/admin
+
+Satıcı paneli: http://localhost:3000/satici (admin tarafından satıcı erişimi açılmış bayi hesabı gerekir)
 
 Yerel geliştirme admin bilgisi:
 
@@ -93,3 +96,14 @@ Smoke test public teklif oluşturur, admin fiyatlandırır, siparişe çevirir, 
 ## Kritik Ticari Kural
 
 Onaylı bayi oturumu yoksa ürün fiyatı, indirim, sepet ve ödeme alanları görünmez. UI tarafında `PriceGate`, domain tarafında `calculateB2BPrice` aynı kuralı uygular.
+
+## Satıcı / Dropshipping API
+
+Admin `/admin/dealers` ekranından doğrudan satıcı hesabı açabilir; geçici şifre ve API anahtarı yalnızca üretildiği anda düz metin gösterilir. Ürün verisi yetkiye göre JSON, CSV ve XML olarak alınabilir:
+
+```bash
+curl -H "Authorization: Bearer $ENTAS_API_KEY" \
+  "https://entasburada.com/api/reseller/v1/products?stock=available&limit=100"
+```
+
+API ile dropshipping siparişi `POST /api/reseller/v1/orders` adresine mağaza sipariş numarası, alıcı ve SKU satırları gönderilerek açılır. Aynı satıcı + mağaza sipariş numarası mükerrer sipariş üretmez. Ayrıntılı sözleşme ve operasyon notları için [SATICI_PORTALI.md](./SATICI_PORTALI.md) dosyasına bakın.

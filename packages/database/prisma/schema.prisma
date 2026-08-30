@@ -44,6 +44,12 @@ enum CompanyAccountRole {
   WAREHOUSE_RECEIVER
 }
 
+enum SellerMode {
+  RESELLER
+  DROPSHIPPING
+  HYBRID
+}
+
 enum ProductStatus {
   DRAFT
   REVIEW
@@ -288,6 +294,7 @@ model Company {
   applications          DealerApplication[]
   addresses             Address[]
   customerProfile       CustomerProfile?
+  sellerAccess          SellerAccess?
   creditAccount         CreditAccount?
   carts                 Cart[]
   savedCarts            SavedCart[]
@@ -305,6 +312,27 @@ model Company {
   @@index([status])
   @@index([segmentId])
   @@index([salesRepresentativeId])
+}
+
+model SellerAccess {
+  id                   String     @id @default(cuid())
+  companyId            String     @unique
+  company              Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  enabled              Boolean    @default(false)
+  mode                 SellerMode @default(RESELLER)
+  productFeedEnabled   Boolean    @default(false)
+  apiEnabled           Boolean    @default(false)
+  exactStockEnabled    Boolean    @default(false)
+  orderApiEnabled      Boolean    @default(false)
+  blindShippingEnabled Boolean    @default(false)
+  defaultMarkupRate    Decimal    @default(30) @db.Decimal(7, 2)
+  apiKeyHash           String?    @unique
+  apiKeyPrefix         String?
+  apiKeyCreatedAt      DateTime?
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+
+  @@index([enabled, mode])
 }
 
 model CompanyUser {
@@ -920,6 +948,11 @@ model Order {
   grandTotal            Decimal              @default(0) @db.Decimal(14, 2)
   deliveryAddress       Json?
   invoiceAddress        Json?
+  fulfillmentType       String?
+  recipientName         String?
+  recipientPhone        String?
+  sellerOrderReference  String?
+  blindShipping         Boolean              @default(false)
   customerNote          String?
   internalNote          String?
   statusTimeline        Json?
@@ -936,6 +969,7 @@ model Order {
   @@index([quoteRequestId])
   @@index([contactEmail])
   @@index([createdAt])
+  @@unique([companyId, sellerOrderReference])
 }
 
 model OrderItem {

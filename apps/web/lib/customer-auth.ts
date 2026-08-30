@@ -1,5 +1,5 @@
 import "server-only";
-import { createHash, randomUUID } from "node:crypto";
+import { createHash, randomBytes, randomUUID, timingSafeEqual } from "node:crypto";
 import { existsSync } from "node:fs";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -15,6 +15,22 @@ export { hashPassword, verifyPassword };
 
 export type CustomerStatus = "approved" | "pending" | "suspended";
 export type CustomerSegment = "standard" | "industrial" | "project";
+export type CompanyUserRole = "COMPANY_OWNER" | "PURCHASE_MANAGER" | "PURCHASE_STAFF" | "FINANCE_OFFICER" | "APPROVER" | "WAREHOUSE_RECEIVER" | "VIEWER";
+export type SellerMode = "reseller" | "dropshipping" | "hybrid";
+
+export interface SellerAccess {
+  enabled: boolean;
+  mode: SellerMode;
+  productFeedEnabled: boolean;
+  apiEnabled: boolean;
+  exactStockEnabled: boolean;
+  orderApiEnabled: boolean;
+  blindShippingEnabled: boolean;
+  defaultMarkupRate: number;
+  apiKeyHash?: string;
+  apiKeyPrefix?: string;
+  apiKeyCreatedAt?: string;
+}
 
 export interface CustomerAccount {
   id: string;
@@ -34,6 +50,10 @@ export interface CustomerAccount {
   paymentTermDays?: number;
   creditLimit?: string;
   approvalLimit?: string;
+  companyId?: string;
+  companyRole?: CompanyUserRole;
+  orderApprovalRequired?: boolean;
+  invitedById?: string;
   freeShippingThreshold?: string;
   priorityLevel?: number;
   perks?: string[];
@@ -42,6 +62,7 @@ export interface CustomerAccount {
   categoryDiscounts: Record<string, number>;
   specialNetPrices: Record<string, string>;
   mustChangePassword?: boolean;
+  sellerAccess?: SellerAccess;
 }
 
 export const CUSTOMER_COOKIE = process.env.NODE_ENV === "production" ? "__Host-entas_customer_session" : "entas_customer_session";
@@ -110,6 +131,52 @@ export async function findCustomerByEmail(email: string): Promise<CustomerAccoun
   return customers.find((entry) => normalizeEmail(entry.email) === normalizedEmail) ?? null;
 }
 
+export async function getCompanyMembers(customer: CustomerAccount): Promise<CustomerAccount[]> {
+  const companyId = customer.companyId ?? customer.id;
+  return (await getCustomers()).filter((member) => (member.companyId ?? member.id) === companyId);
+}
+
+export function canApproveCompanyOrders(customer: CustomerAccount): boolean {
+  return ["COMPANY_OWNER", "PURCHASE_MANAGER", "APPROVER", "FINANCE_OFFICER"].includes(customer.companyRole ?? "COMPANY_OWNER");
+}
+
+export function inviteCompanyMember(
+  inviter: CustomerAccount,
+  input: { email: string; authorizedPerson: string; phone?: string; companyRole: CompanyUserRole; approvalLimit?: string; orderApprovalRequired?: boolean }
+): Promise<{ account: CustomerAccount; temporaryPassword: string }> {
+  return enqueueCustomerMutation(() => inviteCompanyMemberUnlocked(inviter, input));
+}
+
+async function inviteCompanyMemberUnlocked(
+  inviter: CustomerAccount,
+  input: { email: string; authorizedPerson: string; phone?: string; companyRole: CompanyUserRole; approvalLimit?: string; orderApprovalRequired?: boolean }
+): Promise<{ account: CustomerAccount; temporaryPassword: string }> {
+  if (!canApproveCompanyOrders(inviter)) throw new Error("Firma kullanıcısı ekleme yetkiniz yok.");
+  const email = normalizeEmail(input.email);
+  const authorizedPerson = input.authorizedPerson.trim().slice(0, 120);
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Geçerli bir e-posta girin.");
+  if (authorizedPerson.length < 2) throw new Error("Kullanıcı adı zorunludur.");
+  const customers = await getCustomers();
+  if (customers.some((customer) => normalizeEmail(customer.email) === email)) throw new Error("Bu e-posta adresiyle kayıtlı kullanıcı zaten var.");
+  const temporaryPassword = generateCompanyTempPassword();
+  const account = enforceUniformCommercialTerms({
+    ...inviter,
+    id: `cust-${randomUUID()}`,
+    email,
+    password: hashPassword(temporaryPassword),
+    authorizedPerson,
+    phone: input.phone?.trim().slice(0, 32) || inviter.phone,
+    companyId: inviter.companyId ?? inviter.id,
+    companyRole: input.companyRole,
+    approvalLimit: normalizeMoneyLimit(input.approvalLimit),
+    orderApprovalRequired: Boolean(input.orderApprovalRequired),
+    invitedById: inviter.id,
+    mustChangePassword: true
+  });
+  await saveCustomers([...customers, account]);
+  return { account, temporaryPassword };
+}
+
 export function createCustomerAccount(account: Omit<CustomerAccount, "password"> & { plainPassword: string }): Promise<CustomerAccount> {
   return enqueueCustomerMutation(() => createCustomerAccountUnlocked(account));
 }
@@ -157,6 +224,77 @@ export function changeCustomerPassword(customerId: string, currentPassword: stri
   return enqueueCustomerMutation(() => changeCustomerPasswordUnlocked(customerId, currentPassword, newPassword));
 }
 
+export function updateSellerAccess(customerId: string, patch: Partial<SellerAccess>): Promise<CustomerAccount> {
+  return enqueueCustomerMutation(async () => {
+    const customers = await getCustomers();
+    const index = customers.findIndex((customer) => customer.id === customerId);
+    if (index < 0) throw new Error("Hesap bulunamadı.");
+    const current = customers[index]!;
+    const sellerAccess = normalizeSellerAccess({ ...current.sellerAccess, ...patch });
+    const updated = enforceUniformCommercialTerms({ ...current, sellerAccess });
+    customers[index] = updated;
+    await saveCustomers(customers);
+    return updated;
+  });
+}
+
+/** Yeni anahtar yalnızca bu çağrının sonucunda düz metin olarak döner; diskte özeti saklanır. */
+export function rotateSellerApiKey(customerId: string): Promise<{ account: CustomerAccount; apiKey: string }> {
+  return enqueueCustomerMutation(async () => {
+    const customers = await getCustomers();
+    const index = customers.findIndex((customer) => customer.id === customerId);
+    if (index < 0) throw new Error("Hesap bulunamadı.");
+    const current = customers[index]!;
+    if (!current.sellerAccess?.enabled || !current.sellerAccess.apiEnabled) {
+      throw new Error("Önce satıcı ve API erişimini etkinleştirin.");
+    }
+    const apiKey = `entas_live_${randomBytes(32).toString("base64url")}`;
+    const sellerAccess = normalizeSellerAccess({
+      ...current.sellerAccess,
+      apiKeyHash: hashSellerApiKey(apiKey),
+      apiKeyPrefix: apiKey.slice(0, 18),
+      apiKeyCreatedAt: new Date().toISOString()
+    });
+    const account = enforceUniformCommercialTerms({ ...current, sellerAccess });
+    customers[index] = account;
+    await saveCustomers(customers);
+    return { account, apiKey };
+  });
+}
+
+export function resetCustomerPasswordByAdmin(customerId: string): Promise<{ account: CustomerAccount; temporaryPassword: string }> {
+  return enqueueCustomerMutation(async () => {
+    const customers = await getCustomers();
+    const index = customers.findIndex((customer) => customer.id === customerId);
+    if (index < 0) throw new Error("Hesap bulunamadı.");
+    const temporaryPassword = generateCompanyTempPassword();
+    const account = enforceUniformCommercialTerms({
+      ...customers[index]!,
+      password: hashPassword(temporaryPassword),
+      mustChangePassword: true
+    });
+    customers[index] = account;
+    await saveCustomers(customers);
+    return { account, temporaryPassword };
+  });
+}
+
+export async function authenticateSellerApiKey(apiKey: string): Promise<CustomerAccount | null> {
+  const token = apiKey.trim();
+  if (!/^entas_live_[A-Za-z0-9_-]{40,}$/.test(token)) return null;
+  const tokenHash = Buffer.from(hashSellerApiKey(token), "hex");
+  const customers = await getCustomers();
+  for (const customer of customers) {
+    const storedHash = customer.sellerAccess?.apiKeyHash;
+    if (!storedHash || storedHash.length !== tokenHash.length * 2) continue;
+    const stored = Buffer.from(storedHash, "hex");
+    if (stored.length === tokenHash.length && timingSafeEqual(stored, tokenHash)) {
+      return customer.status === "approved" && customer.sellerAccess?.enabled && customer.sellerAccess.apiEnabled ? customer : null;
+    }
+  }
+  return null;
+}
+
 async function changeCustomerPasswordUnlocked(customerId: string, currentPassword: string, newPassword: string): Promise<void> {
   const customers = await getCustomers();
   const index = customers.findIndex((customer) => customer.id === customerId);
@@ -187,12 +325,49 @@ async function saveCustomers(customers: CustomerAccount[]): Promise<void> {
 function enforceUniformCommercialTerms(customer: CustomerAccount): CustomerAccount {
   return {
     ...customer,
+    companyId: customer.companyId ?? customer.id,
+    companyRole: customer.companyRole ?? "COMPANY_OWNER",
+    orderApprovalRequired: Boolean(customer.orderApprovalRequired),
     baseDiscountRate: 0,
     brandDiscounts: {},
     categoryDiscounts: {},
     specialNetPrices: {},
-    freeShippingThreshold: String(FREE_SHIPPING_THRESHOLD_TRY)
+    freeShippingThreshold: String(FREE_SHIPPING_THRESHOLD_TRY),
+    sellerAccess: normalizeSellerAccess(customer.sellerAccess)
   };
+}
+
+export function normalizeSellerAccess(access?: Partial<SellerAccess>): SellerAccess {
+  const markup = Number(access?.defaultMarkupRate);
+  return {
+    enabled: Boolean(access?.enabled),
+    mode: access?.mode === "dropshipping" || access?.mode === "hybrid" ? access.mode : "reseller",
+    productFeedEnabled: Boolean(access?.productFeedEnabled),
+    apiEnabled: Boolean(access?.apiEnabled),
+    exactStockEnabled: Boolean(access?.exactStockEnabled),
+    orderApiEnabled: Boolean(access?.orderApiEnabled),
+    blindShippingEnabled: Boolean(access?.blindShippingEnabled),
+    defaultMarkupRate: Number.isFinite(markup) ? Math.min(500, Math.max(0, markup)) : 30,
+    ...(access?.apiKeyHash ? { apiKeyHash: access.apiKeyHash } : {}),
+    ...(access?.apiKeyPrefix ? { apiKeyPrefix: access.apiKeyPrefix } : {}),
+    ...(access?.apiKeyCreatedAt ? { apiKeyCreatedAt: access.apiKeyCreatedAt } : {})
+  };
+}
+
+function hashSellerApiKey(apiKey: string): string {
+  return createHash("sha256").update(apiKey).digest("hex");
+}
+
+function generateCompanyTempPassword(): string {
+  const alphabet = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  const bytes = randomBytes(8);
+  const token = Array.from(bytes, (byte) => alphabet[byte % alphabet.length]).join("");
+  return `Entas-${token.slice(0, 4)}-${token.slice(4)}9!`;
+}
+
+function normalizeMoneyLimit(value: string | undefined): string {
+  const parsed = Number(String(value ?? "0").replace(",", "."));
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed.toFixed(2) : "0.00";
 }
 
 export const CUSTOMER_SESSION_MAX_AGE_SECONDS = 60 * 60 * 8;

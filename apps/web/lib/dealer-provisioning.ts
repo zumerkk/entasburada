@@ -1,6 +1,6 @@
 import "server-only";
 import { randomBytes, randomUUID } from "node:crypto";
-import { createCustomerAccount, findCustomerByEmail, updateCustomerAccount, type CustomerAccount } from "./customer-auth";
+import { createCustomerAccount, findCustomerByEmail, normalizeSellerAccess, updateCustomerAccount, type CustomerAccount, type SellerAccess } from "./customer-auth";
 import type { DealerApplication } from "./dealer-application-repository";
 import { sendMail } from "./mailer";
 import { COMPANY_CONTACT } from "./company-contact";
@@ -24,6 +24,7 @@ export interface DirectDealerAccountInput {
   segment?: CustomerAccount["segment"] | undefined;
   temporaryPassword?: string | undefined;
   sendWelcomeEmail?: boolean | undefined;
+  sellerAccess?: Partial<SellerAccess> | undefined;
 }
 
 // Okunabilir, karistirilmayan karakterlerle guclu gecici sifre (or. Entas-K7KM-Q4TX)
@@ -66,7 +67,8 @@ export async function provisionDealerAccount(application: DealerApplication): Pr
     brandDiscounts: {},
     categoryDiscounts: {},
     specialNetPrices: {},
-    mustChangePassword: true
+    mustChangePassword: true,
+    sellerAccess: normalizeSellerAccess()
   };
 
   const record = await createCustomerAccount(account);
@@ -112,7 +114,8 @@ export async function provisionDirectDealerAccount(input: DirectDealerAccountInp
     brandDiscounts: {},
     categoryDiscounts: {},
     specialNetPrices: {},
-    mustChangePassword: true
+    mustChangePassword: true,
+    sellerAccess: normalizeSellerAccess(input.sellerAccess)
   });
   const mailSent = input.sendWelcomeEmail === false
     ? false

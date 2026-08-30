@@ -13,6 +13,11 @@ export async function GET(request: Request): Promise<Response> {
     view: url.searchParams.get("view") ?? "",
     brand: url.searchParams.get("brand") ?? "",
     sourceKey: url.searchParams.get("sourceKey") ?? "",
+    size: url.searchParams.get("size") ?? "",
+    diameter: url.searchParams.get("diameter") ?? "",
+    connection: url.searchParams.get("connection") ?? "",
+    material: url.searchParams.get("material") ?? "",
+    usage: url.searchParams.get("usage") ?? "",
     limit,
     offset: (page - 1) * limit
   });
@@ -20,7 +25,7 @@ export async function GET(request: Request): Promise<Response> {
   return Response.json({
     ...result,
     pricePolicy: "hidden_until_approved_dealer",
-    stockPolicy: "all_active_products_in_stock",
+    stockPolicy: "real_status_and_safe_quantity_range",
     debug:
       process.env.NODE_ENV === "production"
         ? undefined

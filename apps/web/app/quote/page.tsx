@@ -86,9 +86,13 @@ export default async function QuotePage({ searchParams }: { searchParams: Promis
               Not
               <textarea name="notes" />
             </label>
+            <label className="checkboxLabel spanTwo">
+              <input type="checkbox" name="allowPartialShipment" />
+              Ürünler farklı tarihlerde hazır olursa kısmi sevkiyata izin veriyorum.
+            </label>
             <label>
-              CSV/TSV ürün listesi
-              <input type="file" name="quoteFile" accept=".csv,.tsv,text/csv,text/tab-separated-values" />
+              Excel/CSV/TSV ürün listesi
+              <input type="file" name="quoteFile" accept=".xlsx,.csv,.tsv,text/csv,text/tab-separated-values,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />
             </label>
             <div className="fileUploadHint">
               <Upload size={18} aria-hidden="true" />

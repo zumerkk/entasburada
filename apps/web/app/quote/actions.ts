@@ -3,9 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
+  applyOrderCompanyApprovalPolicy,
   convertQuoteToOrder,
   createQuote,
   getQuoteByTrackingCode,
+  recordQuoteCustomerResponse,
   updateQuoteStatus,
   type CreateQuoteItemInput
 } from "../../lib/commercial-repository";
@@ -14,6 +16,7 @@ import { canAccessCommercialRecord } from "../../lib/commercial-access";
 import { headers } from "next/headers";
 import { consumeRateLimit } from "../../lib/rate-limit";
 import { getClientAddress } from "../../lib/security";
+import { parseMaterialListFile } from "../../lib/material-list-parser";
 
 export async function submitQuoteAction(formData: FormData): Promise<void> {
   let target = "/quote";
@@ -33,6 +36,7 @@ export async function submitQuoteAction(formData: FormData): Promise<void> {
       deliveryAddress: getString(formData, "deliveryAddress"),
       paymentPreference: getString(formData, "paymentPreference"),
       notes: getString(formData, "notes"),
+      allowPartialShipment: getString(formData, "allowPartialShipment") === "on",
       items
     });
 
@@ -55,10 +59,31 @@ export async function approveQuoteByTrackingCodeAction(formData: FormData): Prom
     redirect(`/quote/${encodeURIComponent(code)}?error=${encodeURIComponent("Teklif bulunamadi.")}`);
   }
 
-  await updateQuoteStatus(quote.id, "APPROVED", quote.authorizedPerson || "Musteri", "Musteri teklifi onayladi.");
-  const order = await convertQuoteToOrder(quote.id, quote.authorizedPerson || "Musteri", "customer");
+  const selected = formData.getAll("acceptedItemId").map(String).filter((itemId) => quote.items.some((item) => item.id === itemId));
+  const acceptedItemIds = selected.length > 0 ? selected : quote.items.map((item) => item.id);
+  await recordQuoteCustomerResponse(
+    { quoteId: quote.id, acceptedItemIds, note: getString(formData, "responseNote") },
+    quote.authorizedPerson || "Müşteri"
+  );
+  const createdOrder = await convertQuoteToOrder(quote.id, quote.authorizedPerson || "Müşteri", "customer", acceptedItemIds);
+  const order = customer ? await applyOrderCompanyApprovalPolicy(createdOrder.id, customer) : createdOrder;
   revalidateCommercialPaths();
   redirect(`/orders/${encodeURIComponent(order.trackingCode)}`);
+}
+
+export async function requestQuoteRevisionByTrackingCodeAction(formData: FormData): Promise<void> {
+  const code = getString(formData, "trackingCode");
+  const quote = await getQuoteByTrackingCode(code);
+  const customer = await getCurrentCustomer();
+  if (!quote || !canAccessCommercialRecord(quote, customer) || !["PRICED", "APPROVED"].includes(quote.status)) {
+    redirect(`/quote/${encodeURIComponent(code)}?error=${encodeURIComponent("Teklif bulunamadı.")}`);
+  }
+  const acceptedItemIds = formData.getAll("acceptedItemId").map(String).filter((itemId) => quote.items.some((item) => item.id === itemId));
+  const note = getString(formData, "responseNote");
+  if (note.length < 3) redirect(`/quote/${encodeURIComponent(code)}?error=${encodeURIComponent("Revizyon talebinizi kısa bir notla açıklayın.")}`);
+  await recordQuoteCustomerResponse({ quoteId: quote.id, acceptedItemIds, note, requestRevision: true }, quote.authorizedPerson || "Müşteri");
+  revalidateCommercialPaths();
+  redirect(`/quote/${encodeURIComponent(code)}?revision=requested`);
 }
 
 export async function rejectQuoteByTrackingCodeAction(formData: FormData): Promise<void> {
@@ -70,7 +95,8 @@ export async function rejectQuoteByTrackingCodeAction(formData: FormData): Promi
     redirect(`/quote/${encodeURIComponent(code)}?error=${encodeURIComponent("Teklif bulunamadi.")}`);
   }
 
-  await updateQuoteStatus(quote.id, "REJECTED", quote.authorizedPerson || "Musteri", "Musteri teklifi reddetti.");
+  const note = getString(formData, "responseNote");
+  await updateQuoteStatus(quote.id, "REJECTED", quote.authorizedPerson || "Müşteri", note ? `Müşteri teklifi reddetti: ${note}` : "Müşteri teklifi reddetti.");
   revalidateCommercialPaths();
   redirect(`/quote/${encodeURIComponent(quote.trackingCode)}`);
 }
@@ -100,54 +126,13 @@ async function itemsFromUpload(formData: FormData): Promise<CreateQuoteItemInput
   if (!(file instanceof File) || file.size === 0) {
     return [];
   }
-  if (file.size > 1024 * 1024) throw new Error("Teklif dosyası en fazla 1 MB olabilir.");
-
-  const text = await file.text();
-  return parseDelimitedQuoteItems(text);
-}
-
-function parseDelimitedQuoteItems(text: string): CreateQuoteItemInput[] {
-  const lines = text
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean);
-
-  if (lines.length === 0) {
-    return [];
-  }
-
-  const headerLine = lines[0] ?? "";
-  const delimiter = headerLine.includes("\t") ? "\t" : headerLine.includes(";") ? ";" : ",";
-  const first = splitDelimitedLine(headerLine, delimiter).map((cell) => cell.toLocaleLowerCase("tr-TR"));
-  const hasHeader = first.some((cell) => ["sku", "urun", "ürün", "adet", "quantity", "miktar"].includes(cell));
-  const rows = (hasHeader ? lines.slice(1) : lines).slice(0, 500);
-  const indexOf = (names: string[], fallback: number) => {
-    const index = first.findIndex((cell) => names.includes(cell));
-    return index === -1 ? fallback : index;
-  };
-
-  const skuIndex = hasHeader ? indexOf(["sku", "kod", "urun kodu", "ürün kodu", "barkod"], 0) : 0;
-  const nameIndex = hasHeader ? indexOf(["urun", "ürün", "urun adi", "ürün adı", "product"], 1) : 1;
-  const quantityIndex = hasHeader ? indexOf(["adet", "miktar", "quantity"], 2) : 2;
-  const unitIndex = hasHeader ? indexOf(["birim", "unit"], 3) : 3;
-  const priceIndex = hasHeader ? indexOf(["hedef fiyat", "target price", "fiyat"], 4) : 4;
-
-  return rows
-    .map((line) => {
-      const cells = splitDelimitedLine(line, delimiter);
-      return {
-        sku: cells[skuIndex] ?? "",
-        productName: cells[nameIndex] ?? "",
-        quantity: Number(cells[quantityIndex] ?? "1"),
-        unit: cells[unitIndex] || "Adet",
-        targetPrice: cells[priceIndex] ?? ""
-      };
-    })
-    .filter((item) => getClean(item.sku) || getClean(item.productName));
-}
-
-function splitDelimitedLine(line: string, delimiter: string): string[] {
-  return line.split(delimiter).slice(0, 20).map((cell) => cell.trim().replace(/^"|"$/g, "").slice(0, 500));
+  return (await parseMaterialListFile(file)).map((row) => ({
+    sku: row.sku,
+    productName: row.productName,
+    quantity: row.quantity,
+    unit: row.unit,
+    targetPrice: row.targetPrice
+  }));
 }
 
 function getString(formData: FormData, key: string): string {

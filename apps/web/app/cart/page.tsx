@@ -1,4 +1,4 @@
-import { AlertTriangle, ArrowLeft, CreditCard, FileText, RotateCcw, ShoppingCart, Trash2, Truck } from "lucide-react";
+import { AlertTriangle, ArrowLeft, BookmarkPlus, CreditCard, FileText, RotateCcw, ShoppingCart, Trash2, Truck } from "lucide-react";
 import { EmptyState, StatusPill } from "@entas/ui";
 import { CartQuantityField } from "../../components/CartQuantityField";
 import { loadPricedCart } from "../../lib/cart-repository";
@@ -7,6 +7,7 @@ import { convertToTry, normalizeCurrencyCode } from "../../lib/fx";
 import { installmentOptions } from "../../lib/installments";
 import { parseMoney } from "../../lib/customer-pricing";
 import { clearCartAction, createOrderFromCartAction, createQuoteFromCartAction, payCartWithCardAction, removeCartItemAction, updateCartAction } from "./actions";
+import { saveCartTemplateAction } from "../order-templates/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -179,6 +180,20 @@ export default async function CartPage({ searchParams }: { searchParams: Promise
                   </button>
                 </form>
               </div>
+              <form action={saveCartTemplateAction} className="saveTemplateForm">
+                <div>
+                  <BookmarkPlus size={18} aria-hidden="true" />
+                  <strong>Bu sepeti tekrar kullan</strong>
+                </div>
+                <input name="name" required placeholder="Şablon adı (örn. Aylık sarf)" />
+                <select name="frequency" defaultValue="ON_DEMAND">
+                  <option value="ON_DEMAND">İhtiyaç oldukça</option>
+                  <option value="WEEKLY">Haftalık</option>
+                  <option value="MONTHLY">Aylık</option>
+                </select>
+                <button className="btn btnGhost dark" type="submit">Şablon Olarak Kaydet</button>
+                <a href="/order-templates">Kayıtlı şablonları aç</a>
+              </form>
             </aside>
           </div>
         ) : (

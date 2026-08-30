@@ -15,6 +15,7 @@ import {
   deleteSingleProductAction,
   publishAllDraftAction,
   publishSelectedAction,
+  previewBulkPriceOperationAction,
   updateProductAction
 } from "../actions";
 import { AdminFrame } from "../AdminFrame";
@@ -244,6 +245,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
           filterTouchesSyncedSource={filterTouchesSyncedSource}
           bulkSetStatusAction={bulkSetStatusAction}
           bulkPriceOperationAction={bulkPriceOperationAction}
+          previewBulkPriceOperationAction={previewBulkPriceOperationAction}
           bulkDeleteProductsAction={bulkDeleteProductsAction}
         />
         <div className="adminTable">
@@ -337,6 +339,10 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
                   <label>
                     Stok adedi
                     <input name="stockQuantity" type="number" min={0} defaultValue={product.stockQuantity} form={`edit-${product.id}`} />
+                  </label>
+                  <label>
+                    Beklenen stok tarihi
+                    <input name="expectedStockAt" type="date" defaultValue={product.expectedStockAt ? new Date(product.expectedStockAt).toISOString().slice(0, 10) : ""} form={`edit-${product.id}`} />
                   </label>
                   <label>
                     Birim
