@@ -7579,6 +7579,18 @@ a.metricCard {
   min-height: 28px;
 }
 
+.sellerPricingPolicyNote {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 11px 13px;
+  color: #7c2d12;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 .sellerCredentialResult,
 .sellerCredentialInline {
   display: grid;

@@ -47,7 +47,7 @@ export async function GET(request: Request): Promise<Response> {
   return json({
     apiVersion: "v1",
     generatedAt: new Date().toISOString(),
-    pricePolicy: "KDV dahil satıcı alış fiyatı",
+    pricePolicy: "KDV dahil satıcı kanal alış fiyatı",
     exactStock: Boolean(seller.customer.sellerAccess?.exactStockEnabled),
     pagination: {
       page: Math.floor(catalog.offset / catalog.limit) + 1,

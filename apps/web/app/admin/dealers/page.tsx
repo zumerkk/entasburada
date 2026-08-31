@@ -187,9 +187,10 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
                       </select>
                     </label>
                     <label>
-                      Varsayılan kâr (%)
+                      Önerilen mağaza kârı (%)
                       <input name="defaultMarkupRate" type="number" min="0" max="500" step="0.1" defaultValue={customer.sellerAccess?.defaultMarkupRate ?? 30} />
                     </label>
+                    <p className="sellerPricingPolicyNote"><strong>Satıcı kanal alış fiyatı:</strong> standart bayi net fiyatının %20 üzeridir. Bu sabit kanal kuralı sepet, panel, ürün API’si ve dropshipping siparişlerinde birlikte uygulanır.</p>
                     <label className="spanTwo">
                       Teslimat adresi
                       <textarea name="deliveryAddress" rows={2} defaultValue={customer.deliveryAddress} />

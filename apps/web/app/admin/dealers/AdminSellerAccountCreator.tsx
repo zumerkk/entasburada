@@ -105,7 +105,8 @@ export function AdminSellerAccountCreator() {
             <option value="project">Proje</option>
           </select>
         </label>
-        <label>Varsayılan satış kârı (%)<input name="defaultMarkupRate" type="number" min="0" max="500" step="0.1" defaultValue="30" /></label>
+        <label>Önerilen mağaza kârı (%)<input name="defaultMarkupRate" type="number" min="0" max="500" step="0.1" defaultValue="30" /></label>
+        <p className="sellerPricingPolicyNote"><strong>Satıcı kanal alış fiyatı:</strong> standart bayi net fiyatının %20 üzeridir. Önerilen mağaza kârı bu alış fiyatının üzerine ayrıca hesaplanır.</p>
         <label className="spanTwo">Varsayılan teslimat adresi *<textarea name="deliveryAddress" required minLength={10} rows={2} /></label>
         <div className="sellerPermissionGrid spanTwo">
           <label><input type="checkbox" name="productFeedEnabled" defaultChecked /> Ürün beslemesi</label>

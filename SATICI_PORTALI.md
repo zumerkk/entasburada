@@ -19,6 +19,14 @@ Her bayi hesabında ayrı bir `sellerAccess` profili bulunur:
 
 Hesap tipi `reseller`, `dropshipping` veya `hybrid` olabilir. API anahtarı SHA-256 özetiyle saklanır; düz anahtar yalnızca oluşturma/yenileme yanıtında gösterilir. Şifre yenilenince mevcut müşteri oturumları geçersiz olur.
 
+## Fiyat politikası
+
+- Standart bayi/toptan müşteri fiyatı mevcut marka ve kaynak fiyat kurallarıyla hesaplanır.
+- Satıcı, dropshipping ve hibrit hesapların KDV dahil alış fiyatı, standart bayi net fiyatının sabit `%20` üzeridir.
+- Bu kanal farkı ürün sayfası, hızlı sipariş, sepet, teklif, panel, JSON/XML/CSV beslemesi ve API siparişinde aynı merkezi fiyat motorundan uygulanır.
+- `defaultMarkupRate`, ENTAŞBURADA'nın `%20` kanal farkı değildir; satıcının kendi mağazası için önerilen satış fiyatını hesaplayan ayrı ve yönetilebilir kâr oranıdır.
+- Geçmişte oluşmuş sipariş fiyatları değiştirilmez; yeni fiyat hesapları ve yeni siparişler güncel politikayı kullanır.
+
 ## Admin akışı
 
 1. `/admin/dealers` ekranındaki “Doğrudan satıcı / dropshipping hesabı aç” formu doldurulur.
@@ -45,7 +53,7 @@ Parametreler:
 - `limit`: JSON için 1–250
 - `format`: `json`, `csv`, `xml`
 
-Fiyatlar satıcının KDV dahil alış fiyatıdır. `recommendedSalePrice`, adminin tanımladığı varsayılan kâr oranıyla bilgilendirme amacıyla hesaplanır. `availableQuantity`, yalnızca net stok yetkisi açıksa doludur. `orderable` alanı aktif fiyat ve siparişe uygun stok birlikte bulunduğunda `true` olur.
+Fiyatlar satıcının KDV dahil kanal alış fiyatıdır. `recommendedSalePrice`, bu kanal alış fiyatının üzerine adminin tanımladığı önerilen mağaza kârı uygulanarak bilgilendirme amacıyla hesaplanır. `availableQuantity`, yalnızca net stok yetkisi açıksa doludur. `orderable` alanı aktif fiyat ve siparişe uygun stok birlikte bulunduğunda `true` olur.
 
 ## Sipariş API’si
 

@@ -35,7 +35,7 @@ export default async function SellerDashboardPage({ searchParams }: { searchPara
           <div>
             <span className="sellerEyebrow"><Store size={15} /> Satıcı merkezi</span>
             <h1>{customer.companyName}</h1>
-            <p>Canlı ürün, KDV dahil alış fiyatı, stok ve sipariş operasyonunuz tek çalışma alanında.</p>
+            <p>Canlı ürün, KDV dahil satıcı kanal alış fiyatı, stok ve sipariş operasyonunuz tek çalışma alanında.</p>
             <div className="sellerHeroBadges">
               <StatusPill tone="success">{sellerModeLabel(access.mode)}</StatusPill>
               <StatusPill tone={access.exactStockEnabled ? "success" : "info"}>{access.exactStockEnabled ? "Net stok açık" : "Stok aralığı"}</StatusPill>
@@ -43,9 +43,9 @@ export default async function SellerDashboardPage({ searchParams }: { searchPara
             </div>
           </div>
           <aside>
-            <span>Varsayılan satış kârı</span>
+            <span>Önerilen mağaza kârı</span>
             <strong>%{access.defaultMarkupRate.toLocaleString("tr-TR", { maximumFractionDigits: 1 })}</strong>
-            <small>Önerilen satış fiyatları bu orana göre hesaplanır.</small>
+            <small>Satıcı alış fiyatınızın üzerine eklenerek önerilen mağaza satış fiyatını hesaplar.</small>
           </aside>
         </div>
       </section>
@@ -91,7 +91,7 @@ export default async function SellerDashboardPage({ searchParams }: { searchPara
         </form>
 
         <div className="sellerProductTable">
-          <div className="sellerProductTableHead"><span>Ürün</span><span>Stok</span><span>Alış fiyatı</span><span>Önerilen satış</span><span>Sipariş</span></div>
+          <div className="sellerProductTableHead"><span>Ürün</span><span>Stok</span><span>Satıcı alış fiyatı</span><span>Önerilen mağaza satışı</span><span>Sipariş</span></div>
           {catalog.items.map((product) => (
             <div className="sellerProductRow" key={product.productUrl}>
               <span className="sellerProductIdentity">

@@ -1,4 +1,6 @@
 export const FREE_SHIPPING_THRESHOLD_TRY = 10_000;
+/** Standart bayi satış fiyatının satıcı/dropshipping kanalına uygulanan sabit farkı. */
+export const SELLER_CHANNEL_PREMIUM_RATE = 20;
 
 export type BrandPriceAction = "discount" | "increase" | "net" | "hidden";
 

@@ -6,7 +6,8 @@ import path from "node:path";
 import type { CatalogProductRecord } from "@entas/catalog";
 import { loadCatalogStore } from "./catalog-repository";
 import { createNotification } from "./notification-repository";
-import { canApproveCompanyOrders, getCompanyMembers, type CustomerAccount } from "./customer-auth";
+import { canApproveCompanyOrders, findCustomerByEmail, getCompanyMembers, type CustomerAccount } from "./customer-auth";
+import { formatMoney, parseMoney as parseCustomerMoney, priceProductForCustomer } from "./customer-pricing";
 
 export type QuoteStatus = "DRAFT" | "SUBMITTED" | "ASSIGNED" | "PRICED" | "APPROVED" | "REJECTED" | "EXPIRED" | "CONVERTED";
 export type OrderStatus =
@@ -459,6 +460,7 @@ async function priceQuoteUnlocked(input: PriceQuoteInput, actorName: string): Pr
   if (input.validUntil && !/^\d{4}-\d{2}-\d{2}$/.test(input.validUntil)) {
     throw new Error("Teklif geçerlilik tarihi geçersiz.");
   }
+  await enforceSellerChannelQuoteFloor(quote, priceByItemId);
   const items = quote.items.map((item) => {
     const quoted = priceByItemId.get(item.id);
     if (quoted == null) {
@@ -1042,6 +1044,28 @@ function findCatalogProduct(products: CatalogProductRecord[], sku: string, produ
   }
 
   return undefined;
+}
+
+async function enforceSellerChannelQuoteFloor(quote: AdminQuote, priceByItemId: Map<string, number>): Promise<void> {
+  const customer = await findCustomerByEmail(quote.email);
+  if (!customer?.sellerAccess?.enabled || customer.status !== "approved") return;
+
+  const catalog = await loadCatalogStore();
+  for (const item of quote.items) {
+    const product = item.catalogProductId
+      ? catalog.products.find((entry) => entry.id === item.catalogProductId)
+      : findCatalogProduct(catalog.products, item.sku, item.productName);
+    if (!product) continue;
+
+    const channelPrice = priceProductForCustomer(product, customer);
+    if (!channelPrice) continue;
+    const minimum = parseCustomerMoney(channelPrice.unitNetPrice);
+    const quoted = priceByItemId.get(item.id) ?? 0;
+    if (quoted + 0.001 < minimum) {
+      const currency = product.currency === "TL" ? "TRY" : product.currency || "TRY";
+      throw new Error(`${item.sku} için satıcı kanal birim fiyatı en az ${formatMoney(minimum, currency)} olmalıdır.`);
+    }
+  }
 }
 
 function normalizeStoredQuote(row: AdminQuote): AdminQuote {

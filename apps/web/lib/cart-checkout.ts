@@ -28,6 +28,9 @@ async function createQuoteFromCart(customer: CustomerAccount, cart: CartSummary)
     throw new Error("Sepet bos.");
   }
 
+  const isSellerChannel = Boolean(customer.sellerAccess?.enabled);
+  const pricePolicyLabel = isSellerChannel ? "KDV dahil satıcı kanal fiyatı" : "KDV dahil ortak marka fiyatı";
+  const pricingActor = isSellerChannel ? "Satıcı kanal fiyat motoru" : "Bayi fiyat motoru";
   const quote = await createQuote({
     companyTitle: customer.companyName,
     authorizedPerson: customer.authorizedPerson,
@@ -37,7 +40,7 @@ async function createQuoteFromCart(customer: CustomerAccount, cart: CartSummary)
     deliveryCity: customer.city,
     deliveryAddress: customer.deliveryAddress,
     paymentPreference: "Cari hesap",
-    notes: `KDV dahil ortak marka fiyatı · ${cart.shippingMessage}${cart.canCreateOrder ? "" : ` · ${cart.orderBlockReason ?? "Fiyat teyidi gerekli"}`}`,
+    notes: `${pricePolicyLabel} · ${cart.shippingMessage}${cart.canCreateOrder ? "" : ` · ${cart.orderBlockReason ?? "Fiyat teyidi gerekli"}`}`,
     items: cart.items.map((item) => ({
       sku: item.sku,
       productName: item.productName,
@@ -55,13 +58,13 @@ async function createQuoteFromCart(customer: CustomerAccount, cart: CartSummary)
   return priceQuote(
     {
       quoteId: quote.id,
-      salesRepresentative: "Bayi fiyat motoru",
-      internalNote: `Sepet/hızlı sipariş akışı ortak marka fiyatıyla otomatik fiyatlandırıldı. Fiyatlar KDV dahildir. ${cart.shippingMessage}`,
+      salesRepresentative: pricingActor,
+      internalNote: `Sepet/hızlı sipariş akışı ${pricePolicyLabel.toLocaleLowerCase("tr-TR")} ile otomatik fiyatlandırıldı. ${cart.shippingMessage}`,
       prices: quote.items.map((item) => ({
         itemId: item.id,
         quotedUnitPrice: priceBySku.get(item.sku) ?? item.targetPrice ?? "0"
       }))
     },
-    "Bayi fiyat motoru"
+    pricingActor
   );
 }

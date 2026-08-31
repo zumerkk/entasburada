@@ -119,6 +119,36 @@ describe("common brand pricing", () => {
     expect(priceProductForCustomer(product, customer)).toEqual(priceProductForCustomer(product, otherCustomer));
   });
 
+  it("prices seller and dropshipping accounts 20% above the standard dealer net", () => {
+    const seller: CustomerAccount = {
+      ...customer,
+      sellerAccess: {
+        enabled: true,
+        mode: "hybrid",
+        productFeedEnabled: true,
+        apiEnabled: true,
+        exactStockEnabled: true,
+        orderApiEnabled: true,
+        blindShippingEnabled: true,
+        defaultMarkupRate: 30
+      }
+    };
+
+    const standardPrice = priceProductForCustomer(withBrand("SAYIM"), customer);
+    const sellerPrice = priceProductForCustomer(withBrand("SAYIM"), seller);
+
+    expect(standardPrice?.unitNetPrice).toBe("130.00");
+    expect(sellerPrice).toMatchObject({
+      unitNetPrice: "156.00",
+      displayPrice: "₺156,00",
+      includedTaxAmount: "26.00",
+      priceLabel: "Satıcı alış",
+      ruleLabel: "Satıcı kanal fiyatı · standart bayi neti + %20"
+    });
+    expect(sellerPrice?.listPrice).toBeUndefined();
+    expect(sellerPrice?.discountRate).toBeUndefined();
+  });
+
   it("uses the list price as Net for MRS Max/Mırsan and unspecified brands", () => {
     expect(priceProductForCustomer(withBrand("MRSMAX"), customer)).toMatchObject({ unitNetPrice: "200.00", priceLabel: "Net", ruleLabel: "Net" });
     expect(priceProductForCustomer(withBrand("ENTAŞ"), customer)).toMatchObject({ unitNetPrice: "200.00", priceLabel: "Net" });

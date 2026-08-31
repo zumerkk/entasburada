@@ -1,6 +1,6 @@
 import type { CatalogProductRecord } from "@entas/catalog";
 import type { CustomerAccount } from "./customer-auth";
-import { includedVatAmount, priceMultiplier, resolveProductPricePolicy, roundMoney } from "./commercial-policy";
+import { includedVatAmount, priceMultiplier, resolveProductPricePolicy, roundMoney, SELLER_CHANNEL_PREMIUM_RATE } from "./commercial-policy";
 
 export interface CustomerPrice {
   visible: true;
@@ -29,17 +29,24 @@ export function priceProductForCustomer(product: CatalogProductRecord, customer:
     return null;
   }
 
-  // Liste fiyatı marka kuralıyla doğrudan KDV dahil satış fiyatına dönüşür.
-  // Müşteri, segment, kategori ve ürüne özel fiyat alanları bilinçli olarak kullanılmaz.
-  const gross = roundMoney(listPrice * priceMultiplier(policy));
+  // Liste fiyatı marka kuralıyla önce standart bayinin KDV dahil net satış
+  // fiyatına dönüşür. Satıcı/dropshipping kanalı düzenli toptan müşteriden ayrı
+  // fiyatlanır ve bu netin üzerine sabit kanal farkı uygulanır.
+  const standardDealerGross = roundMoney(listPrice * priceMultiplier(policy));
+  const sellerChannel = Boolean(customer.sellerAccess?.enabled);
+  const gross = sellerChannel
+    ? roundMoney(standardDealerGross * (1 + SELLER_CHANNEL_PREMIUM_RATE / 100))
+    : standardDealerGross;
   const taxRate = Number(product.taxRate.replace(",", "."));
   return {
     visible: true,
     unitNetPrice: money(gross),
     displayPrice: formatMoney(gross, product.currency),
-    ...(policy.action === "discount" ? { listPrice: formatMoney(listPrice, product.currency), discountRate: `${percent(policy.rate)}%` } : {}),
-    ruleLabel: policy.ruleLabel,
-    ...(policy.priceLabel ? { priceLabel: policy.priceLabel } : {}),
+    ...(!sellerChannel && policy.action === "discount" ? { listPrice: formatMoney(listPrice, product.currency), discountRate: `${percent(policy.rate)}%` } : {}),
+    ruleLabel: sellerChannel
+      ? `Satıcı kanal fiyatı · standart bayi neti + %${SELLER_CHANNEL_PREMIUM_RATE}`
+      : policy.ruleLabel,
+    ...(sellerChannel ? { priceLabel: "Satıcı alış" } : policy.priceLabel ? { priceLabel: policy.priceLabel } : {}),
     taxIncluded: true,
     includedTaxAmount: money(includedVatAmount(gross, taxRate))
   };

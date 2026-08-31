@@ -4,6 +4,7 @@ import { CheckCircle2, FileText, ShoppingCart, XCircle } from "lucide-react";
 import { StatusPill } from "@entas/ui";
 import { requireAdmin } from "../../../../lib/admin-auth";
 import { getAdminQuoteById } from "../../../../lib/commercial-repository";
+import { findCustomerByEmail } from "../../../../lib/customer-auth";
 import { convertQuoteToOrderAction, priceQuoteAction, updateQuoteStatusAction } from "../../actions";
 import { AdminFrame } from "../../AdminFrame";
 
@@ -17,6 +18,8 @@ export default async function AdminQuoteDetailPage({ params }: { params: Promise
   if (!quote) {
     notFound();
   }
+  const quoteCustomer = await findCustomerByEmail(quote.email);
+  const sellerChannel = Boolean(quoteCustomer?.sellerAccess?.enabled);
 
   return (
     <AdminFrame active="quotes">
@@ -89,6 +92,10 @@ export default async function AdminQuoteDetailPage({ params }: { params: Promise
             </a>
           ) : null}
         </div>
+
+        {sellerChannel ? (
+          <p className="sellerPricingPolicyNote"><strong>Satıcı kanal fiyat koruması aktif:</strong> katalog ürünleri standart bayi net fiyatının %20 üzerinde fiyatlanır; sistem bu alt sınırın altında teklif kaydetmez.</p>
+        ) : null}
 
         <form action={priceQuoteAction} className="quotePricingForm">
           <input type="hidden" name="quoteId" value={quote.id} />
