@@ -10,8 +10,17 @@ import { QuoteBadge } from "./QuoteBadge";
 import { SearchAutocomplete } from "./SearchAutocomplete";
 
 export async function Header() {
-  const [catalogTree, customer, brandSettings] = await Promise.all([getCatalogTree(), getCurrentCustomer(), getBrandSettings()]);
-  const cart = customer ? await loadCustomerCart(customer) : null;
+  const [catalogTree, customer, brandSettings] = await Promise.all([
+    getCatalogTree(),
+    getCurrentCustomer({ allowPasswordChangeRequired: true }),
+    getBrandSettings()
+  ]);
+  const passwordActivationHref = customer?.mustChangePassword ? "/account?passwordChangeRequired=1#security" : null;
+  const accountHref = passwordActivationHref ?? (customer?.sellerAccess?.enabled ? "/satici" : customer ? "/account" : "/login");
+  const quickOrderHref = passwordActivationHref ?? (customer ? "/quick-order" : "/login?next=/quick-order");
+  const projectsHref = passwordActivationHref ?? (customer ? "/projects" : "/login?next=/projects");
+  const cartHref = passwordActivationHref ?? (customer ? "/cart" : "/login?next=/cart");
+  const cart = customer && !customer.mustChangePassword ? await loadCustomerCart(customer) : null;
 
   return (
     <header className="siteHeader">
@@ -24,9 +33,9 @@ export async function Header() {
           <span>Güvenli bayi alışverişi</span>
           <span>Teknik destek</span>
           <a href="/orders">Sipariş takibi</a>
-          <a href={customer ? "/quick-order" : "/login?next=/quick-order"}>Hızlı sipariş</a>
-          <a href={customer ? "/projects" : "/login?next=/projects"}>Projeler</a>
-          <a href={customer?.sellerAccess?.enabled ? "/satici" : customer ? "/account" : "/login"}>{customer ? customer.companyName : "Bayi girişi"}</a>
+          <a href={quickOrderHref}>Hızlı sipariş</a>
+          <a href={projectsHref}>Projeler</a>
+          <a href={accountHref}>{customer ? customer.companyName : "Bayi girişi"}</a>
           <a href="/dealer-application">Bayi başvurusu</a>
         </div>
       </div>
@@ -53,7 +62,7 @@ export async function Header() {
                 <strong>{COMPANY_CONTACT.technicalSupportPhone}</strong>
               </span>
             </a>
-            <a className="headerIcon" href={customer?.sellerAccess?.enabled ? "/satici" : customer ? "/account" : "/login"} title="Bayi hesabım">
+            <a className="headerIcon" href={accountHref} title={customer?.sellerAccess?.enabled ? "Satıcı hesabım" : "Bayi hesabım"}>
               {customer?.sellerAccess?.enabled ? <Store size={20} aria-hidden="true" /> : <UserRound size={20} aria-hidden="true" />}
             </a>
             <a className="headerIcon quoteIconWrap" href="/quote" title="Teklif listem">
@@ -62,9 +71,9 @@ export async function Header() {
             </a>
             <a
               className="headerIcon cartIconWrap"
-              href={customer ? "/cart" : "/login?next=/cart"}
-              aria-label={customer ? `Sepet, ${cart?.items.length ?? 0} ürün satırı` : "Sepet için bayi girişi"}
-              title={customer ? `${cart?.items.length ?? 0} sepet satırı` : "Sepet için bayi girişi gerekir"}
+              href={cartHref}
+              aria-label={customer?.mustChangePassword ? "Sepet için hesabınızı etkinleştirin" : customer ? `Sepet, ${cart?.items.length ?? 0} ürün satırı` : "Sepet için bayi girişi"}
+              title={customer?.mustChangePassword ? "Önce kalıcı şifrenizi belirleyin" : customer ? `${cart?.items.length ?? 0} sepet satırı` : "Sepet için bayi girişi gerekir"}
             >
               <CartBadge initialCount={cart?.items.length ?? 0} />
               <ShoppingCart size={20} aria-hidden="true" />
@@ -84,19 +93,19 @@ export async function Header() {
           <a className="mobileCatalogLink" href="/catalog">
             Ana Katalog
           </a>
-          <a className="mobileCatalogLink" href={customer ? "/quick-order" : "/login?next=/quick-order"}>
+          <a className="mobileCatalogLink" href={quickOrderHref}>
             Hızlı Sipariş
           </a>
           <a className="headerIcon" href="/dealer-application" title="Bayi başvurusu">
             <Building2 size={20} aria-hidden="true" />
           </a>
-          <a className="headerIcon" href={customer?.sellerAccess?.enabled ? "/satici" : customer ? "/account" : "/login"} title="Bayi girişi">
+          <a className="headerIcon" href={accountHref} title={customer?.sellerAccess?.enabled ? "Satıcı hesabım" : "Bayi girişi"}>
             {customer?.sellerAccess?.enabled ? <Store size={20} aria-hidden="true" /> : <ShieldCheck size={20} aria-hidden="true" />}
           </a>
           <a
             className="headerIcon cartIconWrap"
-            href={customer ? "/cart" : "/login?next=/cart"}
-            aria-label={customer ? `Sepet, ${cart?.items.length ?? 0} ürün satırı` : "Sepet için bayi girişi"}
+            href={cartHref}
+            aria-label={customer?.mustChangePassword ? "Sepet için hesabınızı etkinleştirin" : customer ? `Sepet, ${cart?.items.length ?? 0} ürün satırı` : "Sepet için bayi girişi"}
             title="Sepet"
           >
             <CartBadge initialCount={cart?.items.length ?? 0} />

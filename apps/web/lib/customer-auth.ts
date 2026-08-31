@@ -117,9 +117,16 @@ export async function getCurrentCustomer(options: { allowPasswordChangeRequired?
 }
 
 export async function requireCustomer(options: { allowPasswordChangeRequired?: boolean } = {}): Promise<CustomerAccount> {
-  const customer = await getCurrentCustomer(options);
+  // A valid session must stay distinguishable from an anonymous request while the
+  // user is completing the mandatory first-login password change. Otherwise every
+  // protected workspace route incorrectly sends the user back to /login.
+  const customer = await getCurrentCustomer({ allowPasswordChangeRequired: true });
   if (!customer) {
     redirect("/login");
+  }
+
+  if (!options.allowPasswordChangeRequired && customer.mustChangePassword) {
+    redirect("/account?passwordChangeRequired=1#security");
   }
 
   return customer;
@@ -220,7 +227,7 @@ async function updateCustomerAccountUnlocked(
   return updated;
 }
 
-export function changeCustomerPassword(customerId: string, currentPassword: string, newPassword: string): Promise<void> {
+export function changeCustomerPassword(customerId: string, currentPassword: string, newPassword: string): Promise<CustomerAccount> {
   return enqueueCustomerMutation(() => changeCustomerPasswordUnlocked(customerId, currentPassword, newPassword));
 }
 
@@ -295,7 +302,7 @@ export async function authenticateSellerApiKey(apiKey: string): Promise<Customer
   return null;
 }
 
-async function changeCustomerPasswordUnlocked(customerId: string, currentPassword: string, newPassword: string): Promise<void> {
+async function changeCustomerPasswordUnlocked(customerId: string, currentPassword: string, newPassword: string): Promise<CustomerAccount> {
   const customers = await getCustomers();
   const index = customers.findIndex((customer) => customer.id === customerId);
   if (index < 0) {
@@ -314,6 +321,7 @@ async function changeCustomerPasswordUnlocked(customerId: string, currentPasswor
   await clearApplicationTemporaryPasswordForAccount(customerId).catch((error: unknown) => {
     console.warn(`[dealer-credential] Gecici sifre kaydi temizlenemedi: ${error instanceof Error ? error.message : error}`);
   });
+  return enforceUniformCommercialTerms(customers[index]!);
 }
 
 async function saveCustomers(customers: CustomerAccount[]): Promise<void> {

@@ -24,6 +24,84 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const passwordErrorRaw = params.passwordError;
   const passwordError = Array.isArray(passwordErrorRaw) ? passwordErrorRaw[0] : passwordErrorRaw;
   const customer = await requireCustomer({ allowPasswordChangeRequired: true });
+
+  if (customer.mustChangePassword) {
+    const isSeller = Boolean(customer.sellerAccess?.enabled);
+
+    return (
+      <main className="accountPage accountActivationPage">
+        <section className={`accountHero accountActivationHero tier-${customer.segment}`}>
+          <div className="shell accountHeroInner">
+            <div className="accountHeroCopy">
+              <span className="accountEyebrow">{isSeller ? "Satıcı hesabı aktivasyonu" : "Bayi hesabı aktivasyonu"}</span>
+              <h1>{customer.companyName}</h1>
+              <p>Girişiniz doğrulandı. Çalışma alanınızı açmak için yalnızca size ait kalıcı şifreyi belirleyin.</p>
+            </div>
+            <aside className="accountActivationStatus">
+              <ShieldCheck size={28} aria-hidden="true" />
+              <span>Güvenli ilk giriş</span>
+              <strong>Son 1 adım</strong>
+            </aside>
+            <form action={customerLogoutAction}>
+              <button className="btn btnGhost light accountLogout" type="submit">
+                Çıkış Yap
+              </button>
+            </form>
+          </div>
+        </section>
+
+        <section className="shell accountActivationLayout">
+          <div className="accountActivationIntro">
+            <span className="accountSectionKicker">Hesabınız hazır</span>
+            <h2>{isSeller ? "Satıcı merkezinizi etkinleştirin" : "Bayi çalışma alanınızı etkinleştirin"}</h2>
+            <p>
+              Geçici şifreniz yalnızca ilk giriş içindir. Yeni şifrenizi kaydettiğinizde hesabınız açılır ve
+              {isSeller ? " doğrudan satıcı paneline yönlendirilirsiniz." : " bayi çalışma alanınıza yönlendirilirsiniz."}
+            </p>
+            <ol className="accountActivationSteps">
+              <li className="complete"><BadgeCheck size={20} aria-hidden="true" /><span><strong>Kimlik doğrulandı</strong><small>{customer.email}</small></span></li>
+              <li className="current"><ShieldCheck size={20} aria-hidden="true" /><span><strong>Kalıcı şifre belirleyin</strong><small>En az 8 karakter ve güçlü bir parola kullanın.</small></span></li>
+              <li><Gauge size={20} aria-hidden="true" /><span><strong>{isSeller ? "Satıcı paneli" : "Bayi paneli"}</strong><small>Şifre kaydedildikten sonra otomatik açılır.</small></span></li>
+            </ol>
+          </div>
+
+          <section className="accountPanel accountActivationForm" id="security">
+            <div className="accountSectionHeader compact">
+              <div>
+                <span>Güvenlik</span>
+                <h2>Kalıcı şifrenizi oluşturun</h2>
+              </div>
+              <ShieldCheck size={22} aria-hidden="true" />
+            </div>
+            {passwordError ? (
+              <p className="formError" role="alert">
+                {passwordError}
+              </p>
+            ) : null}
+            <form className="passwordChangeForm" action={changePasswordAction}>
+              <label>
+                Geçici şifre
+                <input name="currentPassword" type="password" autoComplete="current-password" required autoFocus />
+              </label>
+              <label>
+                Yeni şifre
+                <input name="newPassword" type="password" autoComplete="new-password" minLength={8} required />
+              </label>
+              <label>
+                Yeni şifre (tekrar)
+                <input name="newPasswordRepeat" type="password" autoComplete="new-password" minLength={8} required />
+              </label>
+              <button className="btn btnPrimary" type="submit">
+                Hesabı Etkinleştir
+              </button>
+            </form>
+            <p className="accountActivationPrivacy"><ShieldCheck size={15} aria-hidden="true" /> Şifreniz güvenli biçimde özetlenerek saklanır; hiçbir ekranda tekrar gösterilmez.</p>
+          </section>
+        </section>
+      </main>
+    );
+  }
+
   const [quotes, orders, cart, notifications, balance, ledger, favorites, stockSubscriptions] = await Promise.all([
     searchAdminQuotes({ q: customer.email, limit: 5 }),
     searchAdminOrders({ q: customer.email, limit: 5 }),

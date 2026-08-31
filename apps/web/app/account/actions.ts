@@ -1,8 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { changeCustomerPassword, requireCustomer } from "../../lib/customer-auth";
+import { changeCustomerPassword, createCustomerSessionToken, CUSTOMER_COOKIE, CUSTOMER_SESSION_MAX_AGE_SECONDS, requireCustomer } from "../../lib/customer-auth";
 import { toggleFavorite } from "../../lib/favorites-repository";
 import { safeInternalRedirect } from "../../lib/security";
 import { subscribeToStock, unsubscribeFromStock } from "../../lib/stock-notify-repository";
@@ -64,12 +65,22 @@ export async function changePasswordAction(formData: FormData): Promise<void> {
     redirect(`/account?passwordError=${encodeURIComponent("Yeni şifreler birbiriyle uyuşmuyor.")}#security`);
   }
 
+  let updatedCustomer;
   try {
-    await changeCustomerPassword(customer.id, currentPassword, newPassword);
+    updatedCustomer = await changeCustomerPassword(customer.id, currentPassword, newPassword);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Şifre değiştirilemedi.";
     redirect(`/account?passwordError=${encodeURIComponent(message)}#security`);
   }
 
-  redirect("/account?passwordChanged=1#security");
+  const cookieStore = await cookies();
+  cookieStore.set(CUSTOMER_COOKIE, createCustomerSessionToken(updatedCustomer), {
+    httpOnly: true,
+    sameSite: "strict",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: CUSTOMER_SESSION_MAX_AGE_SECONDS
+  });
+
+  redirect(updatedCustomer.sellerAccess?.enabled ? "/satici?passwordChanged=1" : "/account?passwordChanged=1#security");
 }

@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { BarChart3, Boxes, Braces, Database, Download, KeyRound, PackageCheck, Search, ShoppingCart, Store, Truck } from "lucide-react";
+import { BarChart3, Boxes, Braces, Database, Download, KeyRound, PackageCheck, Search, ShieldCheck, ShoppingCart, Store, Truck } from "lucide-react";
 import { StatusPill } from "@entas/ui";
 import { AddToCartControl } from "../../components/AddToCartControl";
 import { requireCustomer } from "../../lib/customer-auth";
@@ -15,6 +15,7 @@ export default async function SellerDashboardPage({ searchParams }: { searchPara
   const customer = await requireCustomer();
   if (!customer.sellerAccess?.enabled) redirect("/account");
   const params = await searchParams;
+  const passwordChanged = getParam(params, "passwordChanged") === "1";
   const q = getParam(params, "q");
   const stock = toStockFilter(getParam(params, "stock"));
   const page = Math.max(1, Number(getParam(params, "page") || "1"));
@@ -56,6 +57,13 @@ export default async function SellerDashboardPage({ searchParams }: { searchPara
         <a href="/orders"><PackageCheck size={18} /> Sipariş takibi</a>
         <a href="#entegrasyon"><Braces size={18} /> Entegrasyon</a>
       </nav>
+
+      {passwordChanged ? (
+        <div className="shell sellerSuccessNotice" role="status">
+          <ShieldCheck size={20} aria-hidden="true" />
+          <span><strong>Hesabınız güvenle etkinleştirildi.</strong> Kalıcı şifreniz kaydedildi; satıcı panelinin tüm özelliklerini kullanabilirsiniz.</span>
+        </div>
+      ) : null}
 
       <section className="shell sellerStats">
         <div><Boxes size={19} /><span>Aktif ürün</span><strong>{catalog.summary.activeProducts.toLocaleString("tr-TR")}</strong><small>Sistemde satışa açık</small></div>
