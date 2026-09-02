@@ -1,16 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Copy, KeyRound, LoaderCircle, RefreshCw } from "lucide-react";
+import { Check, Copy, LoaderCircle, RefreshCw } from "lucide-react";
 
 export function SellerCredentialActions({ customerId, apiEnabled, apiKeyPrefix }: { customerId: string; apiEnabled: boolean; apiKeyPrefix?: string }) {
-  const [busy, setBusy] = useState<"api" | "password" | null>(null);
+  const [busy, setBusy] = useState(false);
   const [credential, setCredential] = useState<{ label: string; value: string } | null>(null);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
 
-  async function generate(kind: "api" | "password") {
-    setBusy(kind);
+  async function rotateApiKey() {
+    const confirmed = window.confirm("API anahtarı yenilensin mi? Mevcut anahtarı kullanan entegrasyonlar hemen duracaktır.");
+    if (!confirmed) return;
+    setBusy(true);
     setError("");
     setCredential(null);
     setCopied(false);
@@ -18,17 +20,16 @@ export function SellerCredentialActions({ customerId, apiEnabled, apiKeyPrefix }
       const response = await fetch("/api/admin/dealers/accounts", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ customerId, rotateApiKey: kind === "api", resetPassword: kind === "password" })
+        body: JSON.stringify({ customerId, rotateApiKey: true })
       });
-      const payload = await response.json() as { apiKey?: string; temporaryPassword?: string; error?: string };
+      const payload = await response.json() as { apiKey?: string; error?: string };
       if (!response.ok) throw new Error(payload.error || "Bilgi üretilemedi.");
-      const value = kind === "api" ? payload.apiKey : payload.temporaryPassword;
-      if (!value) throw new Error("Yeni bilgi yanıtta bulunamadı.");
-      setCredential({ label: kind === "api" ? "Yeni API anahtarı" : "Yeni geçici şifre", value });
+      if (!payload.apiKey) throw new Error("Yeni API anahtarı yanıtta bulunamadı.");
+      setCredential({ label: "Yeni API anahtarı", value: payload.apiKey });
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Bilgi üretilemedi.");
     } finally {
-      setBusy(null);
+      setBusy(false);
     }
   }
 
@@ -41,11 +42,8 @@ export function SellerCredentialActions({ customerId, apiEnabled, apiKeyPrefix }
   return (
     <div className="sellerCredentialActions">
       <div className="sellerCredentialButtons">
-        <button className="btn btnGhost dark btnSmall" type="button" disabled={!apiEnabled || busy !== null} onClick={() => generate("api")}>
-          {busy === "api" ? <LoaderCircle className="spin" size={14} /> : <RefreshCw size={14} />} API anahtarı yenile
-        </button>
-        <button className="btn btnGhost dark btnSmall" type="button" disabled={busy !== null} onClick={() => generate("password")}>
-          {busy === "password" ? <LoaderCircle className="spin" size={14} /> : <KeyRound size={14} />} Geçici şifre üret
+        <button className="btn btnGhost dark btnSmall" type="button" disabled={!apiEnabled || busy} onClick={rotateApiKey}>
+          {busy ? <LoaderCircle className="spin" size={14} /> : <RefreshCw size={14} />} API anahtarı yenile
         </button>
       </div>
       {apiKeyPrefix ? <small>Mevcut anahtar: {apiKeyPrefix}…</small> : <small>Henüz API anahtarı üretilmedi.</small>}

@@ -3800,7 +3800,7 @@ a.metricCard {
 }
 
 .dealerAccountRows {
-  grid-template-columns: minmax(220px, 1.2fr) minmax(210px, 1.1fr) minmax(240px, 1.2fr) minmax(130px, 0.65fr) minmax(80px, 0.4fr) minmax(90px, 0.45fr);
+  grid-template-columns: minmax(220px, 1.2fr) minmax(210px, 1.1fr) minmax(240px, 1.2fr) minmax(130px, 0.65fr) minmax(80px, 0.4fr) minmax(90px, 0.45fr) minmax(145px, 0.7fr);
 }
 
 .integrationRows {
@@ -7621,6 +7621,128 @@ a.metricCard {
 .sellerCredentialButtons { display: flex; flex-wrap: wrap; gap: 8px; }
 .sellerCredentialInline { margin: 0; }
 .sellerCredentialInline .btn { justify-self: start; }
+
+.dealerPasswordResetAction {
+  display: grid;
+  gap: 5px;
+  justify-items: start;
+}
+
+.dealerPasswordResetButton {
+  white-space: nowrap;
+}
+
+.dealerPasswordResetError {
+  max-width: 160px;
+  color: #b91c1c !important;
+  white-space: normal;
+}
+
+.dealerPasswordResetBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(5, 46, 42, 0.68);
+  backdrop-filter: blur(3px);
+}
+
+.dealerPasswordResetDialog {
+  position: relative;
+  display: grid;
+  gap: 14px;
+  width: min(100%, 520px);
+  padding: 28px;
+  color: var(--green-900);
+  background: #fff;
+  border: 1px solid #d8e5e1;
+  border-radius: 16px;
+  box-shadow: 0 28px 80px rgba(5, 46, 42, 0.28);
+}
+
+.dealerPasswordResetDialog h2,
+.dealerPasswordResetDialog p {
+  margin: 0;
+}
+
+.dealerPasswordResetDialog p {
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.dealerPasswordResetIcon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  color: #047857;
+  background: #d1fae5;
+  border-radius: 14px;
+}
+
+.dealerPasswordResetEyebrow {
+  color: #047857;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.dealerPasswordResetClose {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  color: var(--muted);
+  background: #f4f7f6;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.dealerPasswordResetCredentials {
+  display: grid;
+  gap: 5px;
+  padding: 16px;
+  background: #f3f8f6;
+  border: 1px solid #d8e5e1;
+  border-radius: 10px;
+}
+
+.dealerPasswordResetCredentials span {
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.dealerPasswordResetCredentials span:first-child { margin-top: 0; }
+.dealerPasswordResetCredentials strong { overflow-wrap: anywhere; }
+.dealerPasswordResetCredentials code { color: #9a3412; font-size: 17px; font-weight: 900; overflow-wrap: anywhere; }
+
+.dealerPasswordResetDialogActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.dealerPasswordResetDialog > small {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+@media (max-width: 640px) {
+  .dealerPasswordResetBackdrop { padding: 12px; }
+  .dealerPasswordResetDialog { padding: 22px; }
+  .dealerPasswordResetDialogActions .btn { width: 100%; }
+}
 
 .sellerPortal {
   min-height: 100vh;

@@ -16,6 +16,7 @@ import {
 } from "../actions";
 import { AdminFrame } from "../AdminFrame";
 import { AdminSellerAccountCreator } from "./AdminSellerAccountCreator";
+import { DealerPasswordResetAction } from "./DealerPasswordResetAction";
 import { SellerCredentialActions } from "./SellerCredentialActions";
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -114,6 +115,7 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
               <span>Veri / stok</span>
               <span>API</span>
               <span>Durum</span>
+              <span>Güvenlik</span>
             </div>
             {visibleCustomers.map((customer) => (
               <div key={customer.id}>
@@ -141,6 +143,13 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
                   <StatusPill tone={customer.status === "approved" ? "success" : customer.status === "suspended" ? "danger" : "warning"}>
                     {customer.status === "approved" ? "Aktif" : customer.status === "suspended" ? "Askıda" : "Beklemede"}
                   </StatusPill>
+                  <span>
+                    <DealerPasswordResetAction
+                      customerId={customer.id}
+                      companyName={customer.companyName}
+                      email={customer.email}
+                    />
+                  </span>
                 </div>
                 <details className="dealerEdit">
                   <summary>Bayiyi düzenle</summary>

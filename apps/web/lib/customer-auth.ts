@@ -282,6 +282,9 @@ export function resetCustomerPasswordByAdmin(customerId: string): Promise<{ acco
     });
     customers[index] = account;
     await saveCustomers(customers);
+    await clearApplicationTemporaryPasswordForAccount(customerId).catch((error: unknown) => {
+      console.warn(`[dealer-credential] Eski gecici sifre kaydi temizlenemedi: ${error instanceof Error ? error.message : error}`);
+    });
     return { account, temporaryPassword };
   });
 }

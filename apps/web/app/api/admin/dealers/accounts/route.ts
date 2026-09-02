@@ -105,7 +105,10 @@ export async function PATCH(request: Request): Promise<Response> {
       credentials.temporaryPassword = result.temporaryPassword;
     }
 
-    return Response.json({ account: sanitizeAccount(account), ...credentials });
+    return Response.json(
+      { account: sanitizeAccount(account), ...credentials },
+      { headers: { "Cache-Control": "no-store" } }
+    );
   } catch (error) {
     return requestErrorResponse(error, "Hesap güncellenemedi.");
   }
