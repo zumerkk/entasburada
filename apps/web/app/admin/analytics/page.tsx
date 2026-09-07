@@ -1,7 +1,7 @@
 import { AlertTriangle, BarChart3, CircleDollarSign, Gauge, MessageCircle, PackageSearch, PhoneCall, SearchX, ShoppingCart, TrendingDown, UsersRound, WalletCards } from "lucide-react";
 import { MetricCard, StatusPill } from "@entas/ui";
 import { requireAdmin } from "../../../lib/admin-auth";
-import { getAbandonedCartsReport, getCustomerBehaviorReport, getProductInterestReport, getSearchMissesReport } from "../../../lib/analytics-repository";
+import { getAnalyticsDashboardReport } from "../../../lib/analytics-repository";
 import { AdminFrame } from "../AdminFrame";
 import { getManagementIntelligenceReport } from "../../../lib/business-intelligence";
 
@@ -9,13 +9,13 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminAnalyticsPage() {
   await requireAdmin();
-  const [behaviorReport, productReport, abandonedReport, searchMissReport, management] = await Promise.all([
-    getCustomerBehaviorReport(),
-    getProductInterestReport(),
-    getAbandonedCartsReport(),
-    getSearchMissesReport(),
+  const [analytics, management] = await Promise.all([
+    getAnalyticsDashboardReport(),
     getManagementIntelligenceReport()
   ]);
+  const { behaviorReport, productReport, abandonedReport, searchMissReport } = analytics;
+  const visibleBehaviorRows = behaviorReport.rows.slice(0, 120);
+  const visibleAbandonedRows = abandonedReport.rows.slice(0, 60);
 
   return (
     <AdminFrame active="analytics">
@@ -39,7 +39,7 @@ export default async function AdminAnalyticsPage() {
         <MetricCard label="Event kaydı" value={behaviorReport.totals.eventCount.toLocaleString("tr-TR")} trend="Ürün, arama ve sepet sinyali" tone="info" />
         <MetricCard label="Aktif bayi" value={behaviorReport.totals.activeCustomerCount.toLocaleString("tr-TR")} trend="Davranış üreten hesap" tone="success" />
         <MetricCard label="Sıcak fırsat" value={behaviorReport.totals.hotOpportunityCount.toLocaleString("tr-TR")} trend="Arama veya sepet sinyali yüksek" tone="warning" />
-        <MetricCard label="Sonuçsuz arama" value={searchMissReport.rows.length.toLocaleString("tr-TR")} trend="Yeni ürün/kategori fırsatı" tone="warning" />
+        <MetricCard label="Sonuçsuz arama" value={searchMissReport.totalTermCount.toLocaleString("tr-TR")} trend="Yeni ürün/kategori fırsatı" tone="warning" />
         <MetricCard label="Teklif → sipariş" value={`%${management.funnel.quoteToOrderRate}`} trend={`${management.funnel.orderCount} sipariş / ${management.funnel.quoteCount} teklif`} tone="success" />
         <MetricCard label="Veri kalite puanı" value={`${management.quality.score}/100`} trend={`${management.quality.duplicateGroups} kopya grup`} tone={management.quality.score >= 80 ? "success" : "warning"} />
         <MetricCard label="Tahsilat riski" value={management.collectionRisks.length.toLocaleString("tr-TR")} trend="Borçlu veya limite yakın firma" tone="warning" />
@@ -64,7 +64,7 @@ export default async function AdminAnalyticsPage() {
               <span>Sepet</span>
               <span>Aksiyon</span>
             </div>
-            {behaviorReport.rows.map((row) => (
+            {visibleBehaviorRows.map((row) => (
               <div className="adminTableRow behaviorRows" key={row.customerId}>
                 <span>
                   <strong>{row.companyName}</strong>
@@ -102,8 +102,8 @@ export default async function AdminAnalyticsPage() {
             <ShoppingCart size={20} aria-hidden="true" />
           </div>
           <div className="opportunityList">
-            {abandonedReport.rows.length > 0 ? (
-              abandonedReport.rows.map((row) => (
+            {visibleAbandonedRows.length > 0 ? (
+              visibleAbandonedRows.map((row) => (
                 <div key={row.customerId}>
                   <strong>{row.companyName}</strong>
                   <span>

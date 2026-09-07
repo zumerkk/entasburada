@@ -3,8 +3,9 @@ import { randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { loadPricedCart } from "./cart-repository";
-import { formatCatalogMoney, getCatalogSearchSuggestions, loadCatalogStore } from "./catalog-repository";
+import type { CatalogProductRecord } from "@entas/catalog";
+import { loadPricedCarts, type CartSummary } from "./cart-repository";
+import { formatCatalogMoney, loadCatalogStore } from "./catalog-repository";
 import { getCustomers, type CustomerAccount } from "./customer-auth";
 
 export type UserEventType = "product_view" | "category_view" | "search" | "cart_add" | "cart_remove" | "cart_clear" | "favorite" | "quote_intent" | "order_create";
@@ -101,6 +102,35 @@ export interface SearchMissRow {
   suggestedProducts: Array<{ label: string; href: string }>;
 }
 
+export interface CustomerBehaviorReport {
+  generatedAt: string;
+  rows: CustomerBehaviorRow[];
+  totals: { eventCount: number; activeCustomerCount: number; hotOpportunityCount: number };
+}
+
+export interface ProductInterestReport {
+  generatedAt: string;
+  rows: ProductInterestRow[];
+}
+
+export interface AbandonedCartsReport {
+  generatedAt: string;
+  rows: AbandonedCartRow[];
+}
+
+export interface SearchMissesReport {
+  generatedAt: string;
+  rows: SearchMissRow[];
+  totalTermCount: number;
+}
+
+export interface AnalyticsDashboardReport {
+  behaviorReport: CustomerBehaviorReport;
+  productReport: ProductInterestReport;
+  abandonedReport: AbandonedCartsReport;
+  searchMissReport: SearchMissesReport;
+}
+
 export interface SalesOpportunity {
   id: string;
   createdAt: string;
@@ -151,6 +181,7 @@ const eventsPath = path.join(dataDir, "user-events.json");
 const opportunitiesPath = path.join(dataDir, "sales-opportunities.json");
 const tasksPath = path.join(dataDir, "sales-tasks.json");
 let analyticsMutationQueue: Promise<void> = Promise.resolve();
+const SEARCH_MISS_REPORT_LIMIT = 40;
 
 function enqueueAnalyticsMutation<T>(mutation: () => Promise<T>): Promise<T> {
   const operation = analyticsMutationQueue.then(mutation, mutation);
@@ -288,132 +319,42 @@ function salvageJsonArrayPrefix<T>(raw: string): T[] {
   return [];
 }
 
-export async function getCustomerBehaviorReport(): Promise<{ generatedAt: string; rows: CustomerBehaviorRow[]; totals: { eventCount: number; activeCustomerCount: number; hotOpportunityCount: number } }> {
-  const [customers, events] = await Promise.all([getCustomers(), loadUserEvents()]);
-  const rows = await Promise.all(customers.filter((customer) => customer.status === "approved").map((customer) => toCustomerBehaviorRow(customer, events)));
-  const activeRows = rows.sort((a, b) => Date.parse(b.lastVisitAt || "1970-01-01") - Date.parse(a.lastVisitAt || "1970-01-01"));
+export async function getAnalyticsDashboardReport(): Promise<AnalyticsDashboardReport> {
+  const [customers, events, store] = await Promise.all([getCustomers(), loadUserEvents(), loadCatalogStore()]);
+  const approvedCustomers = customers.filter((customer) => customer.status === "approved");
+  const carts = await loadPricedCarts(approvedCustomers);
+  const eventsByCustomer = groupEventsByCustomer(events);
 
   return {
-    generatedAt: new Date().toISOString(),
-    rows: activeRows,
-    totals: {
-      eventCount: events.length,
-      activeCustomerCount: activeRows.filter((row) => row.productViewCount > 0 || row.abandonedItemCount > 0).length,
-      hotOpportunityCount: activeRows.filter((row) => row.actionStatus !== "Normal takip").length
-    }
+    behaviorReport: buildCustomerBehaviorReport(approvedCustomers, events, eventsByCustomer, carts),
+    productReport: buildProductInterestReport(events, store.products),
+    abandonedReport: buildAbandonedCartsReport(approvedCustomers, eventsByCustomer, carts),
+    searchMissReport: buildSearchMissesReport(events, store.products)
   };
 }
 
-export async function getProductInterestReport(): Promise<{ generatedAt: string; rows: ProductInterestRow[] }> {
-  const [events, store] = await Promise.all([loadUserEvents(), loadCatalogStore()]);
-  const grouped = new Map<string, UserEvent[]>();
-
-  for (const event of events) {
-    if (!event.sku && !event.productName) {
-      continue;
-    }
-
-    const key = event.sku || event.productName || "unknown";
-    grouped.set(key, [...(grouped.get(key) ?? []), event]);
-  }
-
-  const rows = Array.from(grouped.entries()).map(([key, itemEvents]) => {
-    const first = itemEvents.find((event) => event.productName || event.sku) ?? itemEvents[0]!;
-    const product = store.products.find((item) => item.sku === first.sku || item.name === first.productName);
-    const uniqueCompanies = new Set(itemEvents.map((event) => event.companyName ?? event.customerId ?? event.sessionId ?? "anon"));
-    const viewCount = countType(itemEvents, "product_view");
-    const cartAddCount = countType(itemEvents, "cart_add");
-    const quoteIntentCount = countType(itemEvents, "quote_intent");
-    const orderCount = countType(itemEvents, "order_create");
-    const opportunityScore = viewCount + cartAddCount * 10 + quoteIntentCount * 12 + itemEvents.filter((event) => (event.durationSeconds ?? 0) >= 30).length * 2;
-
-    return {
-      sku: first.sku ?? key,
-      productName: first.productName ?? product?.name ?? key,
-      brand: first.brand ?? product?.brand ?? "-",
-      category: first.category ?? product?.category ?? "-",
-      viewCount,
-      uniqueCompanyCount: uniqueCompanies.size,
-      cartAddCount,
-      quoteIntentCount,
-      orderCount,
-      conversionRate: cartAddCount + quoteIntentCount === 0 ? "0%" : `${Math.round((orderCount / Math.max(1, cartAddCount + quoteIntentCount)) * 100)}%`,
-      stockStatus: product?.stockStatus ?? "-",
-      interestedCompanies: Array.from(new Set(itemEvents.map((event) => event.companyName).filter(Boolean))).slice(0, 4) as string[],
-      opportunityScore
-    };
-  });
-
-  return { generatedAt: new Date().toISOString(), rows: rows.sort((a, b) => b.opportunityScore - a.opportunityScore).slice(0, 100) };
-}
-
-export async function getAbandonedCartsReport(): Promise<{ generatedAt: string; rows: AbandonedCartRow[] }> {
+export async function getCustomerBehaviorReport(): Promise<CustomerBehaviorReport> {
   const [customers, events] = await Promise.all([getCustomers(), loadUserEvents()]);
-  const rows = await Promise.all(
-    customers
-      .filter((customer) => customer.status === "approved")
-      .map(async (customer) => {
-        const cart = await loadPricedCart(customer);
-        if (cart.items.length === 0) {
-          return null;
-        }
-
-        const customerEvents = events.filter((event) => event.customerId === customer.id);
-        const lastActivityAt = mostRecent(customerEvents)?.occurredAt ?? cart.updatedAt;
-        const highestValueProduct = [...cart.items].sort((a, b) => Number(b.lineTotal) - Number(a.lineTotal))[0]?.productName ?? "-";
-        return {
-          customerId: customer.id,
-          companyName: customer.companyName,
-          userName: customer.authorizedPerson,
-          phone: customer.phone,
-          segment: customer.segment,
-          cartTotal: cart.displayTotal,
-          itemCount: cart.items.length,
-          highestValueProduct,
-          lastActivityAt,
-          ageLabel: formatAge(lastActivityAt),
-          accountManager: customer.accountManager ?? "Satış Operasyon",
-          followUpStatus: "Takip bekliyor",
-          whatsappDraft: `${customer.authorizedPerson} merhaba, sepetinizdeki ${highestValueProduct} ve diğer ürünler için bayi teklifinizi hazırlayabiliriz.`,
-          whatsappHref: buildWhatsappHref(
-            customer.phone,
-            `${customer.authorizedPerson} merhaba, sepetinizdeki ${highestValueProduct} ve diğer ürünler için bayi teklifinizi hazırlayabiliriz.`
-          )
-        } satisfies AbandonedCartRow;
-      })
-  );
-
-  const filteredRows = rows.filter((row): row is NonNullable<typeof row> => row !== null);
-  return { generatedAt: new Date().toISOString(), rows: filteredRows };
+  const approvedCustomers = customers.filter((customer) => customer.status === "approved");
+  const carts = await loadPricedCarts(approvedCustomers);
+  return buildCustomerBehaviorReport(approvedCustomers, events, groupEventsByCustomer(events), carts);
 }
 
-export async function getSearchMissesReport(): Promise<{ generatedAt: string; rows: SearchMissRow[] }> {
-  const events = (await loadUserEvents()).filter((event) => event.type === "search" && (event.resultCount ?? 0) === 0 && event.searchTerm);
-  const grouped = new Map<string, UserEvent[]>();
+export async function getProductInterestReport(): Promise<ProductInterestReport> {
+  const [events, store] = await Promise.all([loadUserEvents(), loadCatalogStore()]);
+  return buildProductInterestReport(events, store.products);
+}
 
-  for (const event of events) {
-    const key = normalize(event.searchTerm ?? "");
-    if (!key) {
-      continue;
-    }
-    grouped.set(key, [...(grouped.get(key) ?? []), event]);
-  }
+export async function getAbandonedCartsReport(): Promise<AbandonedCartsReport> {
+  const [customers, events] = await Promise.all([getCustomers(), loadUserEvents()]);
+  const approvedCustomers = customers.filter((customer) => customer.status === "approved");
+  const carts = await loadPricedCarts(approvedCustomers);
+  return buildAbandonedCartsReport(approvedCustomers, groupEventsByCustomer(events), carts);
+}
 
-  const rows = await Promise.all(Array.from(grouped.entries()).map(async ([term, itemEvents]) => {
-    const suggestionResult = await getCatalogSearchSuggestions(term, 5);
-    return {
-      term,
-      searchCount: itemEvents.length,
-      resultCount: 0,
-      companyCount: new Set(itemEvents.map((event) => event.companyName ?? event.customerId ?? event.sessionId ?? "anon")).size,
-      lastSearchedAt: mostRecent(itemEvents)?.occurredAt ?? "",
-      suggestedCategory: suggestionResult.suggestions.find((item) => item.type === "category")?.label ?? suggestCategory(term),
-      purchaseOpportunity: itemEvents.length >= 2 ? "Ürün ekleme ve satın alma fırsatı" : "Satın alma kontrolü",
-      suggestedProducts: suggestionResult.suggestions.filter((item) => item.type === "product").slice(0, 3).map((item) => ({ label: item.label, href: item.href }))
-    };
-  }));
-
-  return { generatedAt: new Date().toISOString(), rows: rows.sort((a, b) => b.searchCount - a.searchCount) };
+export async function getSearchMissesReport(): Promise<SearchMissesReport> {
+  const [events, store] = await Promise.all([loadUserEvents(), loadCatalogStore()]);
+  return buildSearchMissesReport(events, store.products);
 }
 
 export function createSalesOpportunity(input: SalesOpportunityInput, actor: string): Promise<SalesOpportunity> {
@@ -468,10 +409,177 @@ export async function loadSalesTasks(): Promise<SalesTask[]> {
   return readJson<SalesTask[]>(tasksPath, []);
 }
 
-async function toCustomerBehaviorRow(customer: CustomerAccount, events: UserEvent[]): Promise<CustomerBehaviorRow> {
-  const customerEvents = events.filter((event) => event.customerId === customer.id);
+function buildCustomerBehaviorReport(
+  customers: CustomerAccount[],
+  events: UserEvent[],
+  eventsByCustomer: Map<string, UserEvent[]>,
+  carts: Map<string, CartSummary>
+): CustomerBehaviorReport {
+  const rows = customers
+    .map((customer) => toCustomerBehaviorRow(customer, eventsByCustomer.get(customer.id) ?? [], carts.get(customer.id)!))
+    .sort((a, b) => Date.parse(b.lastVisitAt || "1970-01-01") - Date.parse(a.lastVisitAt || "1970-01-01"));
+
+  return {
+    generatedAt: new Date().toISOString(),
+    rows,
+    totals: {
+      eventCount: events.length,
+      activeCustomerCount: rows.filter((row) => row.productViewCount > 0 || row.abandonedItemCount > 0).length,
+      hotOpportunityCount: rows.filter((row) => row.actionStatus !== "Normal takip").length
+    }
+  };
+}
+
+function buildProductInterestReport(events: UserEvent[], products: CatalogProductRecord[]): ProductInterestReport {
+  const grouped = new Map<string, UserEvent[]>();
+  for (const event of events) {
+    if (!event.sku && !event.productName) continue;
+    const key = event.sku || event.productName || "unknown";
+    const itemEvents = grouped.get(key);
+    if (itemEvents) itemEvents.push(event);
+    else grouped.set(key, [event]);
+  }
+
+  const productBySku = new Map(products.map((product) => [product.sku, product]));
+  const productByName = new Map(products.map((product) => [product.name, product]));
+  const rows = Array.from(grouped.entries()).map(([key, itemEvents]) => {
+    const first = itemEvents.find((event) => event.productName || event.sku) ?? itemEvents[0]!;
+    const product = (first.sku ? productBySku.get(first.sku) : undefined) ?? (first.productName ? productByName.get(first.productName) : undefined);
+    const uniqueCompanies = new Set(itemEvents.map((event) => event.companyName ?? event.customerId ?? event.sessionId ?? "anon"));
+    const viewCount = countType(itemEvents, "product_view");
+    const cartAddCount = countType(itemEvents, "cart_add");
+    const quoteIntentCount = countType(itemEvents, "quote_intent");
+    const orderCount = countType(itemEvents, "order_create");
+    const opportunityScore = viewCount + cartAddCount * 10 + quoteIntentCount * 12 + itemEvents.filter((event) => (event.durationSeconds ?? 0) >= 30).length * 2;
+
+    return {
+      sku: first.sku ?? key,
+      productName: first.productName ?? product?.name ?? key,
+      brand: first.brand ?? product?.brand ?? "-",
+      category: first.category ?? product?.category ?? "-",
+      viewCount,
+      uniqueCompanyCount: uniqueCompanies.size,
+      cartAddCount,
+      quoteIntentCount,
+      orderCount,
+      conversionRate: cartAddCount + quoteIntentCount === 0 ? "0%" : `${Math.round((orderCount / Math.max(1, cartAddCount + quoteIntentCount)) * 100)}%`,
+      stockStatus: product?.stockStatus ?? "-",
+      interestedCompanies: Array.from(new Set(itemEvents.map((event) => event.companyName).filter(Boolean))).slice(0, 4) as string[],
+      opportunityScore
+    };
+  });
+
+  return {
+    generatedAt: new Date().toISOString(),
+    rows: rows.sort((a, b) => b.opportunityScore - a.opportunityScore).slice(0, 100)
+  };
+}
+
+function buildAbandonedCartsReport(
+  customers: CustomerAccount[],
+  eventsByCustomer: Map<string, UserEvent[]>,
+  carts: Map<string, CartSummary>
+): AbandonedCartsReport {
+  const rows = customers.flatMap((customer) => {
+    const cart = carts.get(customer.id)!;
+    if (cart.items.length === 0) return [];
+
+    const customerEvents = eventsByCustomer.get(customer.id) ?? [];
+    const lastActivityAt = mostRecent(customerEvents)?.occurredAt ?? cart.updatedAt;
+    const highestValueProduct = cart.items.reduce((highest, item) => Number(item.lineTotal) > Number(highest?.lineTotal ?? -1) ? item : highest, cart.items[0])?.productName ?? "-";
+    const whatsappDraft = `${customer.authorizedPerson} merhaba, sepetinizdeki ${highestValueProduct} ve diğer ürünler için bayi teklifinizi hazırlayabiliriz.`;
+    return [{
+      customerId: customer.id,
+      companyName: customer.companyName,
+      userName: customer.authorizedPerson,
+      phone: customer.phone,
+      segment: customer.segment,
+      cartTotal: cart.displayTotal,
+      itemCount: cart.items.length,
+      highestValueProduct,
+      lastActivityAt,
+      ageLabel: formatAge(lastActivityAt),
+      accountManager: customer.accountManager ?? "Satış Operasyon",
+      followUpStatus: "Takip bekliyor",
+      whatsappDraft,
+      whatsappHref: buildWhatsappHref(customer.phone, whatsappDraft)
+    } satisfies AbandonedCartRow];
+  });
+
+  return { generatedAt: new Date().toISOString(), rows };
+}
+
+function buildSearchMissesReport(events: UserEvent[], products: CatalogProductRecord[]): SearchMissesReport {
+  const grouped = new Map<string, UserEvent[]>();
+  for (const event of events) {
+    if (event.type !== "search" || (event.resultCount ?? 0) !== 0 || !event.searchTerm) continue;
+    const key = normalize(event.searchTerm);
+    if (!key) continue;
+    const itemEvents = grouped.get(key);
+    if (itemEvents) itemEvents.push(event);
+    else grouped.set(key, [event]);
+  }
+
+  const prioritized = Array.from(grouped.entries())
+    .sort((a, b) => b[1].length - a[1].length || Date.parse(mostRecent(b[1])?.occurredAt ?? "") - Date.parse(mostRecent(a[1])?.occurredAt ?? ""))
+    .slice(0, SEARCH_MISS_REPORT_LIMIT);
+  const searchIndex = products
+    .filter((product) => product.status === "ACTIVE" && product.isVisible)
+    .map((product) => ({ product, searchText: normalize(`${product.name} ${product.sku} ${product.brand} ${product.category}`) }));
+  const rows = prioritized.map(([term, itemEvents]) => {
+    const suggestions = findSearchMissSuggestions(term, searchIndex);
+    return {
+      term,
+      searchCount: itemEvents.length,
+      resultCount: 0,
+      companyCount: new Set(itemEvents.map((event) => event.companyName ?? event.customerId ?? event.sessionId ?? "anon")).size,
+      lastSearchedAt: mostRecent(itemEvents)?.occurredAt ?? "",
+      suggestedCategory: suggestions.category ?? suggestCategory(term),
+      purchaseOpportunity: itemEvents.length >= 2 ? "Ürün ekleme ve satın alma fırsatı" : "Satın alma kontrolü",
+      suggestedProducts: suggestions.products
+    } satisfies SearchMissRow;
+  });
+
+  return { generatedAt: new Date().toISOString(), rows, totalTermCount: grouped.size };
+}
+
+function findSearchMissSuggestions(
+  term: string,
+  searchIndex: Array<{ product: CatalogProductRecord; searchText: string }>
+): { category?: string; products: Array<{ label: string; href: string }> } {
+  const tokens = normalize(term)
+    .replace(/[^a-z0-9]+/g, " ")
+    .split(/\s+/)
+    .filter((token) => token.length >= 2 && !["urun", "ve", "ile", "icin"].includes(token));
+  if (tokens.length === 0) return { products: [] };
+
+  const matches: Array<{ score: number; product: CatalogProductRecord }> = [];
+  for (const entry of searchIndex) {
+    const score = tokens.reduce((sum, token) => sum + (entry.searchText.includes(token) ? token.length : 0), 0);
+    if (score === 0) continue;
+    matches.push({ score, product: entry.product });
+  }
+  matches.sort((a, b) => b.score - a.score || a.product.name.localeCompare(b.product.name, "tr"));
+  const best = matches.slice(0, 3);
+  return {
+    ...(best[0]?.product.category ? { category: best[0].product.category } : {}),
+    products: best.map(({ product }) => ({ label: product.name, href: `/products/${product.slug}` }))
+  };
+}
+
+function groupEventsByCustomer(events: UserEvent[]): Map<string, UserEvent[]> {
+  const grouped = new Map<string, UserEvent[]>();
+  for (const event of events) {
+    if (!event.customerId) continue;
+    const customerEvents = grouped.get(event.customerId);
+    if (customerEvents) customerEvents.push(event);
+    else grouped.set(event.customerId, [event]);
+  }
+  return grouped;
+}
+
+function toCustomerBehaviorRow(customer: CustomerAccount, customerEvents: UserEvent[], cart: CartSummary): CustomerBehaviorRow {
   const viewEvents = customerEvents.filter((event) => event.type === "product_view");
-  const cart = await loadPricedCart(customer);
   const topProduct = topValue(viewEvents.map((event) => event.productName ?? event.sku ?? ""));
   const topCategory = topValue(customerEvents.map((event) => event.category ?? ""));
   const lastVisitAt = mostRecent(customerEvents)?.occurredAt ?? "";
@@ -585,7 +693,16 @@ function withCustomer<T extends Omit<UserEvent, "id" | "occurredAt"> & { id?: st
 }
 
 function mostRecent(events: UserEvent[]): UserEvent | undefined {
-  return [...events].sort((a, b) => Date.parse(b.occurredAt) - Date.parse(a.occurredAt))[0];
+  let latest: UserEvent | undefined;
+  let latestTime = Number.NEGATIVE_INFINITY;
+  for (const event of events) {
+    const occurredAt = Date.parse(event.occurredAt);
+    if (occurredAt > latestTime) {
+      latest = event;
+      latestTime = occurredAt;
+    }
+  }
+  return latest;
 }
 
 function buildWhatsappHref(phone: string, message: string): string {

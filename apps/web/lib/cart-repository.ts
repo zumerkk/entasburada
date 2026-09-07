@@ -65,6 +65,12 @@ export interface CartSummary extends CartPricingPolicy {
   currency: string;
 }
 
+interface CatalogProductLookup {
+  bySlug: Map<string, CatalogProductRecord[]>;
+  byCode: Map<string, CatalogProductRecord[]>;
+  byName: Map<string, CatalogProductRecord[]>;
+}
+
 const rootDir = findWorkspaceRoot(process.cwd());
 const dataDir = process.env.ENTAS_CART_DATA_DIR ? path.resolve(process.env.ENTAS_CART_DATA_DIR) : path.join(rootDir, "data");
 const cartsPath = path.join(dataDir, "carts.json");
@@ -85,6 +91,7 @@ export async function addCartItems(
   return mutateCart(async () => {
     if (inputs.length > 50) throw new CartInputError("Tek seferde en fazla 50 ürün eklenebilir.");
     const [rows, store] = await Promise.all([loadCarts(), loadCatalogStore()]);
+    const productLookup = createCatalogProductLookup(getEligibleProducts(store.products));
     const index = rows.findIndex((cart) => cart.customerId === customer.id);
     const existing = index === -1 ? createEmptyCart(customer.id) : rows[index]!;
     const now = new Date().toISOString();
@@ -95,7 +102,7 @@ export async function addCartItems(
       const productName = clean(input.productName);
       if (!sku && !productName) continue;
 
-      const product = findCatalogProduct(store.products, clean(input.productSlug), sku, productName);
+      const product = findCatalogProduct(productLookup, clean(input.productSlug), sku, productName);
       if (!product && options.catalogOnly) {
         throw new CartInputError(`${sku || productName} aktif katalogda bulunamadı veya birden fazla ürünle eşleşti.`);
       }
@@ -141,6 +148,7 @@ export async function addCartItems(
 export async function updateCartQuantities(customer: CustomerAccount, quantities: Array<{ itemId: string; quantity: number }>): Promise<CustomerCart> {
   return mutateCart(async () => {
     const [rows, store] = await Promise.all([loadCarts(), loadCatalogStore()]);
+    const productLookup = createCatalogProductLookup(getEligibleProducts(store.products));
     const index = rows.findIndex((cart) => cart.customerId === customer.id);
     const existing = index === -1 ? createEmptyCart(customer.id) : rows[index]!;
     const quantityById = new Map(quantities.map((item) => [item.itemId, item.quantity]));
@@ -151,7 +159,7 @@ export async function updateCartQuantities(customer: CustomerAccount, quantities
         const requested = quantityById.get(item.id);
         if (requested == null) return [{ ...item }];
         if (Number(requested) <= 0) return [];
-        const product = findCatalogProduct(store.products, item.productSlug ?? "", item.sku, item.productName);
+        const product = findCatalogProduct(productLookup, item.productSlug ?? "", item.sku, item.productName);
         return [{ ...item, quantity: normalizeCartQuantity(requested, product?.minOrder ?? 1), unit: product?.unitType || item.unit }];
       })
     };
@@ -197,8 +205,25 @@ export async function loadCustomerCart(customer: CustomerAccount): Promise<Custo
 }
 
 export async function loadPricedCart(customer: CustomerAccount): Promise<CartSummary> {
-  const [cart, store] = await Promise.all([loadCustomerCart(customer), loadCatalogStore()]);
-  const items = cart.items.map((item) => priceCartItem(item, customer, store.products));
+  const carts = await loadPricedCarts([customer]);
+  return carts.get(customer.id)!;
+}
+
+export async function loadPricedCarts(customers: CustomerAccount[]): Promise<Map<string, CartSummary>> {
+  await cartMutationQueue;
+  const [rows, store] = await Promise.all([loadCarts(), loadCatalogStore()]);
+  const cartsByCustomer = new Map(rows.map((cart) => [cart.customerId, cart]));
+  const productLookup = createCatalogProductLookup(getEligibleProducts(store.products));
+  return new Map(
+    customers.map((customer) => {
+      const cart = cartsByCustomer.get(customer.id) ?? createEmptyCart(customer.id);
+      return [customer.id, priceCart(cart, customer, productLookup)];
+    })
+  );
+}
+
+function priceCart(cart: CustomerCart, customer: CustomerAccount, productLookup: CatalogProductLookup): CartSummary {
+  const items = cart.items.map((item) => priceCartItem(item, customer, productLookup));
   const policy = summarizeCartPricing(items);
   const singleTotal = policy.totals.length === 1 ? policy.totals[0] : undefined;
   return {
@@ -233,8 +258,8 @@ async function ensureFile(): Promise<void> {
   await writeFile(cartsPath, "[]\n", { mode: 0o600 });
 }
 
-function priceCartItem(item: CartItem, customer: CustomerAccount, products: CatalogProductRecord[]): PricedCartItem {
-  const product = findCatalogProduct(products, item.productSlug ?? "", item.sku, item.productName);
+function priceCartItem(item: CartItem, customer: CustomerAccount, productLookup: CatalogProductLookup): PricedCartItem {
+  const product = findCatalogProduct(productLookup, item.productSlug ?? "", item.sku, item.productName);
   const publicProduct = product ? toCustomerFacingProduct(product) : null;
   const currency = product?.currency === "TL" ? "TRY" : product?.currency || "TRY";
   const price = product ? priceProductForCustomer(product, customer) : null;
@@ -273,22 +298,19 @@ function createEmptyCart(customerId: string): CustomerCart {
   return { customerId, updatedAt: new Date().toISOString(), items: [] };
 }
 
-function findCatalogProduct(products: CatalogProductRecord[], productSlug: string, sku: string, productName: string): CatalogProductRecord | undefined {
-  const eligibleProducts = products.filter((product) => product.status === "ACTIVE" && product.isVisible);
+function findCatalogProduct(productLookup: CatalogProductLookup, productSlug: string, sku: string, productName: string): CatalogProductRecord | undefined {
   const normalizedSlug = normalize(productSlug);
   const normalizedSku = normalize(sku);
   const normalizedName = normalize(productName);
 
   if (normalizedSlug) {
-    const slugMatches = eligibleProducts.filter((product) => normalize(product.slug) === normalizedSlug);
+    const slugMatches = productLookup.bySlug.get(normalizedSlug) ?? [];
     if (slugMatches.length === 1) return slugMatches[0];
     return undefined;
   }
 
   if (normalizedSku) {
-    const matches = eligibleProducts.filter((product) =>
-      [product.sku, product.barcode ?? "", product.manufacturerCode ?? ""].some((value) => normalize(value) === normalizedSku)
-    );
+    const matches = productLookup.byCode.get(normalizedSku) ?? [];
     if (matches.length === 1) return matches[0];
     if (matches.length > 1 && normalizedName) {
       const namedMatches = matches.filter((product) => normalize(product.name) === normalizedName);
@@ -298,11 +320,37 @@ function findCatalogProduct(products: CatalogProductRecord[], productSlug: strin
   }
 
   if (normalizedName) {
-    const exactMatches = eligibleProducts.filter((product) => normalize(product.name) === normalizedName);
+    const exactMatches = productLookup.byName.get(normalizedName) ?? [];
     return exactMatches.length === 1 ? exactMatches[0] : undefined;
   }
 
   return undefined;
+}
+
+function getEligibleProducts(products: CatalogProductRecord[]): CatalogProductRecord[] {
+  return products.filter((product) => product.status === "ACTIVE" && product.isVisible);
+}
+
+function createCatalogProductLookup(products: CatalogProductRecord[]): CatalogProductLookup {
+  const lookup: CatalogProductLookup = { bySlug: new Map(), byCode: new Map(), byName: new Map() };
+  for (const product of products) {
+    addToProductLookup(lookup.bySlug, normalize(product.slug), product);
+    addToProductLookup(lookup.byName, normalize(product.name), product);
+    for (const code of [product.sku, product.barcode ?? "", product.manufacturerCode ?? ""]) {
+      addToProductLookup(lookup.byCode, normalize(code), product);
+    }
+  }
+  return lookup;
+}
+
+function addToProductLookup(map: Map<string, CatalogProductRecord[]>, key: string, product: CatalogProductRecord): void {
+  if (!key) return;
+  const matches = map.get(key);
+  if (matches) {
+    if (!matches.includes(product)) matches.push(product);
+  } else {
+    map.set(key, [product]);
+  }
 }
 
 async function readJson<T>(filePath: string, fallback: T): Promise<T> {

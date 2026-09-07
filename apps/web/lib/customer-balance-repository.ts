@@ -43,6 +43,26 @@ export async function getCustomerBalance(customer: CustomerAccount): Promise<Bal
   return summarizeLedger(entries, customer.creditLimit, "TRY");
 }
 
+export async function getCustomerBalances(customers: CustomerAccount[]): Promise<Map<string, BalanceSummary>> {
+  const entries = await getLedgerEntries();
+  const entriesByCustomer = new Map<string, LedgerEntry[]>();
+  for (const entry of entries) {
+    const customerEntries = entriesByCustomer.get(entry.customerId);
+    if (customerEntries) {
+      customerEntries.push(entry);
+    } else {
+      entriesByCustomer.set(entry.customerId, [entry]);
+    }
+  }
+
+  return new Map(
+    customers.map((customer) => [
+      customer.id,
+      summarizeLedger(entriesByCustomer.get(customer.id) ?? [], customer.creditLimit, "TRY")
+    ])
+  );
+}
+
 export function addLedgerEntry(input: AddLedgerEntryInput): Promise<LedgerEntry> {
   return enqueueLedgerMutation(() => addLedgerEntryUnlocked(input));
 }

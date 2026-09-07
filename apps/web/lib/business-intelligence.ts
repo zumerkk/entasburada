@@ -3,7 +3,7 @@ import type { CatalogProductRecord } from "@entas/catalog";
 import { loadUserEvents } from "./analytics-repository";
 import { loadCatalogStore } from "./catalog-repository";
 import { loadCommercialRecordsForAnalytics, type AdminOrder, type AdminQuote } from "./commercial-repository";
-import { getCustomerBalance } from "./customer-balance-repository";
+import { getCustomerBalances } from "./customer-balance-repository";
 import { getCustomers, type CustomerAccount } from "./customer-auth";
 
 export interface ManagementIntelligenceReport {
@@ -25,9 +25,13 @@ export async function getManagementIntelligenceReport(): Promise<ManagementIntel
     loadUserEvents()
   ]);
   const activeProducts = store.products.filter((product) => product.status === "ACTIVE" && product.isVisible);
-  const balances = await Promise.all(customers.map(async (customer) => ({ customer, balance: await getCustomerBalance(customer) })));
+  const balancesByCustomer = await getCustomerBalances(customers);
+  const balances = customers.map((customer) => ({ customer, balance: balancesByCustomer.get(customer.id)! }));
   const now = Date.now();
   const orderBySku = buildLastOrderBySku(commercial.orders);
+  const quotesByEmail = groupBy(commercial.quotes, (quote) => normalize(quote.email));
+  const ordersByEmail = groupBy(commercial.orders, (order) => normalize(order.email));
+  const eventsByCustomer = groupBy(events.filter((event) => Boolean(event.customerId)), (event) => event.customerId!);
   const slowStock = activeProducts
     .filter((product) => product.stockQuantityKnown !== false && product.stockQuantity > 0)
     .map((product) => {
@@ -39,7 +43,13 @@ export async function getManagementIntelligenceReport(): Promise<ManagementIntel
     .sort((a, b) => b.stockQuantity - a.stockQuantity || b.daysWithoutOrder - a.daysWithoutOrder)
     .slice(0, 30);
 
-  const customerFunnels = customers.map((customer) => buildCustomerFunnel(customer, commercial.quotes, commercial.orders, events, now))
+  const customerFunnels = customers.map((customer) => buildCustomerFunnel(
+    customer,
+    quotesByEmail.get(normalize(customer.email)) ?? [],
+    ordersByEmail.get(normalize(customer.email)) ?? [],
+    eventsByCustomer.get(customer.id) ?? [],
+    now
+  ))
     .sort((a, b) => riskRank(b.risk) - riskRank(a.risk) || b.revenue - a.revenue);
   const collectionRisks = balances
     .filter(({ balance }) => balance.balance > 0)
@@ -94,7 +104,9 @@ function buildQualityReport(products: CatalogProductRecord[]) {
   const duplicateGroups = new Map<string, CatalogProductRecord[]>();
   for (const product of products) {
     const key = `${normalize(product.brand)}|${normalize(product.name)}`;
-    duplicateGroups.set(key, [...(duplicateGroups.get(key) ?? []), product]);
+    const group = duplicateGroups.get(key);
+    if (group) group.push(product);
+    else duplicateGroups.set(key, [product]);
   }
   const duplicates = [...duplicateGroups.values()].filter((group) => group.length > 1);
   const noImage = products.filter((product) => !product.imageUrl || product.imageUrl.includes("industrial-hero")).length;
@@ -111,10 +123,7 @@ function buildQualityReport(products: CatalogProductRecord[]) {
   return { score, duplicateGroups: duplicates.length, duplicateProducts: duplicates.reduce((sum, group) => sum + group.length, 0), wrongCategoryCandidates, noImage, noPrice, placeholderBrands, hotlinkedImages };
 }
 
-function buildCustomerFunnel(customer: CustomerAccount, quotes: AdminQuote[], orders: AdminOrder[], events: Awaited<ReturnType<typeof loadUserEvents>>, now: number) {
-  const email = normalize(customer.email);
-  const customerQuotes = quotes.filter((quote) => normalize(quote.email) === email);
-  const customerOrders = orders.filter((order) => normalize(order.email) === email);
+function buildCustomerFunnel(customer: CustomerAccount, customerQuotes: AdminQuote[], customerOrders: AdminOrder[], events: Awaited<ReturnType<typeof loadUserEvents>>, now: number) {
   const revenue = customerOrders.filter((order) => order.status !== "CANCELLED").reduce((sum, order) => sum + number(order.totalAmount), 0);
   const activityDates = [
     ...events.filter((event) => event.customerId === customer.id).map((event) => event.occurredAt),
@@ -126,6 +135,17 @@ function buildCustomerFunnel(customer: CustomerAccount, quotes: AdminQuote[], or
   const risk = inactiveDays >= 120 && revenue > 0 ? "Yüksek kayıp riski" : inactiveDays >= 60 ? "Takip gerekli" : customerOrders.length === 0 && customerQuotes.length > 0 ? "Teklif dönüşümü bekliyor" : "Aktif";
   const suggestedSegment = revenue >= 500_000 || customerOrders.length >= 12 ? "Kurumsal Proje" : revenue >= 100_000 || customerOrders.length >= 5 ? "Sanayi Pro" : "Standart Bayi";
   return { customerId: customer.id, companyName: customer.companyName, segment: customer.segment, quotes: customerQuotes.length, orders: customerOrders.length, revenue: round(revenue), conversionRate: percent(customerOrders.length, customerQuotes.length), lastActivityAt, risk, suggestedSegment };
+}
+
+function groupBy<T>(rows: T[], keyFor: (row: T) => string): Map<string, T[]> {
+  const grouped = new Map<string, T[]>();
+  for (const row of rows) {
+    const key = keyFor(row);
+    const group = grouped.get(key);
+    if (group) group.push(row);
+    else grouped.set(key, [row]);
+  }
+  return grouped;
 }
 
 function buildRepresentativeReport(quotes: AdminQuote[], orders: AdminOrder[]) {
