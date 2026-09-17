@@ -1,4 +1,6 @@
 import "server-only";
+import { withCommercialFileLock } from "./commercial-file-lock";
+import { commissionSummary, settleCommission, type SellerCommission } from "./seller-commission";
 import { randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
@@ -128,6 +130,7 @@ export interface AdminQuote {
 }
 
 export interface AdminOrder {
+  sellerCommission?: SellerCommission;
   id: string;
   orderNo: string;
   trackingCode: string;
@@ -255,7 +258,8 @@ const ordersPath = path.join(dataDir, "orders.json");
 let commercialMutationQueue: Promise<void> = Promise.resolve();
 
 function enqueueCommercialMutation<T>(mutation: () => Promise<T>): Promise<T> {
-  const operation = commercialMutationQueue.then(mutation, mutation);
+  const locked = () => withCommercialFileLock(dataDir, mutation);
+  const operation = commercialMutationQueue.then(locked, locked);
   commercialMutationQueue = operation.then(() => undefined, () => undefined);
   return operation;
 }
@@ -579,14 +583,14 @@ async function convertQuoteToOrderUnlocked(id: string, actorName: string, actor:
   }
 
   const quote = quotes[quoteIndex]!;
-  if (!["PRICED", "APPROVED"].includes(quote.status)) {
-    throw new Error("Yalnızca fiyatlanmış veya onaylanmış teklif siparişe çevrilebilir.");
-  }
   if (quote.convertedOrderId) {
     const existing = orders.find((order) => order.id === quote.convertedOrderId);
     if (existing) {
       return existing;
     }
+  }
+  if (!["PRICED", "APPROVED"].includes(quote.status)) {
+    throw new Error("Yalnızca fiyatlanmış veya onaylanmış teklif siparişe çevrilebilir.");
   }
 
   const selectedSet = selectedItemIds ? new Set(selectedItemIds) : null;
@@ -612,7 +616,13 @@ async function convertQuoteToOrderUnlocked(id: string, actorName: string, actor:
     }) as OrderItem;
   });
   const total = items.reduce((sum, item) => sum + parseMoney(item.lineTotal), 0);
+  const referringCustomer = await findCustomerByEmail(quote.email);
+  const referral = referringCustomer?.referral;
   const order: AdminOrder = {
+    ...(referral ? { sellerCommission: {
+      referral, rate: 10 as const, paidCents: 0, revision: 0, payments: [],
+      lines: items.map((item) => ({ itemId: item.id, productName: item.productName, quantity: item.quantity, saleCents: Math.round(parseMoney(item.lineTotal) * 100), refundedQuantity: 0 }))
+    } } : {}),
     id: `order-${randomUUID()}`,
     orderNo,
     trackingCode: trackingCode("S"),
@@ -680,6 +690,35 @@ async function convertQuoteToOrderUnlocked(id: string, actorName: string, actor:
     })
   ]);
   return order;
+}
+
+/** Uses the same mutation queue as order updates: duplicate settlements cannot pay twice. */
+export function updateSellerCommission(input: { orderId: string; revision: number; operation: "settle" | "refund" | "recover"; itemId: string; quantity: number; reference: string }, actor: string): Promise<void> {
+  return enqueueCommercialMutation(async () => {
+    const orders = await loadOrders();
+    const order = orders.find((entry) => entry.id === input.orderId);
+    if (!order?.sellerCommission) throw new Error("Komisyon kaydı bulunamadı.");
+    const commission = order.sellerCommission;
+    if (commission.revision !== input.revision) throw new Error("Kayıt değişti. Sayfayı yenileyip tekrar deneyin.");
+    const now = new Date().toISOString();
+    if (input.reference.trim().length < 3 || input.reference.length > 160) throw new Error("İşlem açıklaması/dekont referansı gerekli (3–160 karakter).");
+    if (input.operation === "settle") {
+      order.sellerCommission = settleCommission(commission, order.status, order.paymentStatus, input.reference, actor, now);
+    } else if (input.operation === "refund") {
+      const line = commission.lines.find((entry) => entry.itemId === input.itemId);
+      if (!line || !Number.isInteger(input.quantity) || input.quantity < line.refundedQuantity || input.quantity > line.quantity) throw new Error("İade adedi önceki iade ile satın alınan adet arasında olmalıdır.");
+      line.refundedQuantity = input.quantity;
+      commission.revision += 1;
+    } else {
+      const { recoveryCents } = commissionSummary(commission, order.status, order.paymentStatus);
+      if (!recoveryCents) throw new Error("Geri alınacak komisyon yok.");
+      commission.paidCents -= recoveryCents;
+      commission.revision += 1;
+      commission.payments.push({ at: now, actor, amountCents: -recoveryCents, reference: input.reference.trim() });
+    }
+    order.history.unshift(historyEntry("admin", actor, `Satıcı komisyonu ${input.operation}: ${input.reference.trim()}${input.operation === "refund" ? ` / ${input.itemId}: toplam ${input.quantity} adet iade` : ""}`, undefined, undefined, now));
+    await saveOrders(orders);
+  });
 }
 
 export async function searchAdminOrders(filters: AdminListFilters = {}): Promise<AdminListResult<AdminOrder>> {

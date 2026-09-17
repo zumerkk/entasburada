@@ -72,7 +72,7 @@ export function AdminSellerAccountCreator() {
   async function copyCredentials() {
     if (!result?.email) return;
     const value = [
-      "ENTAŞBURADA Satıcı Paneli",
+      "ENTAŞBURADA Yetkili Paneli",
       "Giriş: https://entasburada.com/login",
       `Kullanıcı: ${result.email}`,
       result.temporaryPassword ? `Geçici şifre: ${result.temporaryPassword}` : "",
@@ -106,7 +106,7 @@ export function AdminSellerAccountCreator() {
           </select>
         </label>
         <label>Önerilen mağaza kârı (%)<input name="defaultMarkupRate" type="number" min="0" max="500" step="0.1" defaultValue="30" /></label>
-        <p className="sellerPricingPolicyNote"><strong>Satıcı kanal alış fiyatı:</strong> standart bayi net fiyatının %20 üzeridir. Önerilen mağaza kârı bu alış fiyatının üzerine ayrıca hesaplanır.</p>
+        <p className="sellerPricingPolicyNote"><strong>Müşteri referansı:</strong> Bu hesap kendi referansıyla getirdiği müşterilerin ürün satışlarından %10 komisyon kazanır. Bu oran mağaza kârından bağımsızdır. <strong>Satıcı kanal alış fiyatı:</strong> standart bayi net fiyatının %20 üzeridir. Önerilen mağaza kârı bu alış fiyatının üzerine ayrıca hesaplanır.</p>
         <label className="spanTwo">Varsayılan teslimat adresi *<textarea name="deliveryAddress" required minLength={10} rows={2} /></label>
         <div className="sellerPermissionGrid spanTwo">
           <label><input type="checkbox" name="productFeedEnabled" defaultChecked /> Ürün beslemesi</label>

@@ -48,7 +48,7 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },
-      ...["/admin/:path*", "/account/:path*", "/cart/:path*", "/checkout/:path*", "/login", "/orders/:path*", "/quote/:path*", "/quick-order/:path*", "/api/:path*"]
+      ...["/satici/:path*", "/admin/:path*", "/account/:path*", "/cart/:path*", "/checkout/:path*", "/login", "/orders/:path*", "/quote/:path*", "/quick-order/:path*", "/api/:path*"]
         .map((source) => ({ source, headers: privatePageHeaders }))
     ];
   },

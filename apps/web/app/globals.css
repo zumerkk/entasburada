@@ -8802,3 +8802,52 @@ a.metricCard {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* Referral seller workspace: existing ENTAŞ green, mint and warm neutral palette. */
+.referralPortal { padding-bottom: 56px; }
+.referralHeroInner { display: grid; grid-template-columns: 1.3fr 1fr; align-items: center; gap: 48px; padding-top: 52px; padding-bottom: 52px; }
+.referralHeroInner h1 { font-size: clamp(28px,3vw,42px); letter-spacing: -1.3px; margin: 16px 0; }
+.referralHeroInner p { font-size: 19px; line-height: 1.7; color: #cfdfd8; }
+.referralHeroActions { display: flex; align-items: center; gap: 24px; margin-top: 26px; flex-wrap: wrap; }
+.referralHeroActions > a { display: inline-flex; align-items: center; gap: 8px; }
+.referralHeroActions .btnPrimary { background: #e3f4ad; color: #0d3f35; }
+.referralCodeCard { padding: 30px; border: 1px solid #ffffff35; background: #ffffff0c; border-radius: 20px; min-width: 0; }
+.referralCodeCard > span { font-size: 11px; font-weight: 700; letter-spacing: 1.8px; color: #c6d9d0; }
+.referralCodeCard > strong { display: block; font-family: monospace; font-size: clamp(15px,1.7vw,24px); letter-spacing: 1px; margin: 20px 0; overflow-wrap: anywhere; color: #ecf5d8; }
+.referralCodeCard > div { display: flex; flex-wrap: wrap; gap: 8px; }
+.referralCodeCard button { display: inline-flex; align-items: center; gap: 7px; border: 1px solid #ffffff40; border-radius: 8px; background: #ffffff12; color: white; padding: 10px 12px; cursor: pointer; font: inherit; font-size: 12px; }
+.referralCodeCard button:hover { background: #ffffff25; }
+.referralCodeCard small { display: block; color: #c6d9d0; margin-top: 16px; line-height: 1.5; }
+.referralStats strong { font-size: clamp(20px,2vw,29px) !important; overflow-wrap: anywhere; }
+.referralHow { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; padding-top: 8px; padding-bottom: 32px; }
+.referralHow > div { display: flex; gap: 14px; align-items: flex-start; }
+.referralHow b { display: grid; place-items: center; color: var(--green-900); border: 1px solid #dbe6df; background: #edf3ed; border-radius: 50%; width: 36px; height: 36px; flex-shrink: 0; font-size: 12px; }
+.referralHow strong { display: block; font-size: 14px; margin: 3px 0 5px; }
+.referralHow small,.referralTable small,.referralOrder small { display: block; color: #6b7c76; font-size: 12px; line-height: 1.65; }
+.referralTableWrap { overflow-x: auto; }
+.referralTable { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+.referralTable th { background: #f5f8f6; color: #6b7c76; font-size: 11px; letter-spacing: .4px; padding: 15px 18px; white-space: nowrap; }
+.referralTable td { padding: 19px 18px; border-bottom: 1px solid #eaf0ec; }
+.referralTable strong { display: block; color: #153c30; }
+.referralBadge { display: inline-block; background: #eef3f0; color: #476455; padding: 6px 10px; border-radius: 7px; font-size: 11px; white-space: nowrap; }
+.referralBadge.approved { background: #e8f5e8; color: #22653f; }
+.referralBadge.pending,.referralBadge.reviewing { background: #fff5de; color: #876422; }
+.referralBadge.rejected { background: #fcecea; color: #a44137; }
+.referralOrder { border: 1px solid #e1e9e3; border-radius: 10px; margin-bottom: 12px; padding: 18px; }
+.referralOrder summary { display: flex; justify-content: space-between; align-items: center; gap: 16px; cursor: pointer; list-style: none; }
+.referralOrder summary::after { content: '+'; color: #456b58; font-size: 22px; }
+.referralOrder[open] summary::after { content: '−'; }
+.referralOrder summary > span:first-child { flex: 1; }
+.referralOrder[open] summary { margin-bottom: 18px; }
+.referralFineprint,.referralPayment { color: #708078; font-size: 12px; line-height: 1.8; }
+.referralAlert { padding: 18px; border: 1px solid #e8d4aa; background: #fff8e9; border-radius: 10px; color: #725320; margin-top: 20px; margin-bottom: 20px; }
+.referralBack { padding-top: 32px; }
+.referralPortal .sellerEmpty svg { margin: 0 auto 12px; color: #799386; }
+.referralPortal .sellerWorkspace { scroll-margin-top: 24px; }
+.referralPortal a:focus-visible,.referralPortal button:focus-visible { outline: 3px solid #8dbd4a; outline-offset: 4px; }
+@media(max-width:800px) { .referralHeroInner { grid-template-columns: 1fr; gap: 28px; padding-top: 30px; padding-bottom: 30px; } .referralHow { grid-template-columns: 1fr; gap: 18px; } .referralOrder summary { flex-wrap: wrap; } .referralOrder summary > span:first-child { flex-basis: 100%; } .referralTable { min-width: 640px; } .referralCodeCard { padding: 22px; } }
+.referralPortal .sellerProductFilters { grid-template-columns: minmax(0,1fr) auto; }
+.referralStats { padding-bottom: 28px; }
+.referralHeroActions > a:not(.btn) { color: #e6efe9; }
+.applicationForm > .applicationFormBody { display: contents; }
+.applicationForm[aria-busy="true"] button { opacity: .6; cursor: wait; }

@@ -1,149 +1,391 @@
-import { redirect } from "next/navigation";
-import { BarChart3, Boxes, Braces, Database, Download, KeyRound, PackageCheck, Search, ShieldCheck, ShoppingCart, Store, Truck } from "lucide-react";
-import { StatusPill } from "@entas/ui";
-import { AddToCartControl } from "../../components/AddToCartControl";
-import { requireCustomer } from "../../lib/customer-auth";
-import { getSellerCatalog, type SellerStockFilter } from "../../lib/reseller-catalog";
-import { searchAdminOrders } from "../../lib/commercial-repository";
-
-type SearchParams = Record<string, string | string[] | undefined>;
-const PAGE_SIZE = 30;
+import {
+  Users,
+  Wallet,
+  Clock3,
+  ArrowUpRight,
+  Plus,
+  Store,
+  ReceiptText,
+  CircleCheck,
+  Search,
+} from "lucide-react";
+import { SellerReference } from "../../components/SellerReference";
+import { sellerReferenceCode } from "../../lib/customer-auth";
+import {
+  requireReferralSeller,
+  sellerDashboard,
+  commissionMoney,
+} from "../../lib/seller-dashboard";
+import { commissionSummary } from "../../lib/seller-commission";
 
 export const dynamic = "force-dynamic";
-
-export default async function SellerDashboardPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  const customer = await requireCustomer();
-  if (!customer.sellerAccess?.enabled) redirect("/account");
+type Params = Record<string, string | string[] | undefined>;
+export default async function SellerDashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<Params>;
+}) {
+  const seller = await requireReferralSeller();
+  const data = await sellerDashboard(seller.id);
   const params = await searchParams;
-  const passwordChanged = getParam(params, "passwordChanged") === "1";
-  const q = getParam(params, "q");
-  const stock = toStockFilter(getParam(params, "stock"));
-  const page = Math.max(1, Number(getParam(params, "page") || "1"));
-  const [catalog, orders] = await Promise.all([
-    getSellerCatalog(customer, { q, stock, limit: PAGE_SIZE, offset: (page - 1) * PAGE_SIZE }),
-    searchAdminOrders({ q: customer.email, limit: 5 })
-  ]);
-  const safePage = Math.floor(catalog.offset / catalog.limit) + 1;
-  const pageCount = Math.max(1, Math.ceil(catalog.total / catalog.limit));
-  const access = customer.sellerAccess;
-  const dropshipEnabled = access.mode === "dropshipping" || access.mode === "hybrid";
-
+  const q = String(params.q ?? "").slice(0, 120);
+  const query = q.toLocaleLowerCase("tr-TR");
+  const customers = data.applications.filter((c) =>
+    [c.companyTitle, c.authorizedPerson, c.email].some((v) =>
+      v.toLocaleLowerCase("tr-TR").includes(query),
+    ),
+  );
+  const page = Math.max(
+    1,
+    Math.min(
+      Math.ceil(customers.length / 15) || 1,
+      Number.parseInt(String(params.page ?? "1"), 10) || 1,
+    ),
+  );
+  const balances = Object.entries(data.totals);
+  const total = (field: "pending" | "payable" | "paid") =>
+    balances.length
+      ? balances
+          .map(([currency, value]) => commissionMoney(value[field], currency))
+          .join(" · ")
+      : commissionMoney(0);
   return (
-    <main className="sellerPortal">
+    <main className="sellerPortal referralPortal">
       <section className="sellerHero">
-        <div className="shell sellerHeroInner">
+        <div className="shell referralHeroInner">
           <div>
-            <span className="sellerEyebrow"><Store size={15} /> Satıcı merkezi</span>
-            <h1>{customer.companyName}</h1>
-            <p>Canlı ürün, KDV dahil satıcı kanal alış fiyatı, stok ve sipariş operasyonunuz tek çalışma alanında.</p>
-            <div className="sellerHeroBadges">
-              <StatusPill tone="success">{sellerModeLabel(access.mode)}</StatusPill>
-              <StatusPill tone={access.exactStockEnabled ? "success" : "info"}>{access.exactStockEnabled ? "Net stok açık" : "Stok aralığı"}</StatusPill>
-              <StatusPill tone={access.apiEnabled ? "success" : "neutral"}>{access.apiEnabled ? "API açık" : "API kapalı"}</StatusPill>
+            <span className="sellerEyebrow">
+              <Store size={15} /> ENTAŞBURADA · SATIŞ ORTAKLIĞI
+            </span>
+            <h1>Yetkili Panel: {seller.authorizedPerson}</h1>
+            <p>
+              Müşteri ağınızı büyütün.
+              <br />
+              Her ürün satışından <b>%10 pay</b> kazanın.
+            </p>
+            <div className="referralHeroActions">
+              <a className="btn btnPrimary" href="/satici/musteri">
+                <Plus size={18} /> Yeni müşteri kaydet
+              </a>
+              <a href="#kazanclar">
+                Kazançlarımı incele <ArrowUpRight size={17} />
+              </a>
             </div>
           </div>
-          <aside>
-            <span>Önerilen mağaza kârı</span>
-            <strong>%{access.defaultMarkupRate.toLocaleString("tr-TR", { maximumFractionDigits: 1 })}</strong>
-            <small>Satıcı alış fiyatınızın üzerine eklenerek önerilen mağaza satış fiyatını hesaplar.</small>
-          </aside>
+          <SellerReference code={sellerReferenceCode(seller)} />
         </div>
       </section>
-
-      <nav className="shell sellerQuickNav" aria-label="Satıcı paneli hızlı işlemler">
-        <a href="#urunler"><Boxes size={18} /> Ürün ve stok</a>
-        <a href="/cart"><ShoppingCart size={18} /> Sepet</a>
-        {dropshipEnabled ? <a href="/satici/siparis"><Truck size={18} /> Dropship siparişi</a> : null}
-        <a href="/orders"><PackageCheck size={18} /> Sipariş takibi</a>
-        <a href="#entegrasyon"><Braces size={18} /> Entegrasyon</a>
+      <nav className="shell sellerQuickNav" aria-label="Yetkili menüsü">
+        <a href="/satici">
+          <Store size={18} /> Genel bakış
+        </a>
+        <a href="#musteriler">
+          <Users size={18} /> Müşterilerim
+        </a>
+        <a href="#kazanclar">
+          <Wallet size={18} /> Kazançlarım
+        </a>
+        <a href="/satici/katalog">
+          <ReceiptText size={18} /> Ürün kataloğu
+        </a>
+        <a href="/account">
+          Hesap ayarları <ArrowUpRight size={16} />
+        </a>
       </nav>
-
-      {passwordChanged ? (
-        <div className="shell sellerSuccessNotice" role="status">
-          <ShieldCheck size={20} aria-hidden="true" />
-          <span><strong>Hesabınız güvenle etkinleştirildi.</strong> Kalıcı şifreniz kaydedildi; satıcı panelinin tüm özelliklerini kullanabilirsiniz.</span>
-        </div>
+      {params.error ? (
+        <p className="shell referralAlert" role="alert">
+          {String(params.error)}
+        </p>
       ) : null}
-
-      <section className="shell sellerStats">
-        <div><Boxes size={19} /><span>Aktif ürün</span><strong>{catalog.summary.activeProducts.toLocaleString("tr-TR")}</strong><small>Sistemde satışa açık</small></div>
-        <div><PackageCheck size={19} /><span>Stokta</span><strong>{catalog.summary.availableProducts.toLocaleString("tr-TR")}</strong><small>Siparişe uygun stok</small></div>
-        <div><BarChart3 size={19} /><span>Fiyatlı ürün</span><strong>{catalog.summary.pricedProducts.toLocaleString("tr-TR")}</strong><small>KDV dahil alış fiyatı</small></div>
-        <div><Truck size={19} /><span>Toplam sipariş</span><strong>{orders.total.toLocaleString("tr-TR")}</strong><small>Panel ve API siparişleri</small></div>
+      {params.submitted ? (
+        <p className="shell sellerSuccessNotice" role="status">
+          <CircleCheck size={20} /> Müşteri kaydı alındı. Başvuru:{" "}
+          {String(params.submitted)}. Yönetici onayından sonra hesap etkinleşir.
+        </p>
+      ) : null}
+      {params.passwordChanged ? (
+        <p className="shell sellerSuccessNotice" role="status">
+          Şifreniz güncellendi. Yetkili paneliniz hazır.
+        </p>
+      ) : null}
+      <section className="shell sellerStats referralStats">
+        <div>
+          <Users size={20} />
+          <span>Kayıtlı müşteri</span>
+          <strong>{data.customers.length}</strong>
+          <small>
+            {
+              data.applications.filter(
+                (a) => a.status === "pending" || a.status === "reviewing",
+              ).length
+            }{" "}
+            başvuru onay bekliyor
+          </small>
+        </div>
+        <div>
+          <Clock3 size={20} />
+          <span>Bekleyen kazanç</span>
+          <strong>{total("pending")}</strong>
+          <small>Tahsilat ve teslimat sonrası kesinleşir</small>
+        </div>
+        <div>
+          <Wallet size={20} />
+          <span>Ödenebilir kazanç</span>
+          <strong>{total("payable")}</strong>
+          <small>Tahsil edilmiş ve teslim edilmiş satışlar</small>
+        </div>
+        <div>
+          <CircleCheck size={20} />
+          <span>Ödenen komisyon</span>
+          <strong>{total("paid")}</strong>
+          <small>Yönetici tarafından kaydedilen ödemeler</small>
+        </div>
       </section>
-
-      <section className="shell sellerWorkspace" id="urunler">
-        <div className="sellerSectionHead">
-          <div><span>Canlı katalog</span><h2>Ürün, fiyat ve stok</h2><p>Veriler katalog yönetimindeki aktif ürünlerden anlık hazırlanır.</p></div>
-          <a className="btn btnGhost dark" href="/quick-order">Toplu SKU girişi</a>
+      {balances.some(([, b]) => b.recovery > 0) ? (
+        <p className="shell referralAlert">
+          İptal/iade sonrası geri alınacak komisyon:{" "}
+          {balances
+            .filter(([, b]) => b.recovery > 0)
+            .map(([c, b]) => commissionMoney(b.recovery, c))
+            .join(" · ")}
+          . Mutabakat için satış ekibiyle iletişime geçin.
+        </p>
+      ) : null}
+      <section className="shell referralHow">
+        <div>
+          <b>01</b>
+          <span>
+            <strong>Müşterinizi ekleyin</strong>
+            <small>Panelden kayıt açın veya referansınızı paylaşın.</small>
+          </span>
         </div>
-        <form className="sellerProductFilters" action="/satici">
-          <label><Search size={17} /><input name="q" defaultValue={q} placeholder="SKU, barkod, ürün, marka…" /></label>
-          <select name="stock" defaultValue={stock} aria-label="Stok filtresi">
-            <option value="all">Tüm stok durumları</option>
-            <option value="available">Siparişe uygun</option>
-            <option value="low_stock">Az stok</option>
-            <option value="incoming">Tedarik sürecinde</option>
-            <option value="out_of_stock">Stok yok</option>
-          </select>
-          <button className="btn btnPrimary" type="submit">Filtrele</button>
-          <a className="btn btnGhost dark" href="/satici">Temizle</a>
-        </form>
-
-        <div className="sellerProductTable">
-          <div className="sellerProductTableHead"><span>Ürün</span><span>Stok</span><span>Satıcı alış fiyatı</span><span>Önerilen mağaza satışı</span><span>Sipariş</span></div>
-          {catalog.items.map((product) => (
-            <div className="sellerProductRow" key={product.productUrl}>
-              <span className="sellerProductIdentity">
-                <img src={product.imageUrl} alt="" loading="lazy" />
-                <span><strong><a href={product.productUrl}>{product.name}</a></strong><small>{product.brand} · {product.sku} · {product.unit}</small></span>
-              </span>
-              <span className="sellerStockCell">
-                <StatusPill tone={stockTone(product.stockStatus)}>{product.stockLabel}</StatusPill>
-                <small>{product.exactStock ? `${product.availableQuantity?.toLocaleString("tr-TR") ?? 0} ${product.unit}` : product.stockRange}</small>
-              </span>
-              <span className="sellerPriceCell"><strong>{product.displayPurchasePrice ?? "Teklif alın"}</strong><small>KDV dahil</small></span>
-              <span className="sellerPriceCell"><strong>{product.displayRecommendedSalePrice ?? "—"}</strong><small>{product.estimatedProfit ? `Tahmini kâr ${product.estimatedProfit} ${product.currency}` : "Fiyat bekleniyor"}</small></span>
-              <span>
-                {product.orderable ? <AddToCartControl slug={product.productUrl.split("/products/")[1] ?? ""} sku={product.sku} name={product.name} unit={product.unit} minOrder={product.minOrder} isAuthenticated /> : <small className="sellerNotOrderable">Stok/fiyat teyidi gerekli</small>}
-              </span>
-            </div>
-          ))}
-          {catalog.items.length === 0 ? <div className="sellerEmpty">Bu filtrelerle ürün bulunamadı.</div> : null}
+        <div>
+          <b>02</b>
+          <span>
+            <strong>Müşteriniz alışveriş yapsın</strong>
+            <small>Onaylı hesabının ürün satışları size bağlansın.</small>
+          </span>
         </div>
-        <nav className="pagination" aria-label="Satıcı kataloğu sayfalama">
-          <a className={safePage <= 1 ? "disabled" : ""} href={safePage <= 1 ? "#" : pageHref(params, safePage - 1)}>Önceki</a>
-          <span>{safePage.toLocaleString("tr-TR")} / {pageCount.toLocaleString("tr-TR")}</span>
-          <a className={safePage >= pageCount ? "disabled" : ""} href={safePage >= pageCount ? "#" : pageHref(params, safePage + 1)}>Sonraki</a>
-        </nav>
+        <div>
+          <b>03</b>
+          <span>
+            <strong>%10 kazancınızı takip edin</strong>
+            <small>Ürün bazında şeffaf komisyon dökümü.</small>
+          </span>
+        </div>
       </section>
-
-      <section className="shell sellerIntegration" id="entegrasyon">
+      <section className="shell sellerWorkspace" id="musteriler">
         <div className="sellerSectionHead">
-          <div><span>Veri aktarımı</span><h2>Mağazanızı ENTAŞBURADA’ya bağlayın</h2><p>JSON API, CSV ve XML aynı aktif ürün, fiyat ve stok politikasını kullanır.</p></div>
-          <Database size={28} />
-        </div>
-        {access.productFeedEnabled ? (
-          <div className="sellerIntegrationGrid">
-            <a href="/api/reseller/v1/products?format=csv"><Download size={20} /><strong>CSV ürün listesi</strong><span>Excel ve toplu içe aktarma için UTF-8 dosya</span></a>
-            <a href="/api/reseller/v1/products?format=xml"><Download size={20} /><strong>XML ürün beslemesi</strong><span>Pazaryeri ve e-ticaret yazılımları için</span></a>
-            <a href="/api/reseller/v1/products?format=json&limit=100"><Braces size={20} /><strong>JSON API önizleme</strong><span>Sayfalı ürün, fiyat ve stok yanıtı</span></a>
+          <div>
+            <span>MÜŞTERİ AĞINIZ</span>
+            <h2>Birlikte büyüdüğünüz işletmeler</h2>
+            <p>Kayıtlarınız, başvuru durumları ve müşteri kaynakları.</p>
           </div>
-        ) : <p className="sellerNotice">Ürün beslemesi bu hesap için kapalı. Yöneticinizle iletişime geçin.</p>}
-        {access.apiEnabled ? (
-          <div className="sellerApiCard">
-            <div><KeyRound size={20} /><span><strong>Bearer API erişimi</strong><small>{access.apiKeyPrefix ? `Anahtar kimliği: ${access.apiKeyPrefix}…` : "Admin henüz API anahtarı üretmedi."}</small></span></div>
-            <pre><code>{`curl -H "Authorization: Bearer $ENTAS_API_KEY" \\\n  "https://entasburada.com/api/reseller/v1/products?stock=available&limit=100"`}</code></pre>
-            <p>Güvenlik için API anahtarının tamamı panelde gösterilmez. Anahtarı sunucu ortam değişkeninde saklayın; tarayıcı koduna koymayın.</p>
+          <a className="btn btnPrimary" href="/satici/musteri">
+            <Plus size={17} /> Müşteri ekle
+          </a>
+        </div>
+        <form className="sellerProductFilters">
+          <label>
+            <Search size={17} />
+            <input
+              name="q"
+              defaultValue={q}
+              placeholder="Firma, yetkili veya e-posta ara"
+              aria-label="Müşteri ara"
+            />
+          </label>
+          <button className="btn btnGhost dark">Ara</button>
+        </form>
+        <div className="referralTableWrap">
+          <table className="referralTable">
+            <thead>
+              <tr>
+                <th>Müşteri / firma</th>
+                <th>İletişim</th>
+                <th>Kayıt kanalı</th>
+                <th>Durum</th>
+                <th>Kayıt tarihi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {customers.slice((page - 1) * 15, page * 15).map((c) => (
+                <tr key={c.id}>
+                  <td>
+                    <strong>{c.companyTitle}</strong>
+                    <small>{c.authorizedPerson}</small>
+                  </td>
+                  <td>
+                    {c.email}
+                    <small>{c.phone}</small>
+                  </td>
+                  <td>
+                    {c.referral?.source === "seller"
+                      ? "Panelden kayıt"
+                      : "Referans kodu"}
+                  </td>
+                  <td>
+                    <span className={`referralBadge ${c.status}`}>
+                      {
+                        {
+                          pending: "Onay bekliyor",
+                          reviewing: "İnceleniyor",
+                          approved: "Onaylandı",
+                          rejected: "Reddedildi",
+                        }[c.status]
+                      }
+                    </span>
+                  </td>
+                  <td>{new Date(c.createdAt).toLocaleDateString("tr-TR")}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {!customers.length ? (
+          <div className="sellerEmpty">
+            <Users size={28} />
+            <h3>
+              {q
+                ? "Aramanıza uygun müşteri bulunamadı"
+                : "İlk müşterinizle başlayın"}
+            </h3>
+            <p>
+              Müşteri kaydedin veya yukarıdaki referans bağlantınızı paylaşın.
+            </p>
           </div>
         ) : null}
+        <nav className="pagination" aria-label="Müşteri sayfaları">
+          {page > 1 ? (
+            <a href={`?q=${encodeURIComponent(q)}&page=${page - 1}#musteriler`}>
+              Önceki
+            </a>
+          ) : null}
+          <span>
+            {page} / {Math.ceil(customers.length / 15) || 1}
+          </span>
+          {page * 15 < customers.length ? (
+            <a href={`?q=${encodeURIComponent(q)}&page=${page + 1}#musteriler`}>
+              Sonraki
+            </a>
+          ) : null}
+        </nav>
+      </section>
+      <section className="shell sellerWorkspace" id="kazanclar">
+        <div className="sellerSectionHead">
+          <div>
+            <span>SATIŞ & KOMİSYON</span>
+            <h2>Kazancınızın her adımı görünür</h2>
+            <p>Ürün satış tutarının %10’u · Kargo hariç · İadeler düşülür</p>
+          </div>
+          <a className="btn btnGhost dark" href="/api/seller/commissions">
+            CSV indir
+          </a>
+        </div>
+        {data.orders.length ? (
+          data.orders.slice(0, 100).map((order) => {
+            const c = order.sellerCommission!;
+            const summary = commissionSummary(
+              c,
+              order.status,
+              order.paymentStatus,
+            );
+            return (
+              <details className="referralOrder" key={order.id}>
+                <summary>
+                  <span>
+                    <strong>{order.orderNo}</strong>
+                    <small>
+                      {order.companyName} ·{" "}
+                      {new Date(order.orderedAt).toLocaleDateString("tr-TR")}
+                    </small>
+                  </span>
+                  <span className="referralBadge">
+                    {summary.cancelled
+                      ? "İptal / iade"
+                      : summary.recoveryCents
+                        ? "İade mutabakatı"
+                        : summary.payableCents
+                          ? "Ödenebilir"
+                          : summary.pendingCents
+                            ? "Bekliyor"
+                            : c.paidCents
+                              ? "Ödendi"
+                              : "Kazanç yok"}
+                  </span>
+                  <strong>
+                    {commissionMoney(summary.earnedCents, order.currency)}
+                  </strong>
+                </summary>
+                <div className="referralTableWrap">
+                  <table className="referralTable">
+                    <thead>
+                      <tr>
+                        <th>Ürün</th>
+                        <th>Adet / iade</th>
+                        <th>Satış tutarı</th>
+                        <th>%10 payınız</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {c.lines.map((line) => (
+                        <tr key={line.itemId}>
+                          <td>{line.productName}</td>
+                          <td>
+                            {line.quantity} / {line.refundedQuantity}
+                          </td>
+                          <td>
+                            {commissionMoney(line.saleCents, order.currency)}
+                          </td>
+                          <td>
+                            {commissionMoney(
+                              summary.cancelled
+                                ? 0
+                                : Math.round(
+                                    (line.saleCents *
+                                      (line.quantity - line.refundedQuantity)) /
+                                      line.quantity /
+                                      10,
+                                  ),
+                              order.currency,
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {c.payments.map((payment, i) => (
+                  <p className="referralPayment" key={i}>
+                    {new Date(payment.at).toLocaleDateString("tr-TR")} ·{" "}
+                    {payment.amountCents < 0 ? "Geri alındı" : "Ödeme"}:{" "}
+                    {commissionMoney(
+                      Math.abs(payment.amountCents),
+                      order.currency,
+                    )}{" "}
+                    · {payment.reference}
+                  </p>
+                ))}
+              </details>
+            );
+          })
+        ) : (
+          <div className="sellerEmpty">
+            <ReceiptText size={28} />
+            <h3>Satışlarınız burada görünecek</h3>
+            <p>
+              Getirdiğiniz müşterilerin yeni siparişleri ürün bazında otomatik
+              işlenir.
+            </p>
+          </div>
+        )}
+        <p className="referralFineprint">
+          Son 100 sipariş gösterilir; CSV tüm kayıtları içerir. Komisyon KDV
+          dahil ürün satır tutarından hesaplanır. Tahsilat ve teslimat birlikte
+          tamamlanınca ödenebilir olur. Ödemeler yönetici mutabakatıyla
+          kaydedilir; iptal ve ürün iadeleri kazancı azaltır.
+        </p>
       </section>
     </main>
   );
 }
-
-function getParam(params: SearchParams, key: string): string { const value = params[key]; return Array.isArray(value) ? value[0] ?? "" : value ?? ""; }
-function toStockFilter(value: string): SellerStockFilter { return (["available", "low_stock", "incoming", "out_of_stock"] as string[]).includes(value) ? value as SellerStockFilter : "all"; }
-function pageHref(params: SearchParams, page: number): string { const query = new URLSearchParams(); for (const [key, value] of Object.entries(params)) { if (key === "page" || value == null) continue; query.set(key, Array.isArray(value) ? value[0] ?? "" : value); } query.set("page", String(page)); return `/satici?${query.toString()}`; }
-function sellerModeLabel(mode: string): string { return mode === "dropshipping" ? "Dropshipping" : mode === "hybrid" ? "Al-sat + Dropshipping" : "Al-sat bayi"; }
-function stockTone(status: string): "success" | "warning" | "danger" | "info" { return status === "in_stock" ? "success" : status === "low_stock" || status === "incoming" ? "warning" : "danger"; }

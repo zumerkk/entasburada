@@ -82,6 +82,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
         <div>
           <span>Kaynak</span>
           <strong>{order.source}</strong>
+          {order.sellerCommission ? <a href={`/admin/sellers?seller=${encodeURIComponent(order.sellerCommission.referral.sellerId)}`}>Yetkili Panel: {order.sellerCommission.referral.sellerName} · %10 komisyon</a> : null}
         </div>
         <div className="spanTwo">
           <span>Teslimat adresi</span>
@@ -148,7 +149,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
         <div className="panelHeader compact">
           <h2>Operasyon güncelle</h2>
         </div>
-        <form className="adminFilterForm inlineCommercialForm" action={updateOrderOperationAction}>
+        <form key={order.history[0]?.id ?? order.id} className="adminFilterForm inlineCommercialForm" action={updateOrderOperationAction}>
           <input type="hidden" name="orderId" value={order.id} />
           <label>
             Durum

@@ -30,6 +30,7 @@ const menu = [
   { label: "Bildirimler", href: "/admin/notifications", icon: Bell },
   { label: "Marka ayarları", href: "/admin/settings", icon: Settings },
   { label: "Bayiler", href: "/admin/dealers", icon: UsersRound },
+  { label: "Satıcı komisyonları", href: "/admin/sellers", icon: Wallet },
   { label: "Cari hesaplar", href: "/admin/balances", icon: Wallet },
   { label: "Fiyat listeleri", href: "/admin#pricing", icon: Tags },
   { label: "Stok yönetimi", href: "/admin#stock", icon: Boxes },
@@ -38,7 +39,7 @@ const menu = [
   { label: "Audit logs", href: "/admin/import#audit", icon: ShieldCheck }
 ];
 
-export type AdminFrameActive = "dashboard" | "analytics" | "products" | "data-quality" | "import" | "ai-import" | "integrations" | "notifications" | "settings" | "orders" | "quotes" | "dealers" | "balances";
+export type AdminFrameActive = "dashboard" | "analytics" | "products" | "data-quality" | "import" | "ai-import" | "integrations" | "notifications" | "settings" | "orders" | "quotes" | "dealers" | "balances" | "sellers";
 
 export async function AdminFrame({ children, active }: { children: React.ReactNode; active: AdminFrameActive }) {
   const brandSettings = await getBrandSettings();
@@ -68,6 +69,7 @@ export async function AdminFrame({ children, active }: { children: React.ReactNo
               (active === "orders" && item.href === "/admin/orders") ||
               (active === "quotes" && item.href === "/admin/quotes") ||
               (active === "dealers" && item.href === "/admin/dealers") ||
+              (active === "sellers" && item.href === "/admin/sellers") ||
               (active === "balances" && item.href === "/admin/balances");
             return (
               <a href={item.href} key={item.label} className={isActive ? "active" : ""}>

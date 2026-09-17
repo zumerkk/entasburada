@@ -17,7 +17,7 @@ export default async function DropshipOrderPage({ searchParams }: { searchParams
   return (
     <main className="sellerPortal dropshipCheckout">
       <section className="shell sellerSubHeader">
-        <a href="/satici"><ArrowLeft size={16} /> Satıcı merkezine dön</a>
+        <a href="/satici"><ArrowLeft size={16} /> Yetkili paneline dön</a>
         <span>Dropshipping operasyonu</span>
         <h1>Son müşteriye sipariş oluştur</h1>
         <p>Sepetinizdeki ürünleri alıcının adresine, hesabınız izin veriyorsa ENTAŞBURADA evraksız kör kargo ile gönderin.</p>

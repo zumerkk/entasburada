@@ -56,7 +56,7 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
       <header className="adminTopbar">
         <div>
           <span>Bayiler</span>
-          <h1>Bayi yönetimi</h1>
+          <h1>Bayi yönetimi</h1><a href="/admin/sellers">Satıcı komisyon yönetimi →</a>
         </div>
       </header>
 
@@ -123,6 +123,7 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
                   <span>
                     <strong>{customer.companyName}</strong>
                     <small>{customer.authorizedPerson}</small>
+                    {customer.referral ? <small>Yetkili Panel: {customer.referral.sellerName}</small> : null}
                   </span>
                   <span>
                     <strong>{customer.email}</strong>
@@ -205,7 +206,7 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
                       <textarea name="deliveryAddress" rows={2} defaultValue={customer.deliveryAddress} />
                     </label>
                     <div className="sellerPermissionGrid spanTwo">
-                      <label><input type="checkbox" name="sellerEnabled" defaultChecked={customer.sellerAccess?.enabled} /> Satıcı paneli</label>
+                      <label><input type="checkbox" name="sellerEnabled" defaultChecked={customer.sellerAccess?.enabled} /> Yetkili paneli</label>
                       <label><input type="checkbox" name="productFeedEnabled" defaultChecked={customer.sellerAccess?.productFeedEnabled} /> Ürün beslemesi</label>
                       <label><input type="checkbox" name="exactStockEnabled" defaultChecked={customer.sellerAccess?.exactStockEnabled} /> Net stok</label>
                       <label><input type="checkbox" name="apiEnabled" defaultChecked={customer.sellerAccess?.apiEnabled} /> API</label>
@@ -379,7 +380,7 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
                   <div>
                     <strong>Ticari profil</strong>
                     <p>
-                      {[application.dealershipType, application.annualPurchaseVolume, application.referenceCompany]
+                      {[application.referral ? `Yetkili Panel: ${application.referral.sellerName}` : "", application.dealershipType, application.annualPurchaseVolume, application.referenceCompany]
                         .filter(Boolean)
                         .join(" · ") || "—"}
                     </p>

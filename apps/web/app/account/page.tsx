@@ -53,15 +53,15 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
         <section className="shell accountActivationLayout">
           <div className="accountActivationIntro">
             <span className="accountSectionKicker">Hesabınız hazır</span>
-            <h2>{isSeller ? "Satıcı merkezinizi etkinleştirin" : "Bayi çalışma alanınızı etkinleştirin"}</h2>
+            <h2>{isSeller ? "Yetkili panelinizi etkinleştirin" : "Bayi çalışma alanınızı etkinleştirin"}</h2>
             <p>
               Geçici şifreniz yalnızca ilk giriş içindir. Yeni şifrenizi kaydettiğinizde hesabınız açılır ve
-              {isSeller ? " doğrudan satıcı paneline yönlendirilirsiniz." : " bayi çalışma alanınıza yönlendirilirsiniz."}
+              {isSeller ? " doğrudan yetkili paneline yönlendirilirsiniz." : " bayi çalışma alanınıza yönlendirilirsiniz."}
             </p>
             <ol className="accountActivationSteps">
               <li className="complete"><BadgeCheck size={20} aria-hidden="true" /><span><strong>Kimlik doğrulandı</strong><small>{customer.email}</small></span></li>
               <li className="current"><ShieldCheck size={20} aria-hidden="true" /><span><strong>Kalıcı şifre belirleyin</strong><small>En az 8 karakter ve güçlü bir parola kullanın.</small></span></li>
-              <li><Gauge size={20} aria-hidden="true" /><span><strong>{isSeller ? "Satıcı paneli" : "Bayi paneli"}</strong><small>Şifre kaydedildikten sonra otomatik açılır.</small></span></li>
+              <li><Gauge size={20} aria-hidden="true" /><span><strong>{isSeller ? "Yetkili paneli" : "Bayi paneli"}</strong><small>Şifre kaydedildikten sonra otomatik açılır.</small></span></li>
             </ol>
           </div>
 
@@ -161,7 +161,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
         {customer.sellerAccess?.enabled ? (
           <a href="/satici">
             <Gauge size={19} aria-hidden="true" />
-            <span>Satıcı Paneli</span>
+            <span>Yetkili Paneli</span>
           </a>
         ) : null}
         <a href="/quick-order">

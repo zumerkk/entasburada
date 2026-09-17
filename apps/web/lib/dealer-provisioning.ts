@@ -54,6 +54,7 @@ export async function provisionDealerAccount(application: DealerApplication): Pr
   const account: Omit<CustomerAccount, "password"> & { plainPassword: string } = {
     id: `cust-${randomUUID()}`,
     email: application.email.trim().toLowerCase(),
+    ...(application.referral ? { referral: application.referral } : {}),
     plainPassword: tempPassword,
     companyName: application.companyTitle,
     authorizedPerson: application.authorizedPerson,

@@ -1,5 +1,6 @@
 "use server";
 
+import { getCurrentCustomer, resolveSellerReferral, sellerReferenceCode } from "../../lib/customer-auth";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { createDealerApplication, type DealerApplicationInput } from "../../lib/dealer-application-repository";
@@ -22,10 +23,13 @@ const REQUIRED_FIELDS: Array<[keyof DealerApplicationInput, string]> = [
   ["activityArea", "Faaliyet alanı"]
 ];
 
-export async function submitDealerApplicationAction(formData: FormData): Promise<void> {
-  const rateLimit = await consumeRateLimit("dealer-application", getClientAddress(await headers()), { limit: 5, windowMs: 60 * 60 * 1000 });
+export async function submitDealerApplicationAction(formData: FormData): Promise<{ error: string }> {
+  const sellerEntry = formData.get("sellerEntry") === "1";
+  const seller = sellerEntry ? await getCurrentCustomer() : null;
+  if (sellerEntry && (!seller?.sellerAccess?.enabled || (seller.companyId ?? seller.id) !== seller.id)) return { error: "Satıcı oturumunuz geçersiz. Tekrar giriş yapın." };
+  const rateLimit = await consumeRateLimit(seller ? "seller-customer-registration" : "dealer-application", seller?.id ?? getClientAddress(await headers()), { limit: seller ? 30 : 5, windowMs: 60 * 60 * 1000 });
   if (!rateLimit.allowed) {
-    redirect(`/dealer-application?error=${encodeURIComponent("Çok fazla başvuru gönderildi. Lütfen daha sonra tekrar deneyin.")}`);
+    return { error: "Çok fazla başvuru gönderildi. Lütfen daha sonra tekrar deneyin." };
   }
   const value = (key: string): string => String(formData.get(key) ?? "").trim();
 
@@ -54,19 +58,32 @@ export async function submitDealerApplicationAction(formData: FormData): Promise
 
   const missing = REQUIRED_FIELDS.filter(([key]) => !input[key]).map(([, label]) => label);
   if (missing.length > 0) {
-    redirect(`/dealer-application?error=${encodeURIComponent(missing.join(", "))}`);
+    return { error: "Zorunlu alanlar: " + missing.join(", ") };
   }
 
   if (!input.kvkkAccepted) {
-    redirect(`/dealer-application?error=${encodeURIComponent("KVKK onayı zorunludur")}`);
+    return { error: "KVKK onayı zorunludur." };
   }
 
   const parsed = dealerApplicationSchema.safeParse(input);
   if (!parsed.success) {
     const message = parsed.error.issues[0]?.message ?? "Başvuru bilgileri geçersiz.";
-    redirect(`/dealer-application?error=${encodeURIComponent(message)}`);
+    return { error: message };
   }
 
-  const application = await createDealerApplication(parsed.data as DealerApplicationInput);
-  redirect(`/dealer-application?submitted=${encodeURIComponent(application.reference)}`);
+  let destination = "/dealer-application";
+  let reference = "";
+  try {
+    let code = value("referralCode");
+    if (seller) {
+      code = sellerReferenceCode(seller);
+      destination = "/satici";
+    }
+    const referral = await resolveSellerReferral(code, input.email, sellerEntry ? "seller" : "code");
+    const application = await createDealerApplication({ ...parsed.data as DealerApplicationInput, ...(referral ? { referral } : {}) });
+    reference = application.reference;
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "Başvuru kaydedilemedi." };
+  }
+  redirect(`${destination}?submitted=${encodeURIComponent(reference)}`);
 }

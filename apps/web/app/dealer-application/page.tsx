@@ -1,5 +1,7 @@
+import { requireCustomer, sellerReferenceCode } from "../../lib/customer-auth";
+import { redirect } from "next/navigation";
 import { Building2, CheckCircle2, FileText, ShieldCheck } from "lucide-react";
-import { submitDealerApplicationAction } from "./actions";
+import { ApplicationForm } from "./ApplicationForm";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -12,6 +14,13 @@ export const dynamic = "force-dynamic";
 
 export default async function DealerApplicationPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const params = await searchParams;
+  const sellerEntry = getParam(params, "seller") === "1";
+  let referralCode = getParam(params, "ref");
+  if (sellerEntry) {
+    const seller = await requireCustomer();
+    if (!seller.sellerAccess?.enabled) redirect("/account");
+    referralCode = sellerReferenceCode(seller);
+  }
   const submittedReference = getParam(params, "submitted");
   const errorMessage = getParam(params, "error");
 
@@ -86,7 +95,7 @@ export default async function DealerApplicationPage({ searchParams }: { searchPa
             Lütfen zorunlu alanları tamamlayın: {errorMessage}
           </p>
         ) : null}
-        <form className="applicationForm" action={submitDealerApplicationAction}>
+        <ApplicationForm>
           <fieldset>
             <legend>Firma bilgileri</legend>
             <label>
@@ -181,8 +190,10 @@ export default async function DealerApplicationPage({ searchParams }: { searchPa
               </select>
             </label>
             <label>
-              Referans firma
-              <input name="referenceCompany" />
+              Referansın var mı? (İsteğe bağlı)
+              <input name="referralCode" defaultValue={referralCode} readOnly={sellerEntry} maxLength={32} placeholder="ENT-…" />
+              <small>Satıcı referansı ile kaydınız ilgili satıcıya bağlanır.</small>
+              {sellerEntry ? <input type="hidden" name="sellerEntry" value="1" /> : null}
             </label>
           </fieldset>
 
@@ -194,11 +205,11 @@ export default async function DealerApplicationPage({ searchParams }: { searchPa
             </p>
             <label className="checkLabel">
               <input name="kvkkAccepted" type="checkbox" required />
-              KVKK aydınlatma metnini okudum ve kabul ediyorum.
+              {sellerEntry ? "Müşteri KVKK aydınlatmasını aldı; başvuru için gerekli onayı aldığımı teyit ediyorum." : "KVKK aydınlatma metnini okudum ve kabul ediyorum."}
             </label>
             <label className="checkLabel">
               <input name="commercialConsent" type="checkbox" />
-              Ticari elektronik ileti gönderimini kabul ediyorum.
+              {sellerEntry ? "Müşteriden ticari elektronik ileti için ayrıca izin aldım. (İsteğe bağlı)" : "Ticari elektronik ileti gönderimini kabul ediyorum."}
             </label>
           </fieldset>
 
@@ -208,7 +219,7 @@ export default async function DealerApplicationPage({ searchParams }: { searchPa
               Başvuruyu Gönder
             </button>
           </div>
-        </form>
+        </ApplicationForm>
       </section>
     </main>
   );

@@ -32,7 +32,15 @@ const rootDir = findWorkspaceRoot(process.cwd());
 const dataDir = path.join(rootDir, "data");
 const notificationsPath = path.join(dataDir, "notifications.json");
 
-export async function createNotification(input: CreateNotificationInput): Promise<NotificationRecord> {
+let notificationMutationQueue: Promise<void> = Promise.resolve();
+
+export function createNotification(input: CreateNotificationInput): Promise<NotificationRecord> {
+  const operation = notificationMutationQueue.then(() => createNotificationUnlocked(input));
+  notificationMutationQueue = operation.then(() => undefined, () => undefined);
+  return operation;
+}
+
+async function createNotificationUnlocked(input: CreateNotificationInput): Promise<NotificationRecord> {
   const rows = await loadNotifications();
   const notification: NotificationRecord = stripUndefined({
     id: `notification-${randomUUID()}`,

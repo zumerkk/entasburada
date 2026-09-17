@@ -62,7 +62,7 @@ export async function Header() {
                 <strong>{COMPANY_CONTACT.technicalSupportPhone}</strong>
               </span>
             </a>
-            <a className="headerIcon" href={accountHref} title={customer?.sellerAccess?.enabled ? "Satıcı hesabım" : "Bayi hesabım"}>
+            <a className="headerIcon" href={accountHref} title={customer?.sellerAccess?.enabled ? "Yetkili hesabım" : "Bayi hesabım"}>
               {customer?.sellerAccess?.enabled ? <Store size={20} aria-hidden="true" /> : <UserRound size={20} aria-hidden="true" />}
             </a>
             <a className="headerIcon quoteIconWrap" href="/quote" title="Teklif listem">
@@ -99,7 +99,7 @@ export async function Header() {
           <a className="headerIcon" href="/dealer-application" title="Bayi başvurusu">
             <Building2 size={20} aria-hidden="true" />
           </a>
-          <a className="headerIcon" href={accountHref} title={customer?.sellerAccess?.enabled ? "Satıcı hesabım" : "Bayi girişi"}>
+          <a className="headerIcon" href={accountHref} title={customer?.sellerAccess?.enabled ? "Yetkili hesabım" : "Bayi girişi"}>
             {customer?.sellerAccess?.enabled ? <Store size={20} aria-hidden="true" /> : <ShieldCheck size={20} aria-hidden="true" />}
           </a>
           <a

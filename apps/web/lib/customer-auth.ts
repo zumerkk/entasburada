@@ -32,6 +32,8 @@ export interface SellerAccess {
   apiKeyCreatedAt?: string;
 }
 
+export interface SellerReferral { sellerId: string; sellerName: string; code: string; linkedAt: string; source: "code" | "seller"; }
+
 export interface CustomerAccount {
   id: string;
   email: string;
@@ -62,6 +64,7 @@ export interface CustomerAccount {
   categoryDiscounts: Record<string, number>;
   specialNetPrices: Record<string, string>;
   mustChangePassword?: boolean;
+  referral?: SellerReferral;
   sellerAccess?: SellerAccess;
 }
 
@@ -77,6 +80,19 @@ function enqueueCustomerMutation<T>(mutation: () => Promise<T>): Promise<T> {
   const operation = customerMutationQueue.then(mutation, mutation);
   customerMutationQueue = operation.then(() => undefined, () => undefined);
   return operation;
+}
+
+export function sellerReferenceCode(customer: Pick<CustomerAccount, "id">): string {
+  return `ENT-${createHash("sha256").update(customer.id).digest("hex").slice(0, 20).toUpperCase()}`;
+}
+
+export async function resolveSellerReferral(code: string, email: string, source: SellerReferral["source"] = "code"): Promise<SellerReferral | undefined> {
+  if (!code.trim()) return undefined;
+  const customers = await getCustomers();
+  const seller = customers.find((c) => sellerReferenceCode(c) === code.trim().toUpperCase() && c.status === "approved" && c.sellerAccess?.enabled && (c.companyId ?? c.id) === c.id);
+  if (!seller) throw new Error("Referans kodu geçersiz veya satıcı hesabı aktif değil.");
+  if (customers.some((c) => normalizeEmail(c.email) === normalizeEmail(email))) throw new Error("Bu e-posta zaten kayıtlı; mevcut hesaplara referans eklenemez.");
+  return { sellerId: seller.id, sellerName: seller.authorizedPerson, code: sellerReferenceCode(seller), linkedAt: new Date().toISOString(), source };
 }
 
 export async function getCustomers(): Promise<CustomerAccount[]> {
@@ -178,6 +194,7 @@ async function inviteCompanyMemberUnlocked(
     approvalLimit: normalizeMoneyLimit(input.approvalLimit),
     orderApprovalRequired: Boolean(input.orderApprovalRequired),
     invitedById: inviter.id,
+    sellerAccess: normalizeSellerAccess(),
     mustChangePassword: true
   });
   await saveCustomers([...customers, account]);

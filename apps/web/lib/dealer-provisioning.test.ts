@@ -82,6 +82,12 @@ describe("dealer provisioning", () => {
     );
   });
 
+  it("preserves the seller attribution when approving an application", async () => {
+    const referral = { sellerId: "eren", sellerName: "Eren", code: "ENT-TEST", linkedAt: "2026-09-16", source: "seller" as const };
+    await provisionDealerAccount({ ...application, referral });
+    expect(mocks.createCustomerAccount).toHaveBeenCalledWith(expect.objectContaining({ referral }));
+  });
+
   it("builds a WhatsApp message containing login, email and temporary password", () => {
     const href = buildCredentialsWhatsappHref(application, application.email, "Entas-K7KM-Q4T7!");
     const url = new URL(href);

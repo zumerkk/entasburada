@@ -1,4 +1,5 @@
 import "server-only";
+import type { SellerReferral } from "./customer-auth";
 import { randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
@@ -43,6 +44,7 @@ export interface DealerApplication {
   activityArea: string;
   annualPurchaseVolume?: string | undefined;
   dealershipType?: string | undefined;
+  referral?: SellerReferral | undefined;
   referenceCompany?: string | undefined;
   // Onaylar
   kvkkAccepted: boolean;
@@ -79,6 +81,7 @@ export interface DealerApplicationInput {
   activityArea: string;
   annualPurchaseVolume?: string | undefined;
   dealershipType?: string | undefined;
+  referral?: SellerReferral | undefined;
   referenceCompany?: string | undefined;
   kvkkAccepted: boolean;
   commercialConsent: boolean;
@@ -135,10 +138,10 @@ async function createDealerApplicationUnlocked(input: DealerApplicationInput): P
   const rows = await loadApplications();
   const normalizedInput = normalizeApplicationInput(input);
   const duplicate = rows.find((row) =>
-    (row.status === "pending" || row.status === "reviewing") &&
+    (row.status === "pending" || row.status === "reviewing" || row.status === "approved" || Boolean(row.accountId)) &&
     (row.email.toLowerCase() === normalizedInput.email || row.taxNumber === normalizedInput.taxNumber)
   );
-  if (duplicate) throw new Error(`Bu firma için açık bir başvuru zaten var: ${duplicate.reference}`);
+  if (duplicate) throw new Error(`Bu firma için bir başvuru zaten var: ${duplicate.reference}`);
   const now = new Date().toISOString();
   const reference = buildReference(now, rows.length + 1);
 
@@ -166,7 +169,7 @@ async function createDealerApplicationUnlocked(input: DealerApplicationInput): P
     recipientKey: "all",
     level: "info",
     title: "Yeni bayi başvurusu",
-    body: `${application.companyTitle} (${application.city}) — ${application.authorizedPerson}`,
+    body: `${application.companyTitle} (${application.city}) — ${application.authorizedPerson}${application.referral ? ` · Yetkili Panel: ${application.referral.sellerName}` : ""}`,
     href: `/admin/dealers?highlight=${application.id}`
   });
 
@@ -209,6 +212,7 @@ function normalizeApplicationInput(input: DealerApplicationInput): DealerApplica
     annualPurchaseVolume: optional(input.annualPurchaseVolume, "Yıllık alım hacmi", 80),
     dealershipType: optional(input.dealershipType, "Bayilik türü", 80),
     referenceCompany: optional(input.referenceCompany, "Referans firma", 180),
+    ...(input.referral ? { referral: input.referral } : {}),
     kvkkAccepted: true,
     commercialConsent: Boolean(input.commercialConsent)
   };
