@@ -6,6 +6,7 @@ import { loadCommercialStats } from "../../lib/commercial-repository";
 import { countDealerApplicationsByStatus } from "../../lib/dealer-application-repository";
 import { AdminFrame } from "./AdminFrame";
 import { AdminHashRedirect } from "./AdminHashRedirect";
+import { OnlineNowPanel } from "./OnlineNowWidget";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +41,8 @@ export default async function AdminDashboardPage() {
         <MetricCard label="Teklif" value={commercialStats.quotes.toLocaleString("tr-TR")} trend={`${commercialStats.pendingQuotes.toLocaleString("tr-TR")} bekleyen`} tone="info" />
         <MetricCard label="Sipariş" value={commercialStats.orders.toLocaleString("tr-TR")} trend={`${commercialStats.openOrders.toLocaleString("tr-TR")} açık operasyon`} tone="info" />
       </section>
+
+      <OnlineNowPanel />
 
       <section className="adminGrid">
         <div className="panel wide">

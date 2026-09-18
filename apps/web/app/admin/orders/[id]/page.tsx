@@ -1,12 +1,17 @@
 import { notFound } from "next/navigation";
-import { FileDown, Save } from "lucide-react";
+import { CheckCircle2, FileDown, Save, Trash2 } from "lucide-react";
 import { StatusPill } from "@entas/ui";
 import { requireAdmin } from "../../../../lib/admin-auth";
 import { ORDER_STATUS_OPTIONS, orderStatusLabel } from "../../../../lib/commercial-labels";
 import { getAdminOrderById } from "../../../../lib/commercial-repository";
+import { orderDeletionBlockReason, orderItemsEditBlockReason } from "../../../../lib/order-editing";
 import { SHIPPING_CARRIERS } from "../../../../lib/shipping-carriers";
 import { updateOrderOperationAction } from "../../actions";
 import { AdminFrame } from "../../AdminFrame";
+import { deleteRejectedOrdersAction } from "../actions";
+import { ConfirmSubmitButton } from "../ConfirmSubmitButton";
+import { AdminOrderItemsEditor } from "./AdminOrderItemsEditor";
+import { OrderShareLinks } from "./OrderShareLinks";
 
 const financeStatuses = ["Bekliyor", "Onaylandı", "Reddedildi"];
 const stockStatuses = ["Kontrol bekliyor", "Ayrıldı", "Kısmi", "Tedarik bekliyor", "Stok yok"];
@@ -15,14 +20,23 @@ const warehouses = ["Ana Depo", "Tedarikçi Deposu", "Konsinye", "Dış tedarik"
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function AdminOrderDetailPage({
+  params,
+  searchParams
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   await requireAdmin();
-  const { id } = await params;
+  const [{ id }, query] = await Promise.all([params, searchParams]);
   const order = await getAdminOrderById(id);
 
   if (!order) {
     notFound();
   }
+  const justCreated = query.created === "1";
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL?.trim() || "https://entasburada.com").replace(/\/+$/, "");
+  const canDelete = orderDeletionBlockReason(order) === null;
 
   return (
     <AdminFrame active="orders">
@@ -42,8 +56,37 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
           <a className="btn btnGhost dark" href="/admin/orders">
             Siparişlere dön
           </a>
+          {canDelete ? (
+            <form action={deleteRejectedOrdersAction}>
+              <input type="hidden" name="orderId" value={order.id} />
+              <ConfirmSubmitButton
+                className="btn btnDanger"
+                message={`${order.orderNo} reddedilen sipariş listeden silinsin mi? Kayıt arşive taşınır.`}
+              >
+                <Trash2 size={16} aria-hidden="true" /> Siparişi sil
+              </ConfirmSubmitButton>
+            </form>
+          ) : null}
         </div>
       </header>
+
+      {justCreated ? (
+        <p className="formSuccess adminOrderCreatedNotice" role="status">
+          <CheckCircle2 size={18} aria-hidden="true" /> {order.orderNo} oluşturuldu. Aşağıdaki sipariş linkini müşteriye WhatsApp ile gönderebilirsiniz.
+        </p>
+      ) : null}
+
+      <OrderShareLinks
+        siteUrl={siteUrl}
+        orderNo={order.orderNo}
+        trackingCode={order.trackingCode}
+        totalAmount={order.totalAmount}
+        currency={order.currency}
+        contactName={order.dealerUser || order.companyName}
+        phone={order.phone}
+        awaitingCardPayment={order.status === "PAYMENT_PENDING"}
+        highlight={justCreated}
+      />
 
       <section className="panel detailSummaryGrid">
         <div>
@@ -116,33 +159,26 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
 
       <section className="panel">
         <div className="panelHeader compact">
-          <h2>Ürün satırları</h2>
-        </div>
-        <div className="commercialTable">
-          <div className="commercialTableHead orderItemRows">
-            <span>Ürün</span>
-            <span>Adet</span>
-            <span>Birim fiyat</span>
-            <span>Tutar</span>
+          <div>
+            <h2>Ürün satırları</h2>
+            <p>Adetleri değiştirin, satır çıkarın veya katalogdan ürün ekleyin; toplam ve müşteri bildirimi otomatik güncellenir.</p>
           </div>
-          {order.items.map((item) => (
-            <div className="commercialTableRow orderItemRows" key={item.id}>
-              <span>
-                <strong>{item.productName}</strong>
-                <small>{item.sku}</small>
-              </span>
-              <span>
-                {item.quantity} {item.unit}
-              </span>
-              <span>
-                {item.unitPrice} {item.currency}
-              </span>
-              <span>
-                {item.lineTotal} {item.currency}
-              </span>
-            </div>
-          ))}
         </div>
+        <AdminOrderItemsEditor
+          orderId={order.id}
+          currency={order.currency}
+          totalAmount={order.totalAmount}
+          revision={`${order.history[0]?.id ?? ""}:${order.totalAmount}`}
+          blockReason={orderItemsEditBlockReason(order)}
+          items={order.items.map((item) => ({
+            id: item.id,
+            sku: item.sku,
+            productName: item.productName,
+            unit: item.unit,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice
+          }))}
+        />
       </section>
 
       <section className="panel">

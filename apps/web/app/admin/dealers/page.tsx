@@ -50,6 +50,139 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
   );
   const sellerAccounts = customers.filter((customer) => customer.sellerAccess?.enabled);
   const apiAccounts = sellerAccounts.filter((customer) => customer.sellerAccess?.apiEnabled);
+  // Onay bekleyenler ve giriş bilgisi henüz iletilmemiş yeni onaylar üstte kalır;
+  // sonuçlanan başvurular katlanır bölüme iner ki uzun listede onay aranmasın.
+  const credentialWindowMs = 7 * 24 * 60 * 60 * 1000;
+  const isActionable = (application: (typeof applications)[number]) =>
+    application.status === "pending" ||
+    application.status === "reviewing" ||
+    application.id === highlight ||
+    (application.status === "approved" &&
+      Boolean(application.accountId) &&
+      Date.now() - Date.parse(application.updatedAt) < credentialWindowMs &&
+      getApplicationTemporaryPassword(application) !== null);
+  const actionRank = (application: (typeof applications)[number]) =>
+    application.status === "pending" ? 0 : application.status === "reviewing" ? 1 : 2;
+  const actionableApplications = applications
+    .filter(isActionable)
+    .sort((left, right) => actionRank(left) - actionRank(right));
+  const settledApplications = applications.filter((application) => !isActionable(application));
+
+  const renderApplicationCard = (application: (typeof applications)[number]) => {
+    const temporaryPassword = getApplicationTemporaryPassword(application);
+    return (
+      <article
+        className={`dealerApplicationCard${highlight === application.id ? " highlight" : ""}`}
+        key={application.id}
+      >
+        <div className="dealerApplicationHead">
+          <div>
+            <h3>{application.companyTitle}</h3>
+            <small>
+              {application.reference} · {new Date(application.createdAt).toLocaleString("tr-TR")}
+            </small>
+          </div>
+          <StatusPill tone={statusTone[application.status]}>
+            {dealerApplicationStatusLabel(application.status)}
+          </StatusPill>
+        </div>
+
+        <div className="dealerApplicationGrid">
+          <span>
+            <Building2 size={15} aria-hidden="true" />
+            {application.companyType} · V.D. {application.taxOffice} · VKN {application.taxNumber}
+          </span>
+          <span>
+            <PhoneCall size={15} aria-hidden="true" />
+            {application.authorizedPerson} · {application.phone}
+            {application.whatsapp ? ` · WA ${application.whatsapp}` : ""}
+          </span>
+          <span>
+            <Mail size={15} aria-hidden="true" />
+            {application.email}
+          </span>
+          <span>
+            <MapPin size={15} aria-hidden="true" />
+            {application.city} / {application.district} · {application.activityArea}
+          </span>
+        </div>
+
+        <div className="dealerApplicationDetail">
+          <div>
+            <strong>Fatura adresi</strong>
+            <p>{application.invoiceAddress}</p>
+          </div>
+          <div>
+            <strong>Teslimat adresi</strong>
+            <p>{application.deliveryAddress}</p>
+          </div>
+          <div>
+            <strong>Ticari profil</strong>
+            <p>
+              {[application.referral ? `Yetkili Panel: ${application.referral.sellerName}` : "", application.dealershipType, application.annualPurchaseVolume, application.referenceCompany]
+                .filter(Boolean)
+                .join(" · ") || "—"}
+            </p>
+          </div>
+          <div>
+            <strong>İzinler</strong>
+            <p>
+              KVKK: {application.kvkkAccepted ? "Evet" : "Hayır"} · Ticari ileti:{" "}
+              {application.commercialConsent ? "Evet" : "Hayır"}
+            </p>
+          </div>
+        </div>
+
+        {application.reviewNote ? <p className="dealerApplicationNote">Not: {application.reviewNote}</p> : null}
+
+        {application.accountId && temporaryPassword ? (
+          <div className="dealerCredentials">
+            <div className="dealerCredentialsHead">
+              <KeyRound size={15} aria-hidden="true" />
+              Giriş bilgileri hazır — firmaya iletin
+              {application.welcomeMailSent ? <StatusPill tone="success">E-posta gönderildi</StatusPill> : <StatusPill tone="warning">E-posta gönderilmedi</StatusPill>}
+            </div>
+            <code>
+              Kullanıcı: {application.accountEmail}
+              {"\n"}Geçici şifre: {temporaryPassword}
+            </code>
+            <a
+              className="btn btnPrimary"
+              href={buildCredentialsWhatsappHref(application, application.accountEmail ?? application.email, temporaryPassword)}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <MessageCircle size={16} aria-hidden="true" />
+              WhatsApp ile Gönder
+            </a>
+          </div>
+        ) : null}
+        {application.accountId && !temporaryPassword ? (
+          <p className="dealerApplicationNote">
+            {application.temporaryPasswordConsumedAt
+              ? "Müşteri şifresini değiştirdi; geçici şifre güvenli biçimde temizlendi."
+              : "Bu hesap için gösterilebilir bir geçici şifre yok. Daha önce açılmış veya mevcut bir hesap olabilir."}
+          </p>
+        ) : null}
+
+        <form className="dealerApplicationActions" action={updateDealerApplicationStatusAction}>
+          <input type="hidden" name="applicationId" value={application.id} />
+          <input name="reviewNote" placeholder="İnceleme notu (opsiyonel)" defaultValue="" />
+          <div className="dealerApplicationButtons">
+            <button className="btn btnGhost dark" name="status" value="reviewing" type="submit">
+              İncelemeye Al
+            </button>
+            <button className="btn btnPrimary" name="status" value="approved" type="submit">
+              Onayla
+            </button>
+            <button className="btn btnDanger" name="status" value="rejected" type="submit">
+              Reddet
+            </button>
+          </div>
+        </form>
+      </article>
+    );
+  };
 
   return (
     <AdminFrame active="dealers">
@@ -82,6 +215,131 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
         </form>
       </section>
 
+      <section className="panel dealerApprovalPanel" id="basvurular">
+        <div className="panelHeader compact">
+          <div>
+            <h2>
+              {status === "all"
+                ? `${actionableApplications.length.toLocaleString("tr-TR")} başvuru işlem bekliyor`
+                : `${applications.length.toLocaleString("tr-TR")} başvuru`}
+            </h2>
+            <small>Onay bekleyen başvurular her zaman en üstte; bayi hesap listesi sayfanın en altındadır.</small>
+          </div>
+          <a className="btn btnGhost dark" href="#bayi-hesaplari">
+            Bayi hesaplarına in ↓
+          </a>
+        </div>
+
+        {okMessage ? <p className="formSuccess">{okMessage}</p> : null}
+        {errorMessage ? <p className="formError">{errorMessage}</p> : null}
+
+        <details className="manualApplication">
+          <summary>Elden alınan başvuruyu ekle</summary>
+          <form action={createManualDealerApplicationAction} className="adminFilterForm inlineCommercialForm">
+            <label>
+              Firma ünvanı *
+              <input name="companyTitle" required />
+            </label>
+            <label>
+              Yetkili kişi *
+              <input name="authorizedPerson" required />
+            </label>
+            <label>
+              Telefon *
+              <input name="phone" type="tel" required placeholder="+90 5xx xxx xx xx" />
+            </label>
+            <label>
+              E-posta *
+              <input name="email" type="email" required />
+            </label>
+            <label>
+              Vergi dairesi
+              <input name="taxOffice" required minLength={2} maxLength={100} />
+            </label>
+            <label>
+              Vergi no
+              <input name="taxNumber" required inputMode="numeric" pattern="[0-9]{10,11}" maxLength={11} />
+            </label>
+            <label>
+              MERSİS no
+              <input name="mersisNumber" />
+            </label>
+            <label>
+              Firma tipi
+              <select name="companyType" defaultValue="Hırdavat bayisi">
+                <option>Hırdavat bayisi</option>
+                <option>Yapı market</option>
+                <option>Sanayi işletmesi</option>
+                <option>Kurumsal satın alma</option>
+              </select>
+            </label>
+            <label>
+              İl
+              <input name="city" required minLength={2} maxLength={80} />
+            </label>
+            <label>
+              İlçe
+              <input name="district" required minLength={2} maxLength={80} />
+            </label>
+            <label>
+              Faaliyet alanı
+              <input name="activityArea" defaultValue="Hırdavat" />
+            </label>
+            <label>
+              Bayilik türü
+              <select name="dealershipType" defaultValue="Standart bayi">
+                <option>Standart bayi</option>
+                <option>Bölgesel bayi</option>
+                <option>Proje bazlı</option>
+                <option>Toptan ticaret</option>
+              </select>
+            </label>
+            <label className="spanTwo">
+              Fatura adresi
+              <textarea name="invoiceAddress" rows={2} required minLength={10} maxLength={600} />
+            </label>
+            <label className="spanTwo">
+              Teslimat adresi (boş bırakılırsa fatura adresi kullanılır)
+              <textarea name="deliveryAddress" rows={2} />
+            </label>
+            <label className="checkboxLabel spanTwo">
+              <input type="checkbox" name="kvkkAccepted" />
+              Müşteriden KVKK aydınlatma onayı alındı *
+            </label>
+            <label className="checkboxLabel spanTwo">
+              <input type="checkbox" name="commercialConsent" />
+              Ticari elektronik ileti izni alındı
+            </label>
+            <button className="btn btnPrimary" type="submit">
+              Başvuruyu Kaydet (onay bekler)
+            </button>
+          </form>
+        </details>
+
+        {applications.length === 0 ? (
+          <EmptyState
+            title="Başvuru bulunamadı"
+            body="Seçtiğiniz filtreye uygun bayi başvurusu yok. Yeni başvurular müşteri sitesindeki /dealer-application formundan buraya düşer."
+          />
+        ) : status === "all" ? (
+          <>
+            {actionableApplications.length > 0 ? (
+              <div className="dealerApplicationList">{actionableApplications.map(renderApplicationCard)}</div>
+            ) : (
+              <p className="dealerApprovalEmpty">Onay bekleyen başvuru yok. Yeni başvurular geldiğinde burada, listenin en üstünde görünür.</p>
+            )}
+            {settledApplications.length > 0 ? (
+              <details className="dealerApplicationArchive">
+                <summary>Sonuçlanan başvurular ({settledApplications.length.toLocaleString("tr-TR")}) — onaylanan ve reddedilenler</summary>
+                <div className="dealerApplicationList">{settledApplications.map(renderApplicationCard)}</div>
+              </details>
+            ) : null}
+          </>
+        ) : (
+          <div className="dealerApplicationList">{applications.map(renderApplicationCard)}</div>
+        )}
+      </section>
+
       <section className="panel sellerAdminOverview">
         <div className="panelHeader compact">
           <div>
@@ -97,7 +355,7 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
         <AdminSellerAccountCreator />
       </section>
 
-      <section className="panel">
+      <section className="panel" id="bayi-hesaplari">
         <div className="panelHeader compact">
           <div>
             <h2>{visibleCustomers.length.toLocaleString("tr-TR")} bayi hesabı</h2>
@@ -232,222 +490,6 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
         )}
       </section>
 
-      <section className="panel">
-        <div className="panelHeader compact">
-          <h2>{applications.length.toLocaleString("tr-TR")} başvuru</h2>
-        </div>
-
-        {okMessage ? <p className="formSuccess">{okMessage}</p> : null}
-        {errorMessage ? <p className="formError">{errorMessage}</p> : null}
-
-        <details className="manualApplication">
-          <summary>Elden alınan başvuruyu ekle</summary>
-          <form action={createManualDealerApplicationAction} className="adminFilterForm inlineCommercialForm">
-            <label>
-              Firma ünvanı *
-              <input name="companyTitle" required />
-            </label>
-            <label>
-              Yetkili kişi *
-              <input name="authorizedPerson" required />
-            </label>
-            <label>
-              Telefon *
-              <input name="phone" type="tel" required placeholder="+90 5xx xxx xx xx" />
-            </label>
-            <label>
-              E-posta *
-              <input name="email" type="email" required />
-            </label>
-            <label>
-              Vergi dairesi
-              <input name="taxOffice" required minLength={2} maxLength={100} />
-            </label>
-            <label>
-              Vergi no
-              <input name="taxNumber" required inputMode="numeric" pattern="[0-9]{10,11}" maxLength={11} />
-            </label>
-            <label>
-              MERSİS no
-              <input name="mersisNumber" />
-            </label>
-            <label>
-              Firma tipi
-              <select name="companyType" defaultValue="Hırdavat bayisi">
-                <option>Hırdavat bayisi</option>
-                <option>Yapı market</option>
-                <option>Sanayi işletmesi</option>
-                <option>Kurumsal satın alma</option>
-              </select>
-            </label>
-            <label>
-              İl
-              <input name="city" required minLength={2} maxLength={80} />
-            </label>
-            <label>
-              İlçe
-              <input name="district" required minLength={2} maxLength={80} />
-            </label>
-            <label>
-              Faaliyet alanı
-              <input name="activityArea" defaultValue="Hırdavat" />
-            </label>
-            <label>
-              Bayilik türü
-              <select name="dealershipType" defaultValue="Standart bayi">
-                <option>Standart bayi</option>
-                <option>Bölgesel bayi</option>
-                <option>Proje bazlı</option>
-                <option>Toptan ticaret</option>
-              </select>
-            </label>
-            <label className="spanTwo">
-              Fatura adresi
-              <textarea name="invoiceAddress" rows={2} required minLength={10} maxLength={600} />
-            </label>
-            <label className="spanTwo">
-              Teslimat adresi (boş bırakılırsa fatura adresi kullanılır)
-              <textarea name="deliveryAddress" rows={2} />
-            </label>
-            <label className="checkboxLabel spanTwo">
-              <input type="checkbox" name="kvkkAccepted" />
-              Müşteriden KVKK aydınlatma onayı alındı *
-            </label>
-            <label className="checkboxLabel spanTwo">
-              <input type="checkbox" name="commercialConsent" />
-              Ticari elektronik ileti izni alındı
-            </label>
-            <button className="btn btnPrimary" type="submit">
-              Başvuruyu Kaydet (onay bekler)
-            </button>
-          </form>
-        </details>
-
-        {applications.length === 0 ? (
-          <EmptyState
-            title="Başvuru bulunamadı"
-            body="Seçtiğiniz filtreye uygun bayi başvurusu yok. Yeni başvurular müşteri sitesindeki /dealer-application formundan buraya düşer."
-          />
-        ) : (
-          <div className="dealerApplicationList">
-            {applications.map((application) => {
-              const temporaryPassword = getApplicationTemporaryPassword(application);
-              return (
-                <article
-                  className={`dealerApplicationCard${highlight === application.id ? " highlight" : ""}`}
-                  key={application.id}
-                >
-                <div className="dealerApplicationHead">
-                  <div>
-                    <h3>{application.companyTitle}</h3>
-                    <small>
-                      {application.reference} · {new Date(application.createdAt).toLocaleString("tr-TR")}
-                    </small>
-                  </div>
-                  <StatusPill tone={statusTone[application.status]}>
-                    {dealerApplicationStatusLabel(application.status)}
-                  </StatusPill>
-                </div>
-
-                <div className="dealerApplicationGrid">
-                  <span>
-                    <Building2 size={15} aria-hidden="true" />
-                    {application.companyType} · V.D. {application.taxOffice} · VKN {application.taxNumber}
-                  </span>
-                  <span>
-                    <PhoneCall size={15} aria-hidden="true" />
-                    {application.authorizedPerson} · {application.phone}
-                    {application.whatsapp ? ` · WA ${application.whatsapp}` : ""}
-                  </span>
-                  <span>
-                    <Mail size={15} aria-hidden="true" />
-                    {application.email}
-                  </span>
-                  <span>
-                    <MapPin size={15} aria-hidden="true" />
-                    {application.city} / {application.district} · {application.activityArea}
-                  </span>
-                </div>
-
-                <div className="dealerApplicationDetail">
-                  <div>
-                    <strong>Fatura adresi</strong>
-                    <p>{application.invoiceAddress}</p>
-                  </div>
-                  <div>
-                    <strong>Teslimat adresi</strong>
-                    <p>{application.deliveryAddress}</p>
-                  </div>
-                  <div>
-                    <strong>Ticari profil</strong>
-                    <p>
-                      {[application.referral ? `Yetkili Panel: ${application.referral.sellerName}` : "", application.dealershipType, application.annualPurchaseVolume, application.referenceCompany]
-                        .filter(Boolean)
-                        .join(" · ") || "—"}
-                    </p>
-                  </div>
-                  <div>
-                    <strong>İzinler</strong>
-                    <p>
-                      KVKK: {application.kvkkAccepted ? "Evet" : "Hayır"} · Ticari ileti:{" "}
-                      {application.commercialConsent ? "Evet" : "Hayır"}
-                    </p>
-                  </div>
-                </div>
-
-                {application.reviewNote ? <p className="dealerApplicationNote">Not: {application.reviewNote}</p> : null}
-
-                {application.accountId && temporaryPassword ? (
-                  <div className="dealerCredentials">
-                    <div className="dealerCredentialsHead">
-                      <KeyRound size={15} aria-hidden="true" />
-                      Giriş bilgileri hazır — firmaya iletin
-                      {application.welcomeMailSent ? <StatusPill tone="success">E-posta gönderildi</StatusPill> : <StatusPill tone="warning">E-posta gönderilmedi</StatusPill>}
-                    </div>
-                    <code>
-                      Kullanıcı: {application.accountEmail}
-                      {"\n"}Geçici şifre: {temporaryPassword}
-                    </code>
-                    <a
-                      className="btn btnPrimary"
-                      href={buildCredentialsWhatsappHref(application, application.accountEmail ?? application.email, temporaryPassword)}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      <MessageCircle size={16} aria-hidden="true" />
-                      WhatsApp ile Gönder
-                    </a>
-                  </div>
-                ) : null}
-                {application.accountId && !temporaryPassword ? (
-                  <p className="dealerApplicationNote">
-                    {application.temporaryPasswordConsumedAt
-                      ? "Müşteri şifresini değiştirdi; geçici şifre güvenli biçimde temizlendi."
-                      : "Bu hesap için gösterilebilir bir geçici şifre yok. Daha önce açılmış veya mevcut bir hesap olabilir."}
-                  </p>
-                ) : null}
-
-                <form className="dealerApplicationActions" action={updateDealerApplicationStatusAction}>
-                  <input type="hidden" name="applicationId" value={application.id} />
-                  <input name="reviewNote" placeholder="İnceleme notu (opsiyonel)" defaultValue="" />
-                  <div className="dealerApplicationButtons">
-                    <button className="btn btnGhost dark" name="status" value="reviewing" type="submit">
-                      İncelemeye Al
-                    </button>
-                    <button className="btn btnPrimary" name="status" value="approved" type="submit">
-                      Onayla
-                    </button>
-                    <button className="btn btnDanger" name="status" value="rejected" type="submit">
-                      Reddet
-                    </button>
-                  </div>
-                </form>
-                </article>
-              );
-            })}
-          </div>
-        )}
-      </section>
     </AdminFrame>
   );
 }

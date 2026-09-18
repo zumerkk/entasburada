@@ -10,6 +10,15 @@ import { loadCatalogStore } from "./catalog-repository";
 import { createNotification } from "./notification-repository";
 import { canApproveCompanyOrders, findCustomerByEmail, getCompanyMembers, type CustomerAccount } from "./customer-auth";
 import { formatMoney, parseMoney as parseCustomerMoney, priceProductForCustomer, usesSellerChannelPricing } from "./customer-pricing";
+import {
+  applyOrderItemChanges,
+  isOrderRejected,
+  orderDeletionBlockReason,
+  orderItemsEditBlockReason,
+  rebuildCommissionLines,
+  type OrderItemChange,
+  type PricedOrderAddition
+} from "./order-editing";
 
 export type QuoteStatus = "DRAFT" | "SUBMITTED" | "ASSIGNED" | "PRICED" | "APPROVED" | "REJECTED" | "EXPIRED" | "CONVERTED";
 export type OrderStatus =
@@ -240,6 +249,8 @@ export interface AdminListFilters {
   dateTo?: string;
   financeApproval?: string;
   warehouse?: string;
+  /** Siparişler: "active" (varsayılan) reddedilen/iptal siparişleri gizler. */
+  view?: "active" | "rejected" | "all";
   limit?: number;
   offset?: number;
 }
@@ -255,6 +266,8 @@ const rootDir = findWorkspaceRoot(process.cwd());
 const dataDir = process.env.ENTAS_COMMERCIAL_DATA_DIR ? path.resolve(process.env.ENTAS_COMMERCIAL_DATA_DIR) : path.join(rootDir, "data");
 const quotesPath = path.join(dataDir, "quotes.json");
 const ordersPath = path.join(dataDir, "orders.json");
+// Admin'in sildiği reddedilen siparişler geri alınabilsin diye buraya taşınır.
+const deletedOrdersPath = path.join(dataDir, "orders-deleted.json");
 let commercialMutationQueue: Promise<void> = Promise.resolve();
 
 function enqueueCommercialMutation<T>(mutation: () => Promise<T>): Promise<T> {
@@ -597,7 +610,7 @@ async function convertQuoteToOrderUnlocked(id: string, actorName: string, actor:
   const selectedQuoteItems = selectedSet ? quote.items.filter((item) => selectedSet.has(item.id)) : quote.items;
   if (selectedQuoteItems.length === 0) throw new Error("Siparişe çevirmek için en az bir teklif satırı seçin.");
   const now = new Date().toISOString();
-  const orderNo = nextNumber("SIP", orders.length + 1, now);
+  const orderNo = nextNumber("SIP", await nextOrderSequence(orders), now);
   const items = selectedQuoteItems.map<OrderItem>((item) => {
     const unitPrice = parseMoney(item.quotedUnitPrice ?? item.targetPrice ?? "0");
     return stripUndefined({
@@ -723,7 +736,11 @@ export function updateSellerCommission(input: { orderId: string; revision: numbe
 
 export async function searchAdminOrders(filters: AdminListFilters = {}): Promise<AdminListResult<AdminOrder>> {
   const rows = await loadOrders();
+  const view = filters.view ?? "all";
   const filtered = rows.filter((row) => {
+    if (view === "active" && isOrderRejected(row)) return false;
+    if (view === "rejected" && !isOrderRejected(row)) return false;
+
     if (filters.status && filters.status !== "all" && row.status !== filters.status) {
       return false;
     }
@@ -914,6 +931,250 @@ async function respondToCompanyOrderApprovalUnlocked(orderId: string, approver: 
     href: `/orders/${order.trackingCode}`
   });
   return nextOrder;
+}
+
+export interface OrderItemsUpdateInput {
+  orderId: string;
+  /** quantity 0 satırı çıkarır. */
+  changes: OrderItemChange[];
+  additions: CatalogOrderLineInput[];
+  note?: string;
+}
+
+export interface CatalogOrderLineInput {
+  productId: string;
+  quantity: number;
+}
+
+export type DirectOrderPaymentMode = "account" | "transfer" | "card";
+
+export interface DirectOrderInput {
+  customer: CustomerAccount;
+  lines: CatalogOrderLineInput[];
+  deliveryAddress?: string;
+  paymentMode: DirectOrderPaymentMode;
+  customerNote?: string;
+  internalNote?: string;
+}
+
+export type DeletedOrderRecord = AdminOrder & { deletedAt: string; deletedBy: string };
+
+const DIRECT_ORDER_PAYMENT: Record<DirectOrderPaymentMode, { status: OrderStatus; paymentStatus: string; label: string }> = {
+  account: { status: "FINANCE_APPROVAL_PENDING", paymentStatus: "Cari hesap", label: "cari hesap" },
+  transfer: { status: "FINANCE_APPROVAL_PENDING", paymentStatus: "Havale/EFT bekleniyor", label: "havale/EFT" },
+  card: { status: "PAYMENT_PENDING", paymentStatus: "Kart ödemesi bekleniyor", label: "kartla ödeme linki" }
+};
+
+/** Admin sipariş düzeltmesi: adet değiştir, satır çıkar, katalogdan müşteriye fiyatlı ürün ekle. */
+export function updateOrderItems(input: OrderItemsUpdateInput, actorName: string): Promise<AdminOrder> {
+  return enqueueCommercialMutation(() => updateOrderItemsUnlocked(input, actorName));
+}
+
+/** Reddedilen/iptal siparişleri listeden kaldırır; kayıt orders-deleted.json arşivine taşınır. */
+export function deleteRejectedOrders(
+  orderIds: string[],
+  actorName: string
+): Promise<{ deleted: string[]; skipped: Array<{ orderNo: string; reason: string }> }> {
+  return enqueueCommercialMutation(() => deleteRejectedOrdersUnlocked(orderIds, actorName));
+}
+
+/** Admin'in onaylı bir bayi adına teklif adımı olmadan, güncel bayi fiyatıyla açtığı sipariş. */
+export function createDirectOrder(input: DirectOrderInput, actorName: string): Promise<AdminOrder> {
+  return enqueueCommercialMutation(() => createDirectOrderUnlocked(input, actorName));
+}
+
+export async function countAdminOrderViews(): Promise<{ active: number; rejected: number }> {
+  const rows = await loadOrders();
+  const rejected = rows.filter(isOrderRejected).length;
+  return { active: rows.length - rejected, rejected };
+}
+
+async function updateOrderItemsUnlocked(input: OrderItemsUpdateInput, actorName: string): Promise<AdminOrder> {
+  const orders = await loadOrders();
+  const index = orders.findIndex((order) => order.id === input.orderId);
+  if (index < 0) throw new Error("Sipariş bulunamadı.");
+  const order = orders[index]!;
+  const blocked = orderItemsEditBlockReason(order);
+  if (blocked) throw new Error(blocked);
+
+  const additions = input.additions.length ? await priceCatalogLines(input.additions, await findCustomerByEmail(order.email)) : [];
+  const result = applyOrderItemChanges(order, input.changes, additions, () => `order-item-${randomUUID()}`);
+  if (result.changes.length === 0) throw new Error("Kaydedilecek değişiklik yok.");
+
+  const now = new Date().toISOString();
+  const note = boundedText(input.note, 500);
+  const total = money(result.total);
+  const nextOrder: AdminOrder = {
+    ...order,
+    items: result.items as OrderItem[],
+    totalAmount: total,
+    ...(order.sellerCommission ? { sellerCommission: rebuildCommissionLines(order.sellerCommission, result.items) } : {}),
+    history: [
+      historyEntry(
+        "admin",
+        actorName,
+        `Sipariş ürünleri düzeltildi: ${result.changes.join("; ")}. Toplam ${order.totalAmount} → ${total} ${order.currency}.${note ? ` Not: ${note}` : ""}`,
+        order.status,
+        order.status,
+        now
+      ),
+      ...order.history
+    ]
+  };
+
+  orders[index] = nextOrder;
+  await saveOrders(orders);
+  await createNotification({
+    recipientType: "customer",
+    recipientKey: nextOrder.email,
+    level: "info",
+    title: "Siparişiniz güncellendi",
+    body: `${nextOrder.orderNo} siparişinizin ürünleri güncellendi. Yeni toplam: ${total} ${nextOrder.currency}.`,
+    href: `/orders/${nextOrder.trackingCode}`
+  });
+  return nextOrder;
+}
+
+async function deleteRejectedOrdersUnlocked(orderIds: string[], actorName: string): Promise<{ deleted: string[]; skipped: Array<{ orderNo: string; reason: string }> }> {
+  const wanted = new Set(orderIds.map((id) => id.trim()).filter(Boolean));
+  if (wanted.size === 0) throw new Error("Silinecek sipariş seçilmedi.");
+
+  const orders = await loadOrders();
+  const now = new Date().toISOString();
+  const removed: AdminOrder[] = [];
+  const skipped: Array<{ orderNo: string; reason: string }> = [];
+  const remaining = orders.filter((order) => {
+    if (!wanted.has(order.id)) return true;
+    const reason = orderDeletionBlockReason(order);
+    if (reason) {
+      skipped.push({ orderNo: order.orderNo, reason });
+      return true;
+    }
+    removed.push(order);
+    return false;
+  });
+
+  if (removed.length > 0) {
+    // Önce arşive yaz: iki yazım arasında süreç düşerse kayıt kaybolmaz, en kötü ihtimalle iki yerde durur.
+    const archive = await readJson<DeletedOrderRecord[]>(deletedOrdersPath, []);
+    const archived = removed.map((order) => stripUndefined({ ...order, deletedAt: now, deletedBy: actorName }));
+    await writeJson(deletedOrdersPath, [...archived, ...archive]);
+    await saveOrders(remaining);
+  }
+
+  return { deleted: removed.map((order) => order.orderNo), skipped };
+}
+
+async function createDirectOrderUnlocked(input: DirectOrderInput, actorName: string): Promise<AdminOrder> {
+  const customer = input.customer;
+  if (customer.status !== "approved") throw new Error("Sipariş yalnızca onaylı bayi hesabı adına oluşturulabilir.");
+  if (input.lines.length === 0) throw new Error("Siparişe en az bir ürün ekleyin.");
+
+  const priced = await priceCatalogLines(input.lines, customer);
+  const result = applyOrderItemChanges({ currency: priced[0]!.currency, items: [] }, [], priced, () => `order-item-${randomUUID()}`);
+  const items = result.items as OrderItem[];
+  const payment = DIRECT_ORDER_PAYMENT[input.paymentMode];
+  const orders = await loadOrders();
+  const now = new Date().toISOString();
+  const total = money(result.total);
+  const referral = customer.referral;
+  const order: AdminOrder = {
+    ...(referral
+      ? {
+          sellerCommission: {
+            referral,
+            rate: 10 as const,
+            paidCents: 0,
+            revision: 0,
+            payments: [],
+            lines: items.map((item) => ({ itemId: item.id, productName: item.productName, quantity: item.quantity, saleCents: Math.round(parseMoney(item.lineTotal) * 100), refundedQuantity: 0 }))
+          }
+        }
+      : {}),
+    id: `order-${randomUUID()}`,
+    orderNo: nextNumber("SIP", await nextOrderSequence(orders), now),
+    trackingCode: trackingCode("S"),
+    companyName: customer.companyName,
+    dealerUser: customer.authorizedPerson,
+    phone: customer.phone,
+    email: customer.email,
+    orderedAt: now,
+    status: payment.status,
+    paymentStatus: payment.paymentStatus,
+    financeApproval: "Bekliyor",
+    stockStatus: "Kontrol bekliyor",
+    shipmentStatus: "Planlanmadi",
+    totalAmount: total,
+    currency: items[0]!.currency,
+    salesRepresentative: actorName,
+    deliveryAddress: boundedText(input.deliveryAddress, 600) || customer.deliveryAddress || customer.city || "Adres teyidi bekliyor",
+    source: "Admin siparişi",
+    warehouse: "Ana Depo",
+    customerNote: boundedText(input.customerNote, 2_000),
+    internalNote: boundedText(input.internalNote, 2_000),
+    allowPartialShipment: false,
+    fulfillmentType: "STANDARD",
+    blindShipping: false,
+    partialQuoteConversion: false,
+    companyApprovalStatus: "NOT_REQUIRED",
+    items,
+    history: [
+      historyEntry("admin", actorName, `Sipariş ${customer.companyName} adına oluşturuldu (${items.length} satır, ${payment.label}).`, undefined, payment.status, now)
+    ]
+  };
+
+  await saveOrders([order, ...orders]);
+  await createNotification({
+    recipientType: "customer",
+    recipientKey: order.email,
+    level: "success",
+    title: "Siparişiniz oluşturuldu",
+    body: `${order.orderNo} siparişiniz ${total} ${order.currency} tutarıyla oluşturuldu.${payment.status === "PAYMENT_PENDING" ? " Kartla ödemek için sipariş sayfanızı açın." : ""}`,
+    href: `/orders/${order.trackingCode}`
+  });
+  return order;
+}
+
+/** Katalog ürünlerini siparişin müşterisine göre fiyatlar; hesap yoksa standart onaylı bayi fiyatı kullanılır. */
+async function priceCatalogLines(lines: CatalogOrderLineInput[], customer: CustomerAccount | null): Promise<PricedOrderAddition[]> {
+  if (lines.length > 200) throw new Error("Bir işlemde en fazla 200 ürün satırı eklenebilir.");
+  const catalog = await loadCatalogStore();
+  const pricingCustomer = customer
+    ? { ...customer, status: "approved" as const }
+    : ({ status: "approved", segment: "standard" } as unknown as CustomerAccount);
+  return lines.map((line) => {
+    const product = catalog.products.find((entry) => entry.id === line.productId);
+    if (!product) throw new Error("Eklenen ürün katalogda bulunamadı.");
+    if (product.status !== "ACTIVE" || !product.isVisible) throw new Error(`${product.sku} yayında değil; siparişe eklenemez.`);
+    const price = priceProductForCustomer(product, pricingCustomer);
+    if (!price) throw new Error(`${product.sku} için satış fiyatı yok; bu ürünü teklif üzerinden fiyatlandırın.`);
+    return stripUndefined({
+      sku: product.sku,
+      productName: product.name,
+      brand: product.brand,
+      category: product.category,
+      unit: product.unitType || "Adet",
+      quantity: line.quantity,
+      unitPrice: parseCustomerMoney(price.unitNetPrice),
+      currency: product.currency === "TL" ? "TRY" : product.currency || DEFAULT_CURRENCY,
+      stockStatus: product.stockStatus
+    }) as PricedOrderAddition;
+  });
+}
+
+/**
+ * Sipariş numarası sırası: silinen (arşivlenen) siparişler numarayı geri
+ * kullandırmaz, aksi halde aynı gün iki farklı sipariş aynı numarayı alabilirdi.
+ */
+async function nextOrderSequence(orders: AdminOrder[]): Promise<number> {
+  const archive = await readJson<Array<Pick<AdminOrder, "orderNo">>>(deletedOrdersPath, []);
+  const highest = [...orders, ...archive].reduce((max, order) => Math.max(max, orderSequence(order.orderNo)), 0);
+  return Math.max(orders.length + archive.length, highest) + 1;
+}
+
+function orderSequence(orderNo: string): number {
+  const match = /-(\d+)$/.exec(orderNo ?? "");
+  return match ? Number(match[1]) : 0;
 }
 
 export async function ensureCommercialDataFiles(): Promise<void> {

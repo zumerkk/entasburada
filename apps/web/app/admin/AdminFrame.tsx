@@ -12,12 +12,14 @@ import {
   ReceiptText,
   Settings,
   ShieldCheck,
+  ShoppingCart,
   Tags,
   UsersRound,
   Wallet
 } from "lucide-react";
 import { getBrandSettings } from "../../lib/brand-settings";
 import { logoutAction } from "./login/actions";
+import { OnlineNowBadge } from "./OnlineNowWidget";
 
 const menu = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -35,6 +37,7 @@ const menu = [
   { label: "Fiyat listeleri", href: "/admin#pricing", icon: Tags },
   { label: "Stok yönetimi", href: "/admin#stock", icon: Boxes },
   { label: "Siparişler", href: "/admin/orders", icon: ClipboardList },
+  { label: "Yeni sipariş", href: "/admin/orders/new", icon: ShoppingCart },
   { label: "Teklifler", href: "/admin/quotes", icon: ReceiptText },
   { label: "Audit logs", href: "/admin/import#audit", icon: ShieldCheck }
 ];
@@ -53,6 +56,7 @@ export async function AdminFrame({ children, active }: { children: React.ReactNo
           </span>
           <strong>{brandSettings.siteTitle}</strong>
         </a>
+        <OnlineNowBadge />
         <nav>
           {menu.map((item) => {
             const Icon = item.icon;

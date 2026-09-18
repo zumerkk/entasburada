@@ -8851,3 +8851,129 @@ a.metricCard {
 .referralHeroActions > a:not(.btn) { color: #e6efe9; }
 .applicationForm > .applicationFormBody { display: contents; }
 .applicationForm[aria-busy="true"] button { opacity: .6; cursor: wait; }
+
+/* --- Admin: bayi onayları üstte --- */
+.dealerApprovalPanel { border-top: 3px solid var(--orange-600); scroll-margin-top: 16px; }
+.dealerApprovalPanel .panelHeader small { display: block; margin-top: 4px; color: var(--muted); }
+#bayi-hesaplari { scroll-margin-top: 16px; }
+.dealerApprovalEmpty { margin: 0 0 16px; padding: 14px 16px; border: 1px dashed var(--line); border-radius: 10px; color: var(--muted); background: var(--surface); }
+.dealerApplicationArchive { margin-top: 18px; border: 1px solid var(--line); border-radius: 10px; padding: 0 14px; background: var(--surface); }
+.dealerApplicationArchive > summary { cursor: pointer; padding: 12px 0; font-weight: 600; font-size: 0.9rem; color: var(--green-900); user-select: none; }
+.dealerApplicationArchive[open] > summary { border-bottom: 1px dashed var(--line); margin-bottom: 14px; }
+.dealerApplicationArchive > .dealerApplicationList { padding-bottom: 14px; }
+
+/* --- Admin: sipariş oluştur / düzelt, sipariş linki, reddedilenler, online sayacı --- */
+.adminPageLead { margin: -6px 0 16px; color: var(--muted); max-width: 860px; line-height: 1.55; }
+.adminPageLead a { color: var(--green-800); font-weight: 750; text-decoration: underline; }
+
+.adminOrderTabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+.adminOrderTabs a { display: inline-flex; align-items: center; gap: 8px; min-height: 38px; padding: 0 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--white); color: var(--green-900); font-weight: 750; font-size: 14px; }
+.adminOrderTabs a span { min-width: 24px; padding: 1px 8px; border-radius: 999px; background: var(--surface); font-size: 12px; text-align: center; }
+.adminOrderTabs a.active { background: var(--green-900); border-color: var(--green-900); color: var(--white); }
+.adminOrderTabs a.active span { background: rgba(255, 255, 255, 0.18); }
+
+.adminOrderBuilder { display: grid; gap: 16px; padding-bottom: 8px; }
+.adminOrderStep h2 { display: flex; align-items: center; gap: 10px; }
+.adminOrderStepNo { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--orange-600); color: var(--white); font-size: 14px; font-weight: 850; flex-shrink: 0; }
+.adminOrderSelectedCustomer { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; padding: 12px 14px; border: 1px solid #b7e4c7; border-radius: 10px; background: #f0fbf4; color: var(--green-900); }
+.adminOrderSelectedCustomer span { display: grid; gap: 2px; min-width: 0; flex: 1; }
+.adminOrderSelectedCustomer small { color: var(--muted); overflow-wrap: anywhere; }
+.adminOrderSelectedIcon { color: #16a34a; flex-shrink: 0; }
+.adminOrderCustomerList { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; max-height: 300px; overflow-y: auto; margin-top: 10px; padding: 2px; }
+.adminOrderCustomerList button { display: grid; gap: 3px; padding: 10px 12px; text-align: left; border: 1px solid var(--line); border-radius: 8px; background: var(--white); color: var(--green-900); cursor: pointer; }
+.adminOrderCustomerList button small { color: var(--muted); font-size: 12px; }
+.adminOrderCustomerList button:hover { border-color: var(--green-800); }
+.adminOrderCustomerList button.selected { border-color: #16a34a; box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.18); background: #f0fbf4; }
+
+.adminProductPicker { display: grid; gap: 10px; }
+.adminProductPickerSearch { display: flex; align-items: center; gap: 8px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--white); color: var(--muted); }
+.adminProductPickerSearch input { flex: 1; min-width: 0; min-height: 42px; border: 0; outline: 0; background: transparent; color: var(--anthracite); font: inherit; }
+.adminProductPickerSearch:focus-within { border-color: var(--green-800); box-shadow: 0 0 0 3px rgba(19, 82, 68, 0.12); }
+.adminProductPickerResults { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; max-height: 360px; overflow-y: auto; }
+.adminProductPickerResults li { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto auto; align-items: center; gap: 12px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--white); }
+.adminProductPickerResults img { width: 48px; height: 48px; object-fit: contain; border-radius: 6px; background: var(--surface); }
+.adminProductPickerInfo, .adminProductPickerPrice { display: grid; gap: 2px; min-width: 0; }
+.adminProductPickerInfo strong { overflow-wrap: anywhere; }
+.adminProductPickerInfo small, .adminProductPickerPrice small { color: var(--muted); font-size: 12px; }
+.adminProductPickerPrice { text-align: right; }
+.adminProductPickerResults .btn { min-height: 36px; padding: 0 12px; }
+.adminProductPickerEmpty { margin: 0; padding: 10px 12px; color: var(--muted); border: 1px dashed var(--line); border-radius: 8px; background: var(--surface); }
+.adminProductPickerAdded { margin: 0; color: #047857; font-size: 13px; font-weight: 700; }
+
+.adminOrderLines { display: grid; gap: 8px; margin-top: 12px; }
+.adminOrderLine { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(90px, auto) auto; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--white); }
+.adminOrderLine:has(> img) { grid-template-columns: 44px minmax(0, 1fr) auto minmax(90px, auto) auto; }
+.adminOrderLine > img { width: 44px; height: 44px; object-fit: contain; border-radius: 6px; background: var(--surface); }
+.adminOrderLine.changed { border-color: #f59e0b; background: #fffbeb; }
+.adminOrderLine.added { border-color: #16a34a; background: #f0fbf4; }
+.adminOrderLine.removed { background: #fef2f2; border-color: #fecaca; }
+.adminOrderLine.removed .adminOrderLineInfo strong { text-decoration: line-through; color: #991b1b; }
+.adminOrderLineInfo { display: grid; gap: 2px; min-width: 0; }
+.adminOrderLineInfo strong { overflow-wrap: anywhere; }
+.adminOrderLineInfo small { color: var(--muted); font-size: 12px; }
+.adminOrderLineTotal { text-align: right; white-space: nowrap; color: var(--green-900); }
+.adminQuantityControl { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--white); }
+.adminQuantityControl button { display: grid; place-items: center; width: 34px; height: 36px; border: 0; background: var(--surface); color: var(--green-900); cursor: pointer; }
+.adminQuantityControl button:disabled { opacity: 0.4; cursor: not-allowed; }
+.adminQuantityControl input { width: 68px; height: 36px; border: 0; border-inline: 1px solid var(--line); text-align: center; font: inherit; font-weight: 750; }
+.adminOrderLineRemove { display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid var(--line); border-radius: 8px; background: var(--white); color: #b91c1c; cursor: pointer; }
+.adminOrderLineRemove:hover { background: #fef2f2; }
+
+.adminPaymentOptions { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; margin-bottom: 14px; }
+.adminPaymentOptions label { position: relative; display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--white); color: var(--green-900); cursor: pointer; }
+.adminPaymentOptions label span { display: grid; gap: 3px; }
+.adminPaymentOptions label small { color: var(--muted); font-size: 12px; line-height: 1.4; }
+.adminPaymentOptions label input { position: absolute; opacity: 0; pointer-events: none; }
+.adminPaymentOptions label.selected { border-color: var(--orange-600); box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.2); background: #fff7ed; }
+.adminPaymentOptions label:focus-within { outline: 2px solid var(--green-800); outline-offset: 2px; }
+
+.adminOrderSubmitBar { position: sticky; bottom: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; padding: 12px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--white); box-shadow: var(--shadow); }
+.adminOrderSubmitBar > span { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; color: var(--green-900); }
+.adminOrderSubmitBar > span small { color: var(--muted); }
+.adminOrderSubmitBar > input { flex: 1 1 220px; min-height: 40px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; font: inherit; }
+.adminOrderSubmitBar .btn:disabled, .adminProductPickerResults .btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+.adminOrderItemsEditor { display: grid; gap: 10px; }
+.adminOrderEditLocked { display: flex; align-items: center; gap: 8px; margin: 0; padding: 10px 12px; border: 1px solid #fde68a; border-radius: 8px; background: #fffbeb; color: #92400e; font-weight: 700; }
+.adminOrderEditAdd { display: grid; gap: 8px; margin-top: 6px; padding-top: 12px; border-top: 1px dashed var(--line); }
+.adminOrderEditAdd > strong { color: var(--green-900); }
+.adminOrderCreatedNotice { display: flex; align-items: center; gap: 8px; }
+
+.orderShareLinks.highlight { border: 2px solid #16a34a; box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.12); }
+.orderShareLinks h2 { display: flex; align-items: center; gap: 8px; }
+.orderShareLinkRow { display: flex; flex-wrap: wrap; gap: 8px; }
+.orderShareLinkRow input { flex: 1 1 320px; min-width: 0; min-height: 42px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--anthracite); font: inherit; font-size: 14px; }
+.orderShareActions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
+.orderShareHint { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 13px; }
+
+.adminOnlineBadge { display: flex; align-items: center; gap: 10px; margin-top: -8px; padding: 10px 12px; border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 10px; background: rgba(255, 255, 255, 0.06); color: rgba(255, 255, 255, 0.9); font-size: 14px; }
+.adminOnlineBadge strong { color: var(--white); font-size: 16px; }
+.adminOnlineBadge small { color: rgba(255, 255, 255, 0.7); }
+.adminOnlineBadge:hover { background: rgba(255, 255, 255, 0.12); }
+.adminOnlineDot { width: 10px; height: 10px; border-radius: 50%; background: #9ca3af; flex-shrink: 0; }
+.adminOnlineDot.live { background: #22c55e; box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); animation: adminOnlinePulse 2s ease-out infinite; }
+@keyframes adminOnlinePulse { 0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.55); } 70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); } 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); } }
+@media (prefers-reduced-motion: reduce) { .adminOnlineDot.live { animation: none; } }
+.adminOnlinePanel { scroll-margin-top: 16px; }
+.adminOnlinePanel h2 { display: flex; align-items: center; gap: 8px; }
+.adminOnlineStats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
+.adminOnlineStats > div { display: grid; gap: 4px; padding: 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--green-900); }
+.adminOnlineStats span { color: var(--muted); font-size: 13px; }
+.adminOnlineStats strong { font-size: 26px; }
+.adminOnlineLists { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 16px; }
+.adminOnlineLists h3 { margin: 0 0 8px; font-size: 15px; color: var(--green-900); }
+.adminOnlineLists ul { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.adminOnlineLists li { display: grid; gap: 2px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--white); }
+.adminOnlineLists li small { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+
+@media (max-width: 720px) {
+  .adminProductPickerResults li { grid-template-columns: 44px minmax(0, 1fr); }
+  .adminProductPickerPrice { text-align: left; grid-column: 2; }
+  .adminProductPickerResults .btn { grid-column: 1 / -1; justify-content: center; }
+  .adminOrderLine, .adminOrderLine:has(> img) { grid-template-columns: minmax(0, 1fr) auto; }
+  .adminOrderLine > img { display: none; }
+  .adminOrderLineInfo { grid-column: 1 / -1; }
+  .adminOrderSubmitBar { position: static; }
+  .adminOrderSubmitBar .btn { flex: 1 1 100%; justify-content: center; }
+}
+/* Uzun takip kodu/adres dar ekranda özet kutusunu taşırmasın. */
+.detailSummaryGrid strong { overflow-wrap: anywhere; }

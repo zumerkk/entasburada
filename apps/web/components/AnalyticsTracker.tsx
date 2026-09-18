@@ -84,7 +84,7 @@ function postEvent(url: string, payload: Record<string, unknown>): void {
   }).catch(() => undefined);
 }
 
-function getSessionId(): string {
+export function getSessionId(): string {
   try {
     window.localStorage.removeItem(sessionStorageKey);
     const existing = window.sessionStorage.getItem(sessionStorageKey);
