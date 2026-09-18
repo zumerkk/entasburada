@@ -1,0 +1,30 @@
+{
+  "version": "2026-09-18-baki-koc-v1",
+  "createdAt": "2026-09-18T07:34:45.847Z",
+  "source": {
+    "name": "Baki Koç 2026 Fiyat Listesi (Eylül 2026)",
+    "fileName": "BAKİ KOÇ 2026 FİYAT LİSTESİ.pdf",
+    "receivedAt": "2026-09-17",
+    "pageCount": 72
+  },
+  "sourceKey": "catalog-pdf-entas-bk-baki-koc-2026-09",
+  "productCount": 153,
+  "imageCount": 153,
+  "groupCounts": {
+    "Plastik Kürek Grubu": 21,
+    "Orijinal Plastik Kürek Grubu": 20,
+    "Plastik Tırmık Grubu": 5,
+    "Orijinal Plastik Tırmık Grubu": 6,
+    "Çelik Gelberi ve Çelik Çapa Grubu": 39,
+    "Yaba ve Çelik Dirgen Grubu": 6,
+    "Orak, Tahra ve Satır Grubu": 20,
+    "Balta ve Nacak Grubu": 30,
+    "Çelik Keser ve Kazma Grubu": 6
+  },
+  "sourcePriceSubtotal": 32221,
+  "salePriceSubtotal": 38665.2,
+  "pricingPolicy": "Liste net fiyatı + %20 KDV (x1,20), iki ondalık; sitede KDV dahil gösterilir. BAKİ KOÇ markasına ek iskonto/kâr uygulanmaz.",
+  "stockPolicy": "Liste gerçek stok adedi içermiyor; stockQuantityKnown=false",
+  "imagePolicy": "PDF gömülü ürün görseli + yumuşak maske, sayfadaki yönelim korunarak beyaz zemine; 1200x1200 WebP (product-image-normalizer)",
+  "classification": "sourceKey 'entas-bk' içerdiği için Sulama & Bahçe > Çapa, Kürek & Tarım El Aletleri"
+}
