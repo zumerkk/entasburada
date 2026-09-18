@@ -70,6 +70,15 @@ if [ -f /app/data/catalog-store.json ]; then
   pnpm catalog:reclassify -- --write
 fi
 
+# ARC fiyat politikasıyla veri onarımını sunucu başlamadan birlikte uygula.
+ARC_REPAIR_MARKER="$DATA_DIR/.arc-banyo-pricing-2026-09-18-v1"
+if [ -f "$DATA_DIR/data/catalog-store.json" ] && [ ! -f "$ARC_REPAIR_MARKER" ]; then
+  if node -e 'const s=require(process.argv[1]); process.exit(s.products.some(p=>p.sourceKey==="catalog-pdfler-fiyat-listesi-subat-2025")?0:1)' "$DATA_DIR/data/catalog-store.json"; then
+    node /app/scripts/repair-arc-banyo.mjs "$DATA_DIR/data/catalog-store.json" --apply
+    date -u +%Y-%m-%dT%H:%M:%SZ > "$ARC_REPAIR_MARKER"
+  fi
+fi
+
 chown -R nextjs:nodejs "$DATA_DIR/data" "$DATA_DIR/uploads"
 
 cd /app/apps/web
