@@ -21,7 +21,8 @@ const DEFAULT_PRICE_POLICY: BrandPricePolicy = {
 };
 
 const BRAND_PRICE_POLICIES: Array<BrandPricePolicy & { aliases: string[] }> = [
-  { canonicalBrand: "ARC Boya", aliases: ["ARC BOYA", "ARC BANYO"], action: "discount", rate: 16, ruleLabel: "ARC Boya liste fiyatı - %16" },
+  { canonicalBrand: "ARC Boya", aliases: ["ARC BOYA"], action: "discount", rate: 16, ruleLabel: "ARC Boya liste fiyatı - %16" },
+  { canonicalBrand: "ARC Banyo", aliases: ["ARC BANYO"], action: "discount", rate: 31.25, ruleLabel: "ARC Banyo liste fiyatı - %50 alış iskontosu + %25 kâr + %10 KDV" },
   { canonicalBrand: "Doğal Plastik", aliases: ["DOGAL PLASTIK"], action: "discount", rate: 19, ruleLabel: "Doğal Plastik liste fiyatı - %19" },
   {
     canonicalBrand: "Euromix",
@@ -61,6 +62,14 @@ const BRAND_PRICE_POLICIES: Array<BrandPricePolicy & { aliases: string[] }> = [
  * geri doner ve zarar tekrarlanir. `customer-pricing.test.ts` bunu sabitler.
  */
 const SOURCE_PRICE_POLICIES: Record<string, BrandPricePolicy> = {
+  // Eski importta sonraki sayfalar "Marka Bekliyor" olarak kayıtlıdır.
+  // Kaynak kuralı ham PDF fiyatını marka eksik olsa da tek kez dönüştürür.
+  "catalog-pdfler-fiyat-listesi-subat-2025": {
+    canonicalBrand: "ARC Banyo",
+    action: "discount",
+    rate: 31.25,
+    ruleLabel: "ARC Banyo liste fiyatı - %50 alış iskontosu + %25 kâr + %10 KDV"
+  },
   "catalog-pdf-karen-led-ayna-2026": {
     canonicalBrand: "Karen LED Ayna",
     action: "net",

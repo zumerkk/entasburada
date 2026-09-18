@@ -51,8 +51,19 @@ function withBrand(brand: string): CatalogProductRecord {
 }
 
 describe("common brand pricing", () => {
+  it.each(["ARC BANYO", "Marka Bekliyor"])("prices ARC PDF rows with brand %s using discount, markup and VAT once", (brand) => {
+    const arc = { ...product, sourceKey: "catalog-pdfler-fiyat-listesi-subat-2025", brand, taxRate: "10", listPrice: "42690.00" };
+    expect(priceProductForCustomer(arc, customer)).toMatchObject({
+      unitNetPrice: "29349.38",
+      includedTaxAmount: "2668.13",
+      discountRate: "31,25%",
+      taxIncluded: true
+    });
+  });
+
   it.each([
-    ["ARC BANYO", "168.00", "16%"],
+    ["ARC BANYO", "137.50", "31,25%"],
+    ["ARC BOYA", "168.00", "16%"],
     ["Doğal Plastik", "162.00", "19%"],
     ["EUROMIX", "200.00", undefined],
     ["FORZA", "162.00", "19%"],
