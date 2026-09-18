@@ -471,7 +471,7 @@ export async function createManualDealerApplicationAction(formData: FormData): P
 
 const DEALER_SEGMENTS: CustomerSegment[] = ["standard", "industrial", "project"];
 const CUSTOMER_STATUSES: CustomerStatus[] = ["approved", "pending", "suspended"];
-const SELLER_MODES: SellerMode[] = ["reseller", "dropshipping", "hybrid"];
+const SELLER_MODES: SellerMode[] = ["reseller", "dropshipping", "hybrid", "referral"];
 
 /**
  * Mevcut bir bayinin firma adı / yetkili / segment (kademe) bilgisini günceller.

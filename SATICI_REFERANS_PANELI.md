@@ -12,6 +12,8 @@
 
 Eren hesabını yönetici panelinden gerçek e-posta/firma/telefon bilgileriyle oluşturun. Yetkili kişi adı Eren olursa başlık ve müşteri kaynak etiketi “Yetkili Panel: Eren” olur. Yerel görsel testte kullanılan Eren hesabı yalnızca `/tmp/entas-seller-preview` içindeki sahte test verisidir; canlı bir hesap oluşturulmamıştır.
 
+Eren al-sat yapmaz, yalnızca müşteri getirir: hesabında **Satıcı tipi: Pazarlamacı** seçilmelidir (`/admin/dealers` → Bayiyi düzenle). Pazarlamacı, getirdiği müşterilerle aynı fiyatı görür (satıcı kanalının %20 farkı uygulanmaz), referans paneli ve %10 komisyon açık kalır; ürün beslemesi, API, dropshipping ve `/satici/katalog` kapanır, “Ürün kataloğu” bağlantısı genel kataloğa gider. Al-sat/dropshipping hesapları %20 satıcı kanal fiyatıyla çalışmaya devam eder.
+
 ## Kurallar
 
 Komisyon yeni sipariş oluşturulurken müşterinin onaylı hesabındaki referanstan, her ürünün KDV dahil satır tutarının %10'u olarak anlık görüntülenip saklanır. Kargo ve ödeme sağlayıcısı masrafları matraha dahil edilmez. Satır bazında kuruşa yuvarlanır. Para birimleri ayrı tutulur. Eski siparişler geriye dönük komisyonlandırılmaz; mevcut müşteri hesabına sonradan referans eklenmez.

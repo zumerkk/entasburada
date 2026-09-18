@@ -16,7 +16,8 @@ export { hashPassword, verifyPassword };
 export type CustomerStatus = "approved" | "pending" | "suspended";
 export type CustomerSegment = "standard" | "industrial" | "project";
 export type CompanyUserRole = "COMPANY_OWNER" | "PURCHASE_MANAGER" | "PURCHASE_STAFF" | "FINANCE_OFFICER" | "APPROVER" | "WAREHOUSE_RECEIVER" | "VIEWER";
-export type SellerMode = "reseller" | "dropshipping" | "hybrid";
+/** referral: yalnızca müşteri getiren pazarlamacı; al-sat yapmaz, müşterilerle aynı fiyatı görür. */
+export type SellerMode = "reseller" | "dropshipping" | "hybrid" | "referral";
 
 export interface SellerAccess {
   enabled: boolean;
@@ -367,14 +368,17 @@ function enforceUniformCommercialTerms(customer: CustomerAccount): CustomerAccou
 
 export function normalizeSellerAccess(access?: Partial<SellerAccess>): SellerAccess {
   const markup = Number(access?.defaultMarkupRate);
+  const mode: SellerMode = access?.mode === "dropshipping" || access?.mode === "hybrid" || access?.mode === "referral" ? access.mode : "reseller";
+  // Pazarlamacı al-sat yapmadığı için besleme, API ve dropshipping araçları bu hesapta kapalı tutulur.
+  const resellerTools = mode !== "referral";
   return {
     enabled: Boolean(access?.enabled),
-    mode: access?.mode === "dropshipping" || access?.mode === "hybrid" ? access.mode : "reseller",
-    productFeedEnabled: Boolean(access?.productFeedEnabled),
-    apiEnabled: Boolean(access?.apiEnabled),
-    exactStockEnabled: Boolean(access?.exactStockEnabled),
-    orderApiEnabled: Boolean(access?.orderApiEnabled),
-    blindShippingEnabled: Boolean(access?.blindShippingEnabled),
+    mode,
+    productFeedEnabled: resellerTools && Boolean(access?.productFeedEnabled),
+    apiEnabled: resellerTools && Boolean(access?.apiEnabled),
+    exactStockEnabled: resellerTools && Boolean(access?.exactStockEnabled),
+    orderApiEnabled: resellerTools && Boolean(access?.orderApiEnabled),
+    blindShippingEnabled: resellerTools && Boolean(access?.blindShippingEnabled),
     defaultMarkupRate: Number.isFinite(markup) ? Math.min(500, Math.max(0, markup)) : 30,
     ...(access?.apiKeyHash ? { apiKeyHash: access.apiKeyHash } : {}),
     ...(access?.apiKeyPrefix ? { apiKeyPrefix: access.apiKeyPrefix } : {}),

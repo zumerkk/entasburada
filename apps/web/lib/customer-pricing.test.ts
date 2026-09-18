@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { CatalogProductRecord } from "@entas/catalog";
 import type { CustomerAccount } from "./customer-auth";
-import { priceProductForCustomer, priceUnavailableMessage } from "./customer-pricing";
+import { priceProductForCustomer, priceUnavailableMessage, usesSellerChannelPricing } from "./customer-pricing";
 
 const product: CatalogProductRecord = {
   id: "product-1",
@@ -147,6 +147,26 @@ describe("common brand pricing", () => {
     });
     expect(sellerPrice?.listPrice).toBeUndefined();
     expect(sellerPrice?.discountRate).toBeUndefined();
+  });
+
+  it("prices a referral-only marketer exactly like the customers they bring", () => {
+    const marketer: CustomerAccount = {
+      ...customer,
+      sellerAccess: {
+        enabled: true,
+        mode: "referral",
+        productFeedEnabled: false,
+        apiEnabled: false,
+        exactStockEnabled: false,
+        orderApiEnabled: false,
+        blindShippingEnabled: false,
+        defaultMarkupRate: 30
+      }
+    };
+
+    expect(usesSellerChannelPricing(marketer)).toBe(false);
+    expect(priceProductForCustomer(withBrand("SAYIM"), marketer)).toEqual(priceProductForCustomer(withBrand("SAYIM"), customer));
+    expect(priceProductForCustomer(withBrand("EUROMIX"), marketer)).toMatchObject({ unitNetPrice: "200.00", priceLabel: "Net" });
   });
 
   it("uses the list price as Net for MRS Max/Mırsan and unspecified brands", () => {

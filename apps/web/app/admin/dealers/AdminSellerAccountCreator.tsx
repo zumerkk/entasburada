@@ -27,6 +27,8 @@ export function AdminSellerAccountCreator() {
     const formElement = event.currentTarget;
     const form = new FormData(formElement);
     const mode = String(form.get("mode") || "hybrid");
+    // Pazarlamacı al-sat yapmaz; besleme, API ve dropshipping izinleri gönderilmez.
+    const resellerTools = mode !== "referral";
     const body = {
       email: String(form.get("email") || ""),
       companyName: String(form.get("companyName") || ""),
@@ -36,15 +38,15 @@ export function AdminSellerAccountCreator() {
       deliveryAddress: String(form.get("deliveryAddress") || ""),
       segment: String(form.get("segment") || "standard"),
       sendWelcomeEmail: form.get("sendWelcomeEmail") === "on",
-      createApiKey: form.get("apiEnabled") === "on",
+      createApiKey: resellerTools && form.get("apiEnabled") === "on",
       sellerAccess: {
         enabled: true,
         mode,
-        productFeedEnabled: form.get("productFeedEnabled") === "on",
-        apiEnabled: form.get("apiEnabled") === "on",
-        exactStockEnabled: form.get("exactStockEnabled") === "on",
-        orderApiEnabled: form.get("orderApiEnabled") === "on",
-        blindShippingEnabled: form.get("blindShippingEnabled") === "on",
+        productFeedEnabled: resellerTools && form.get("productFeedEnabled") === "on",
+        apiEnabled: resellerTools && form.get("apiEnabled") === "on",
+        exactStockEnabled: resellerTools && form.get("exactStockEnabled") === "on",
+        orderApiEnabled: resellerTools && form.get("orderApiEnabled") === "on",
+        blindShippingEnabled: resellerTools && form.get("blindShippingEnabled") === "on",
         defaultMarkupRate: Number(form.get("defaultMarkupRate") || 30)
       }
     };
@@ -96,6 +98,7 @@ export function AdminSellerAccountCreator() {
             <option value="reseller">Al-sat bayi</option>
             <option value="dropshipping">Dropshipping</option>
             <option value="hybrid">Al-sat + dropshipping</option>
+            <option value="referral">Pazarlamacı (sadece müşteri getirir)</option>
           </select>
         </label>
         <label>Hizmet segmenti
@@ -106,7 +109,7 @@ export function AdminSellerAccountCreator() {
           </select>
         </label>
         <label>Önerilen mağaza kârı (%)<input name="defaultMarkupRate" type="number" min="0" max="500" step="0.1" defaultValue="30" /></label>
-        <p className="sellerPricingPolicyNote"><strong>Müşteri referansı:</strong> Bu hesap kendi referansıyla getirdiği müşterilerin ürün satışlarından %10 komisyon kazanır. Bu oran mağaza kârından bağımsızdır. <strong>Satıcı kanal alış fiyatı:</strong> standart bayi net fiyatının %20 üzeridir. Önerilen mağaza kârı bu alış fiyatının üzerine ayrıca hesaplanır.</p>
+        <p className="sellerPricingPolicyNote"><strong>Müşteri referansı:</strong> Bu hesap kendi referansıyla getirdiği müşterilerin ürün satışlarından %10 komisyon kazanır. Bu oran mağaza kârından bağımsızdır. <strong>Satıcı kanal alış fiyatı:</strong> standart bayi net fiyatının %20 üzeridir. Önerilen mağaza kârı bu alış fiyatının üzerine ayrıca hesaplanır. <strong>Pazarlamacı</strong> seçilirse hesap müşterilerle aynı fiyatı görür; besleme, API ve dropshipping izinleri kapalı açılır.</p>
         <label className="spanTwo">Varsayılan teslimat adresi *<textarea name="deliveryAddress" required minLength={10} rows={2} /></label>
         <div className="sellerPermissionGrid spanTwo">
           <label><input type="checkbox" name="productFeedEnabled" defaultChecked /> Ürün beslemesi</label>

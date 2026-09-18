@@ -172,4 +172,24 @@ describe("real persisted Eren seller lifecycle",()=>{
     const data=form("code",other);expect((await register.submitDealerApplicationAction(data)).error).toContain("geçersiz");
     await auth.updateCustomerAccount(other.id,{status:"approved"});
   });
+  it("admin switches Eren to Pazarlamacı: same price as his customers, panel and commission stay, reseller tools close",async()=>{
+    const buyer=await newBuyer();
+    await cart.addCartItems(eren,[{sku:"E2E-1",quantity:1}]);
+    expect((await cart.loadPricedCart(eren)).items[0]?.unitNetPrice).toBe("1500.00");
+    loginAdmin();const data=new FormData();
+    Object.entries({customerId:eren.id,status:"approved",segment:"standard",sellerMode:"referral",defaultMarkupRate:"30",sellerEnabled:"on",productFeedEnabled:"on",exactStockEnabled:"on",apiEnabled:"on",orderApiEnabled:"on",blindShippingEnabled:"on"}).forEach(([k,v])=>data.set(k,v));
+    await expect(adminActions.updateDealerAccountAction(data)).rejects.toThrow("REDIRECT:/admin/dealers?ok=");
+    const marketer=(await auth.findCustomerByEmail(eren.email))!;
+    expect(marketer.sellerAccess).toMatchObject({enabled:true,mode:"referral",productFeedEnabled:false,exactStockEnabled:false,apiEnabled:false,orderApiEnabled:false,blindShippingEnabled:false});
+    await cart.addCartItems(buyer,[{sku:"E2E-1",quantity:1}]);
+    const buyerPrice=(await cart.loadPricedCart(buyer)).items[0]?.unitNetPrice;
+    await cart.clearCart(buyer);
+    expect(buyerPrice).toBe("1250.00");
+    expect((await cart.loadPricedCart(marketer)).items[0]?.unitNetPrice).toBe(buyerPrice);
+    await cart.clearCart(marketer);
+    login(marketer);expect((await dashboard.requireReferralSeller()).id).toBe(eren.id);
+    const {authorizeSellerRequest}=await import("./reseller-api-auth");const request=new Request("https://entasburada.com/api/reseller/v1/products");
+    expect(await authorizeSellerRequest(request,"catalog")).toBeNull();expect(await authorizeSellerRequest(request,"orders")).toBeNull();
+    expect((await buy(buyer)).sellerCommission?.referral.sellerId).toBe(eren.id);
+  });
 });

@@ -1,6 +1,7 @@
 import "server-only";
 import { clearCart, loadPricedCart, type CartSummary } from "./cart-repository";
 import type { CustomerAccount } from "./customer-auth";
+import { usesSellerChannelPricing } from "./customer-pricing";
 import { applyOrderCompanyApprovalPolicy, convertQuoteToOrder, createQuote, priceQuote, updateQuoteStatus, type AdminOrder, type AdminQuote } from "./commercial-repository";
 
 export async function createQuoteFromCustomerCart(customer: CustomerAccount): Promise<AdminQuote> {
@@ -28,7 +29,7 @@ async function createQuoteFromCart(customer: CustomerAccount, cart: CartSummary)
     throw new Error("Sepet bos.");
   }
 
-  const isSellerChannel = Boolean(customer.sellerAccess?.enabled);
+  const isSellerChannel = usesSellerChannelPricing(customer);
   const pricePolicyLabel = isSellerChannel ? "KDV dahil satıcı kanal fiyatı" : "KDV dahil ortak marka fiyatı";
   const pricingActor = isSellerChannel ? "Satıcı kanal fiyat motoru" : "Bayi fiyat motoru";
   const quote = await createQuote({

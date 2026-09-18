@@ -5,6 +5,7 @@ import { StatusPill } from "@entas/ui";
 import { requireAdmin } from "../../../../lib/admin-auth";
 import { getAdminQuoteById } from "../../../../lib/commercial-repository";
 import { findCustomerByEmail } from "../../../../lib/customer-auth";
+import { usesSellerChannelPricing } from "../../../../lib/customer-pricing";
 import { convertQuoteToOrderAction, priceQuoteAction, updateQuoteStatusAction } from "../../actions";
 import { AdminFrame } from "../../AdminFrame";
 
@@ -19,7 +20,7 @@ export default async function AdminQuoteDetailPage({ params }: { params: Promise
     notFound();
   }
   const quoteCustomer = await findCustomerByEmail(quote.email);
-  const sellerChannel = Boolean(quoteCustomer?.sellerAccess?.enabled);
+  const sellerChannel = Boolean(quoteCustomer && usesSellerChannelPricing(quoteCustomer));
 
   return (
     <AdminFrame active="quotes">

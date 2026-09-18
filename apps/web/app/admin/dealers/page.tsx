@@ -8,7 +8,7 @@ import {
   type DealerApplicationStatus
 } from "../../../lib/dealer-application-repository";
 import { buildCredentialsWhatsappHref } from "../../../lib/dealer-provisioning";
-import { getCustomers, type CustomerSegment } from "../../../lib/customer-auth";
+import { getCustomers, type CustomerSegment, type SellerMode } from "../../../lib/customer-auth";
 import {
   createManualDealerApplicationAction,
   updateDealerAccountAction,
@@ -194,13 +194,14 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
                         <option value="reseller">Al-sat bayi</option>
                         <option value="dropshipping">Dropshipping</option>
                         <option value="hybrid">Al-sat + dropshipping</option>
+                        <option value="referral">Pazarlamacı (sadece müşteri getirir)</option>
                       </select>
                     </label>
                     <label>
                       Önerilen mağaza kârı (%)
                       <input name="defaultMarkupRate" type="number" min="0" max="500" step="0.1" defaultValue={customer.sellerAccess?.defaultMarkupRate ?? 30} />
                     </label>
-                    <p className="sellerPricingPolicyNote"><strong>Satıcı kanal alış fiyatı:</strong> standart bayi net fiyatının %20 üzeridir. Bu sabit kanal kuralı sepet, panel, ürün API’si ve dropshipping siparişlerinde birlikte uygulanır.</p>
+                    <p className="sellerPricingPolicyNote"><strong>Satıcı kanal alış fiyatı:</strong> standart bayi net fiyatının %20 üzeridir. Bu sabit kanal kuralı sepet, panel, ürün API’si ve dropshipping siparişlerinde birlikte uygulanır. <strong>Pazarlamacı</strong> al-sat yapmaz: müşterilerle aynı fiyatı görür, yalnızca referans paneli ve %10 komisyon açıktır; besleme, API ve dropshipping kapanır.</p>
                     <label className="spanTwo">
                       Teslimat adresi
                       <textarea name="deliveryAddress" rows={2} defaultValue={customer.deliveryAddress} />
@@ -462,8 +463,9 @@ function segmentLabel(segment: CustomerSegment): string {
   return "Standart bayi";
 }
 
-function sellerModeLabel(mode: "reseller" | "dropshipping" | "hybrid"): string {
+function sellerModeLabel(mode: SellerMode): string {
   if (mode === "dropshipping") return "Dropshipping";
   if (mode === "hybrid") return "Al-sat + Dropshipping";
+  if (mode === "referral") return "Pazarlamacı";
   return "Al-sat bayi";
 }

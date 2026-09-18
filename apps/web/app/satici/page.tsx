@@ -85,7 +85,13 @@ export default async function SellerDashboardPage({
         <a href="#kazanclar">
           <Wallet size={18} /> Kazançlarım
         </a>
-        <a href="/satici/katalog">
+        <a
+          href={
+            seller.sellerAccess?.mode === "referral"
+              ? "/catalog"
+              : "/satici/katalog"
+          }
+        >
           <ReceiptText size={18} /> Ürün kataloğu
         </a>
         <a href="/account">

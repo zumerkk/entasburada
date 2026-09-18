@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 
 const sellerAccessSchema = z.object({
   enabled: z.boolean().default(true),
-  mode: z.enum(["reseller", "dropshipping", "hybrid"]).default("hybrid"),
+  mode: z.enum(["reseller", "dropshipping", "hybrid", "referral"]).default("hybrid"),
   productFeedEnabled: z.boolean().default(true),
   apiEnabled: z.boolean().default(true),
   exactStockEnabled: z.boolean().default(true),
@@ -70,7 +70,7 @@ export async function POST(request: Request): Promise<Response> {
 
     const { createApiKey, ...input } = parsed.data;
     const result = await provisionDirectDealerAccount(input);
-    const generated = result.status === "created" && createApiKey && input.sellerAccess?.enabled && input.sellerAccess.apiEnabled
+    const generated = result.status === "created" && createApiKey && input.sellerAccess?.enabled && input.sellerAccess.apiEnabled && input.sellerAccess.mode !== "referral"
       ? await rotateSellerApiKey(result.accountId)
       : null;
     return Response.json({ ...result, ...(generated ? { apiKey: generated.apiKey, account: sanitizeAccount(generated.account) } : {}) }, { status: result.status === "created" ? 201 : 200 });

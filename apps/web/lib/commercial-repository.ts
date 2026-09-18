@@ -9,7 +9,7 @@ import type { CatalogProductRecord } from "@entas/catalog";
 import { loadCatalogStore } from "./catalog-repository";
 import { createNotification } from "./notification-repository";
 import { canApproveCompanyOrders, findCustomerByEmail, getCompanyMembers, type CustomerAccount } from "./customer-auth";
-import { formatMoney, parseMoney as parseCustomerMoney, priceProductForCustomer } from "./customer-pricing";
+import { formatMoney, parseMoney as parseCustomerMoney, priceProductForCustomer, usesSellerChannelPricing } from "./customer-pricing";
 
 export type QuoteStatus = "DRAFT" | "SUBMITTED" | "ASSIGNED" | "PRICED" | "APPROVED" | "REJECTED" | "EXPIRED" | "CONVERTED";
 export type OrderStatus =
@@ -1087,7 +1087,7 @@ function findCatalogProduct(products: CatalogProductRecord[], sku: string, produ
 
 async function enforceSellerChannelQuoteFloor(quote: AdminQuote, priceByItemId: Map<string, number>): Promise<void> {
   const customer = await findCustomerByEmail(quote.email);
-  if (!customer?.sellerAccess?.enabled || customer.status !== "approved") return;
+  if (!customer || !usesSellerChannelPricing(customer) || customer.status !== "approved") return;
 
   const catalog = await loadCatalogStore();
   for (const item of quote.items) {

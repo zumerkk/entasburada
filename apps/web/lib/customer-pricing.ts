@@ -14,6 +14,11 @@ export interface CustomerPrice {
   includedTaxAmount: string;
 }
 
+/** Satıcı kanal farkı al-sat/dropshipping hesaplarına uygulanır; pazarlamacı (referral) müşterilerle aynı fiyatı görür. */
+export function usesSellerChannelPricing(customer: Pick<CustomerAccount, "sellerAccess">): boolean {
+  return Boolean(customer.sellerAccess?.enabled) && customer.sellerAccess?.mode !== "referral";
+}
+
 export function priceProductForCustomer(product: CatalogProductRecord, customer: CustomerAccount): CustomerPrice | null {
   if (customer.status !== "approved") {
     return null;
@@ -33,7 +38,7 @@ export function priceProductForCustomer(product: CatalogProductRecord, customer:
   // fiyatına dönüşür. Satıcı/dropshipping kanalı düzenli toptan müşteriden ayrı
   // fiyatlanır ve bu netin üzerine sabit kanal farkı uygulanır.
   const standardDealerGross = roundMoney(listPrice * priceMultiplier(policy));
-  const sellerChannel = Boolean(customer.sellerAccess?.enabled);
+  const sellerChannel = usesSellerChannelPricing(customer);
   const gross = sellerChannel
     ? roundMoney(standardDealerGross * (1 + SELLER_CHANNEL_PREMIUM_RATE / 100))
     : standardDealerGross;

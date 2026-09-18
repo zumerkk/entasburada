@@ -14,6 +14,8 @@ export const dynamic = "force-dynamic";
 export default async function SellerDashboardPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const customer = await requireCustomer();
   if (!customer.sellerAccess?.enabled) redirect("/account");
+  // Pazarlamacı al-sat yapmaz; ürünleri müşterilerle aynı fiyatla genel katalogda görür.
+  if (customer.sellerAccess.mode === "referral") redirect("/catalog");
   const params = await searchParams;
   const passwordChanged = getParam(params, "passwordChanged") === "1";
   const q = getParam(params, "q");
