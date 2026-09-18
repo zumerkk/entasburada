@@ -8,6 +8,7 @@ import path from "node:path";
 import type { CatalogProductRecord } from "@entas/catalog";
 import { loadCatalogStore } from "./catalog-repository";
 import { createNotification } from "./notification-repository";
+import { queueNewOrderAlert } from "./order-alerts";
 import { canApproveCompanyOrders, findCustomerByEmail, getCompanyMembers, type CustomerAccount } from "./customer-auth";
 import { formatMoney, parseMoney as parseCustomerMoney, priceProductForCustomer, usesSellerChannelPricing } from "./customer-pricing";
 import {
@@ -702,6 +703,9 @@ async function convertQuoteToOrderUnlocked(id: string, actorName: string, actor:
       href: `/admin/orders/${order.id}`
     })
   ]);
+  // Operasyon ekibine WhatsApp bildirimi: bilerek beklemiyoruz, gonderim
+  // hatasi siparisin olusmasini engellememeli.
+  queueNewOrderAlert(order);
   return order;
 }
 
@@ -1132,6 +1136,8 @@ async function createDirectOrderUnlocked(input: DirectOrderInput, actorName: str
     body: `${order.orderNo} siparişiniz ${total} ${order.currency} tutarıyla oluşturuldu.${payment.status === "PAYMENT_PENDING" ? " Kartla ödemek için sipariş sayfanızı açın." : ""}`,
     href: `/orders/${order.trackingCode}`
   });
+  // Operasyon ekibi telefonla alınan siparişleri de aynı WhatsApp akışından görsün.
+  queueNewOrderAlert(order);
   return order;
 }
 

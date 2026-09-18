@@ -1,0 +1,18 @@
+{
+  "name": "entas-whatsapp-bridge",
+  "version": "0.1.0",
+  "private": true,
+  "description": "WhatsApp Web koprusu: ENTASBURADA panelinden gelen siparis bildirimlerini WhatsApp uzerinden gonderir.",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "qrcode-terminal": "^0.12.0",
+    "whatsapp-web.js": "^1.27.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
