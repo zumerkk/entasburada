@@ -46,6 +46,13 @@ export interface CommercialHistoryEntry {
   message: string;
   fromStatus?: string;
   toStatus?: string;
+  /**
+   * Müşteri sayfası (order-history-view.ts): "public" metin aynen, "internal" hiç
+   * gösterilmez; işaretsiz admin/sistem kaydı yalnız durum değişikliği olarak görünür.
+   */
+  visibility?: "public" | "internal";
+  /** Yalnız admin panelinde gösterilen iç not. */
+  internalNote?: string;
 }
 
 export interface QuoteItem {
@@ -670,7 +677,7 @@ async function convertQuoteToOrderUnlocked(id: string, actorName: string, actor:
     companyApprovalStatus: "NOT_REQUIRED",
     items,
     history: [
-      historyEntry(actor, actorName, `${quote.quoteNo} teklifinden ${selectedQuoteItems.length}/${quote.items.length} satırla sipariş oluşturuldu.`, undefined, "FINANCE_APPROVAL_PENDING", now)
+      historyEntry(actor, actorName, `${quote.quoteNo} teklifinden ${selectedQuoteItems.length}/${quote.items.length} satırla sipariş oluşturuldu.`, undefined, "FINANCE_APPROVAL_PENDING", now, { visibility: "public" })
     ]
   };
 
@@ -733,7 +740,7 @@ export function updateSellerCommission(input: { orderId: string; revision: numbe
       commission.revision += 1;
       commission.payments.push({ at: now, actor, amountCents: -recoveryCents, reference: input.reference.trim() });
     }
-    order.history.unshift(historyEntry("admin", actor, `Satıcı komisyonu ${input.operation}: ${input.reference.trim()}${input.operation === "refund" ? ` / ${input.itemId}: toplam ${input.quantity} adet iade` : ""}`, undefined, undefined, now));
+    order.history.unshift(historyEntry("admin", actor, `Satıcı komisyonu ${input.operation}: ${input.reference.trim()}${input.operation === "refund" ? ` / ${input.itemId}: toplam ${input.quantity} adet iade` : ""}`, undefined, undefined, now, { visibility: "internal" }));
     await saveOrders(orders);
   });
 }
@@ -839,7 +846,8 @@ async function updateOrderOperationUnlocked(input: OrderOperationInput, actorNam
     warehouse: clean(input.warehouse) || order.warehouse,
     internalNote: clean(input.internalNote) || order.internalNote,
     history: [
-      historyEntry("admin", actorName, input.internalNote ? clean(input.internalNote) : "Siparis operasyon bilgileri guncellendi.", order.status, nextStatus, now),
+      // İç not (ör. ZiraatPay işlem referansı) müşteri sayfasına düşmesin diye mesaja değil ayrı alana yazılır.
+      historyEntry("admin", actorName, "Sipariş operasyon bilgileri güncellendi.", order.status, nextStatus, now, clean(input.internalNote) ? { internalNote: clean(input.internalNote) } : {}),
       ...order.history
     ]
   };
@@ -1020,7 +1028,8 @@ async function updateOrderItemsUnlocked(input: OrderItemsUpdateInput, actorName:
         `Sipariş ürünleri düzeltildi: ${result.changes.join("; ")}. Toplam ${order.totalAmount} → ${total} ${order.currency}.${note ? ` Not: ${note}` : ""}`,
         order.status,
         order.status,
-        now
+        now,
+        { visibility: "public" }
       ),
       ...order.history
     ]
@@ -1123,7 +1132,7 @@ async function createDirectOrderUnlocked(input: DirectOrderInput, actorName: str
     companyApprovalStatus: "NOT_REQUIRED",
     items,
     history: [
-      historyEntry("admin", actorName, `Sipariş ${customer.companyName} adına oluşturuldu (${items.length} satır, ${payment.label}).`, undefined, payment.status, now)
+      historyEntry("admin", actorName, `Sipariş ${customer.companyName} adına oluşturuldu (${items.length} satır, ${payment.label}).`, undefined, payment.status, now, { visibility: "public" })
     ]
   };
 
@@ -1485,7 +1494,15 @@ function trackingCode(prefix: "T" | "S"): string {
   return `${prefix}${randomUUID().replace(/-/g, "").toUpperCase()}`;
 }
 
-function historyEntry(actor: CommercialActor, actorName: string, message: string, fromStatus?: string, toStatus?: string, at = new Date().toISOString()): CommercialHistoryEntry {
+function historyEntry(
+  actor: CommercialActor,
+  actorName: string,
+  message: string,
+  fromStatus?: string,
+  toStatus?: string,
+  at = new Date().toISOString(),
+  extra: Pick<CommercialHistoryEntry, "visibility" | "internalNote"> = {}
+): CommercialHistoryEntry {
   return stripUndefined({
     id: `history-${randomUUID()}`,
     at,
@@ -1493,7 +1510,8 @@ function historyEntry(actor: CommercialActor, actorName: string, message: string
     actorName,
     message,
     fromStatus,
-    toStatus
+    toStatus,
+    ...extra
   }) as CommercialHistoryEntry;
 }
 

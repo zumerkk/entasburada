@@ -182,6 +182,23 @@ describe("admin order management (isolated real stores)", () => {
     expect(updated.history[0]?.message).toContain("Not: Müşteri telefonla değiştirdi");
   });
 
+  it("keeps operation notes and payment references out of the customer-visible history", async () => {
+    const order = await createOrder([{ productId: hoe.id, quantity: 1 }], "card");
+    await commercial.updateOrderOperation(
+      { orderId: order.id, status: "APPROVAL_PENDING", paymentStatus: "Kartla ödendi (ZiraatPay)", internalNote: "ZiraatPay 3D ödemesi onaylandı. İşlem ref: gizli-oturum-42" },
+      "ZiraatPay"
+    );
+    const updated = (await commercial.getAdminOrderById(order.id))!;
+    expect(updated.history[0]).toMatchObject({ message: "Sipariş operasyon bilgileri güncellendi.", internalNote: "ZiraatPay 3D ödemesi onaylandı. İşlem ref: gizli-oturum-42" });
+
+    const { customerOrderHistory } = await import("./order-history-view");
+    const visible = JSON.stringify(customerOrderHistory(updated.history));
+    expect(visible).not.toContain("gizli-oturum-42");
+    expect(visible).not.toContain("admin@example.test");
+    expect(visible).toContain("Sipariş durumu güncellendi: Onay bekliyor.");
+    expect(visible).toContain(`${dealer.companyName} adına oluşturuldu`);
+  });
+
   it("refuses item edits once payment is collected", async () => {
     const order = await createOrder([{ productId: hoe.id, quantity: 1 }]);
     await commercial.updateOrderOperation({ orderId: order.id, paymentStatus: "Ödendi" }, "admin@example.test");

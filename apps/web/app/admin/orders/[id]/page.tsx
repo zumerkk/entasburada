@@ -274,7 +274,11 @@ export default async function AdminOrderDetailPage({
         <div className="commercialTimeline">
           {order.history.map((entry) => (
             <div key={entry.id}>
-              <strong>{entry.message}</strong>
+              <strong>
+                {entry.message}
+                {entry.visibility === "internal" ? <em className="historyInternalBadge">Müşteri görmez</em> : null}
+              </strong>
+              {entry.internalNote ? <span className="historyInternalNote">İç not (müşteri görmez): {entry.internalNote}</span> : null}
               <span>
                 {entry.actorName} · {new Date(entry.at).toLocaleString("tr-TR")}
               </span>

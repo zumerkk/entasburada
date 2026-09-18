@@ -9,6 +9,7 @@ import { installmentOptions } from "../../../lib/installments";
 import { getCurrentCustomer } from "../../../lib/customer-auth";
 import { canAccessCommercialRecord } from "../../../lib/commercial-access";
 import { FREE_SHIPPING_THRESHOLD_TRY } from "../../../lib/commercial-policy";
+import { customerOrderHistory } from "../../../lib/order-history-view";
 
 export const dynamic = "force-dynamic";
 
@@ -208,7 +209,7 @@ export default async function OrderTrackingPage({
           </div>
 
           <div className="commercialTimeline">
-            {order.history.map((entry) => (
+            {customerOrderHistory(order.history).map((entry) => (
               <div key={entry.id}>
                 <strong>{entry.message}</strong>
                 <span>

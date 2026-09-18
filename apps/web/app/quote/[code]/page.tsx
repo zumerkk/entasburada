@@ -6,6 +6,7 @@ import { getAdminOrderById, getQuoteByTrackingCode } from "../../../lib/commerci
 import { approveQuoteByTrackingCodeAction, rejectQuoteByTrackingCodeAction, requestQuoteRevisionByTrackingCodeAction } from "../actions";
 import { getCurrentCustomer } from "../../../lib/customer-auth";
 import { canAccessCommercialRecord } from "../../../lib/commercial-access";
+import { publicActorName } from "../../../lib/order-history-view";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -145,7 +146,7 @@ export default async function QuoteTrackingPage({ params, searchParams }: { para
           </form>
 
           <div className="commercialTimeline">
-            {quote.history.map((entry) => <div key={entry.id}><strong>{entry.message}</strong><span>{entry.actorName} · {new Date(entry.at).toLocaleString("tr-TR")}</span></div>)}
+            {quote.history.map((entry) => <div key={entry.id}><strong>{entry.message}</strong><span>{publicActorName(entry)} · {new Date(entry.at).toLocaleString("tr-TR")}</span></div>)}
           </div>
         </article>
       </section>

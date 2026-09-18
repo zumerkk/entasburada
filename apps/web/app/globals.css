@@ -8977,3 +8977,6 @@ a.metricCard {
 }
 /* Uzun takip kodu/adres dar ekranda özet kutusunu taşırmasın. */
 .detailSummaryGrid strong { overflow-wrap: anywhere; }
+/* Sipariş geçmişi: yalnız admin'in gördüğü kayıt ve iç notlar */
+.historyInternalBadge { display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 999px; background: #fef3c7; color: #92400e; font-size: 11px; font-style: normal; font-weight: 800; vertical-align: middle; }
+.historyInternalNote { display: block; margin-top: 2px; padding: 6px 10px; border-left: 3px solid #f59e0b; border-radius: 4px; background: #fffbeb; color: #78350f !important; font-size: 13px; }
