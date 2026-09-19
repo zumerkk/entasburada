@@ -1,0 +1,2156 @@
+{
+  "releaseVersion": "2026-09-19-baki-koc-4k-v2",
+  "createdAt": "2026-09-19T16:18:42.584213+00:00",
+  "baseRelease": "2026-09-18-baki-koc-v1",
+  "productCount": 153,
+  "imageCount": 153,
+  "normalizedCanvas": "3840x3840 WebP q92",
+  "totalImageBytes": 22254596,
+  "method": "Real-ESRGAN realesr-general-x4v3 (x4, girdi en fazla 512 px) + 3000 px içerik + hafif keskinleştirme",
+  "modelSha256": "8dc7edb9ac80ccdc30c3a5dca6616509367f05fbc184ad95b731f05bece96292",
+  "device": "mps",
+  "images": [
+    {
+      "code": "101",
+      "source": "p06-s0-h0.png",
+      "sourceSize": [
+        426,
+        273
+      ],
+      "srInputSize": [
+        426,
+        273
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-101.webp",
+      "outputBytes": 101414
+    },
+    {
+      "code": "102",
+      "source": "p06-s1-h0.png",
+      "sourceSize": [
+        427,
+        294
+      ],
+      "srInputSize": [
+        427,
+        294
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-102.webp",
+      "outputBytes": 102642
+    },
+    {
+      "code": "103",
+      "source": "p06-s2-h0.png",
+      "sourceSize": [
+        421,
+        272
+      ],
+      "srInputSize": [
+        421,
+        272
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-103.webp",
+      "outputBytes": 103966
+    },
+    {
+      "code": "104",
+      "source": "p07-s0-h0.png",
+      "sourceSize": [
+        422,
+        300
+      ],
+      "srInputSize": [
+        422,
+        300
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-104.webp",
+      "outputBytes": 121964
+    },
+    {
+      "code": "105",
+      "source": "p07-s1-h0.png",
+      "sourceSize": [
+        414,
+        230
+      ],
+      "srInputSize": [
+        414,
+        230
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-105.webp",
+      "outputBytes": 87052
+    },
+    {
+      "code": "106",
+      "source": "p07-s2-h0.png",
+      "sourceSize": [
+        409,
+        300
+      ],
+      "srInputSize": [
+        409,
+        300
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-106.webp",
+      "outputBytes": 102740
+    },
+    {
+      "code": "107",
+      "source": "p08-s0-h0.png",
+      "sourceSize": [
+        227,
+        345
+      ],
+      "srInputSize": [
+        227,
+        345
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-107.webp",
+      "outputBytes": 148060
+    },
+    {
+      "code": "108",
+      "source": "p08-s1-h0.png",
+      "sourceSize": [
+        208,
+        346
+      ],
+      "srInputSize": [
+        208,
+        346
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-108.webp",
+      "outputBytes": 105272
+    },
+    {
+      "code": "1085",
+      "source": "p08-s2-h0.png",
+      "sourceSize": [
+        208,
+        346
+      ],
+      "srInputSize": [
+        208,
+        346
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-1085.webp",
+      "outputBytes": 107920
+    },
+    {
+      "code": "111",
+      "source": "p09-s0-h0.png",
+      "sourceSize": [
+        255,
+        324
+      ],
+      "srInputSize": [
+        255,
+        324
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-111.webp",
+      "outputBytes": 127026
+    },
+    {
+      "code": "112",
+      "source": "p09-s1-h0.png",
+      "sourceSize": [
+        268,
+        339
+      ],
+      "srInputSize": [
+        268,
+        339
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-112.webp",
+      "outputBytes": 136910
+    },
+    {
+      "code": "113",
+      "source": "p09-s2-h0.png",
+      "sourceSize": [
+        248,
+        351
+      ],
+      "srInputSize": [
+        248,
+        351
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-113.webp",
+      "outputBytes": 133398
+    },
+    {
+      "code": "1135",
+      "source": "p10-s0-h0.png",
+      "sourceSize": [
+        245,
+        345
+      ],
+      "srInputSize": [
+        245,
+        345
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-1135.webp",
+      "outputBytes": 133170
+    },
+    {
+      "code": "114",
+      "source": "p10-s1-h0.png",
+      "sourceSize": [
+        273,
+        325
+      ],
+      "srInputSize": [
+        273,
+        325
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-114.webp",
+      "outputBytes": 154428
+    },
+    {
+      "code": "115",
+      "source": "p10-s2-h0.png",
+      "sourceSize": [
+        212,
+        353
+      ],
+      "srInputSize": [
+        212,
+        353
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-115.webp",
+      "outputBytes": 135144
+    },
+    {
+      "code": "116",
+      "source": "p11-s0-h0.png",
+      "sourceSize": [
+        221,
+        352
+      ],
+      "srInputSize": [
+        221,
+        352
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-116.webp",
+      "outputBytes": 136286
+    },
+    {
+      "code": "117",
+      "source": "p11-s1-h0.png",
+      "sourceSize": [
+        408,
+        249
+      ],
+      "srInputSize": [
+        408,
+        249
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-117.webp",
+      "outputBytes": 101478
+    },
+    {
+      "code": "118",
+      "source": "p11-s2-h0.png",
+      "sourceSize": [
+        359,
+        317
+      ],
+      "srInputSize": [
+        359,
+        317
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-118.webp",
+      "outputBytes": 191636
+    },
+    {
+      "code": "119",
+      "source": "p12-s0-h0.png",
+      "sourceSize": [
+        225,
+        346
+      ],
+      "srInputSize": [
+        225,
+        346
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-119.webp",
+      "outputBytes": 116530
+    },
+    {
+      "code": "125",
+      "source": "p12-s1-h0.png",
+      "sourceSize": [
+        214,
+        332
+      ],
+      "srInputSize": [
+        214,
+        332
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-125.webp",
+      "outputBytes": 103646
+    },
+    {
+      "code": "126",
+      "source": "p12-s2-h0.png",
+      "sourceSize": [
+        49,
+        345
+      ],
+      "srInputSize": [
+        49,
+        345
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-126.webp",
+      "outputBytes": 54956
+    },
+    {
+      "code": "201",
+      "source": "p13-s0-h0.png",
+      "sourceSize": [
+        405,
+        247
+      ],
+      "srInputSize": [
+        405,
+        247
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-201.webp",
+      "outputBytes": 135556
+    },
+    {
+      "code": "202",
+      "source": "p13-s1-h0.png",
+      "sourceSize": [
+        400,
+        265
+      ],
+      "srInputSize": [
+        400,
+        265
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-202.webp",
+      "outputBytes": 143568
+    },
+    {
+      "code": "203",
+      "source": "p13-s2-h0.png",
+      "sourceSize": [
+        405,
+        268
+      ],
+      "srInputSize": [
+        405,
+        268
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-203.webp",
+      "outputBytes": 149778
+    },
+    {
+      "code": "204",
+      "source": "p14-s0-h0.png",
+      "sourceSize": [
+        423,
+        310
+      ],
+      "srInputSize": [
+        423,
+        310
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-204.webp",
+      "outputBytes": 153386
+    },
+    {
+      "code": "205",
+      "source": "p14-s1-h0.png",
+      "sourceSize": [
+        425,
+        260
+      ],
+      "srInputSize": [
+        425,
+        260
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-205.webp",
+      "outputBytes": 135230
+    },
+    {
+      "code": "206",
+      "source": "p14-s2-h0.png",
+      "sourceSize": [
+        363,
+        290
+      ],
+      "srInputSize": [
+        363,
+        290
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-206.webp",
+      "outputBytes": 134546
+    },
+    {
+      "code": "207",
+      "source": "p15-s0-h0.png",
+      "sourceSize": [
+        225,
+        345
+      ],
+      "srInputSize": [
+        225,
+        345
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-207.webp",
+      "outputBytes": 185662
+    },
+    {
+      "code": "208",
+      "source": "p15-s1-h0.png",
+      "sourceSize": [
+        206,
+        338
+      ],
+      "srInputSize": [
+        206,
+        338
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-208.webp",
+      "outputBytes": 134310
+    },
+    {
+      "code": "2085",
+      "source": "p15-s2-h0.png",
+      "sourceSize": [
+        206,
+        338
+      ],
+      "srInputSize": [
+        206,
+        338
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-2085.webp",
+      "outputBytes": 136312
+    },
+    {
+      "code": "211",
+      "source": "p16-s0-h0.png",
+      "sourceSize": [
+        271,
+        319
+      ],
+      "srInputSize": [
+        271,
+        319
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-211.webp",
+      "outputBytes": 166380
+    },
+    {
+      "code": "212",
+      "source": "p16-s1-h0.png",
+      "sourceSize": [
+        268,
+        327
+      ],
+      "srInputSize": [
+        268,
+        327
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-212.webp",
+      "outputBytes": 177624
+    },
+    {
+      "code": "213",
+      "source": "p16-s2-h0.png",
+      "sourceSize": [
+        227,
+        326
+      ],
+      "srInputSize": [
+        227,
+        326
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-213.webp",
+      "outputBytes": 163124
+    },
+    {
+      "code": "2135",
+      "source": "p17-s0-h0.png",
+      "sourceSize": [
+        245,
+        351
+      ],
+      "srInputSize": [
+        245,
+        351
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-2135.webp",
+      "outputBytes": 177044
+    },
+    {
+      "code": "214",
+      "source": "p17-s1-h0.png",
+      "sourceSize": [
+        274,
+        326
+      ],
+      "srInputSize": [
+        274,
+        326
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-214.webp",
+      "outputBytes": 193602
+    },
+    {
+      "code": "215",
+      "source": "p17-s2-h0.png",
+      "sourceSize": [
+        201,
+        343
+      ],
+      "srInputSize": [
+        201,
+        343
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-215.webp",
+      "outputBytes": 153070
+    },
+    {
+      "code": "216",
+      "source": "p18-s0-h0.png",
+      "sourceSize": [
+        199,
+        329
+      ],
+      "srInputSize": [
+        199,
+        329
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-216.webp",
+      "outputBytes": 160080
+    },
+    {
+      "code": "217",
+      "source": "p18-s1-h0.png",
+      "sourceSize": [
+        440,
+        250
+      ],
+      "srInputSize": [
+        440,
+        250
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-217.webp",
+      "outputBytes": 131826
+    },
+    {
+      "code": "218",
+      "source": "p18-s2-h0.png",
+      "sourceSize": [
+        366,
+        324
+      ],
+      "srInputSize": [
+        366,
+        324
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-218.webp",
+      "outputBytes": 211752
+    },
+    {
+      "code": "219",
+      "source": "p19-s0-h0.png",
+      "sourceSize": [
+        222,
+        344
+      ],
+      "srInputSize": [
+        222,
+        344
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-219.webp",
+      "outputBytes": 137398
+    },
+    {
+      "code": "225",
+      "source": "p19-s1-h0.png",
+      "sourceSize": [
+        213,
+        340
+      ],
+      "srInputSize": [
+        213,
+        340
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-225.webp",
+      "outputBytes": 138094
+    },
+    {
+      "code": "120",
+      "source": "p22-s0-h0.png",
+      "sourceSize": [
+        358,
+        215
+      ],
+      "srInputSize": [
+        358,
+        215
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-120.webp",
+      "outputBytes": 152678
+    },
+    {
+      "code": "121",
+      "source": "p22-s1-h0.png",
+      "sourceSize": [
+        430,
+        134
+      ],
+      "srInputSize": [
+        430,
+        134
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-121.webp",
+      "outputBytes": 94008
+    },
+    {
+      "code": "122",
+      "source": "p22-s2-h0.png",
+      "sourceSize": [
+        422,
+        132
+      ],
+      "srInputSize": [
+        422,
+        132
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-122.webp",
+      "outputBytes": 91696
+    },
+    {
+      "code": "123",
+      "source": "p23-s0-h0.png",
+      "sourceSize": [
+        415,
+        129
+      ],
+      "srInputSize": [
+        415,
+        129
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-123.webp",
+      "outputBytes": 91492
+    },
+    {
+      "code": "124",
+      "source": "p23-s1-h0.png",
+      "sourceSize": [
+        419,
+        140
+      ],
+      "srInputSize": [
+        419,
+        140
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-124.webp",
+      "outputBytes": 93148
+    },
+    {
+      "code": "221",
+      "source": "p24-s0-h0.png",
+      "sourceSize": [
+        424,
+        116
+      ],
+      "srInputSize": [
+        424,
+        116
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-221.webp",
+      "outputBytes": 96928
+    },
+    {
+      "code": "222",
+      "source": "p24-s1-h0.png",
+      "sourceSize": [
+        434,
+        133
+      ],
+      "srInputSize": [
+        434,
+        133
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-222.webp",
+      "outputBytes": 104052
+    },
+    {
+      "code": "223",
+      "source": "p24-s2-h0.png",
+      "sourceSize": [
+        436,
+        125
+      ],
+      "srInputSize": [
+        436,
+        125
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-223.webp",
+      "outputBytes": 98350
+    },
+    {
+      "code": "224",
+      "source": "p25-s0-h0.png",
+      "sourceSize": [
+        430,
+        131
+      ],
+      "srInputSize": [
+        430,
+        131
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-224.webp",
+      "outputBytes": 99804
+    },
+    {
+      "code": "220",
+      "source": "p25-s1-h0.png",
+      "sourceSize": [
+        322,
+        209
+      ],
+      "srInputSize": [
+        322,
+        209
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-220.webp",
+      "outputBytes": 181330
+    },
+    {
+      "code": "230",
+      "source": "p25-s2-h0.png",
+      "sourceSize": [
+        356,
+        312
+      ],
+      "srInputSize": [
+        356,
+        312
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-230.webp",
+      "outputBytes": 329864
+    },
+    {
+      "code": "375",
+      "source": "p28-s0-h0.png",
+      "sourceSize": [
+        428,
+        288
+      ],
+      "srInputSize": [
+        428,
+        288
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-375.webp",
+      "outputBytes": 126296
+    },
+    {
+      "code": "302",
+      "source": "p28-s1-h0.png",
+      "sourceSize": [
+        431,
+        269
+      ],
+      "srInputSize": [
+        431,
+        269
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-302.webp",
+      "outputBytes": 141608
+    },
+    {
+      "code": "303",
+      "source": "p28-s2-h0.png",
+      "sourceSize": [
+        408,
+        259
+      ],
+      "srInputSize": [
+        408,
+        259
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-303.webp",
+      "outputBytes": 150808
+    },
+    {
+      "code": "304",
+      "source": "p29-s0-h0.png",
+      "sourceSize": [
+        405,
+        290
+      ],
+      "srInputSize": [
+        405,
+        290
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-304.webp",
+      "outputBytes": 181648
+    },
+    {
+      "code": "305",
+      "source": "p29-s1-h0.png",
+      "sourceSize": [
+        408,
+        212
+      ],
+      "srInputSize": [
+        408,
+        212
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-305.webp",
+      "outputBytes": 162596
+    },
+    {
+      "code": "306",
+      "source": "p29-s2-h0.png",
+      "sourceSize": [
+        91,
+        342
+      ],
+      "srInputSize": [
+        91,
+        342
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-306.webp",
+      "outputBytes": 114948
+    },
+    {
+      "code": "307",
+      "source": "p30-s0-h0.png",
+      "sourceSize": [
+        92,
+        344
+      ],
+      "srInputSize": [
+        92,
+        344
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-307.webp",
+      "outputBytes": 102448
+    },
+    {
+      "code": "308",
+      "source": "p30-s1-h0.png",
+      "sourceSize": [
+        92,
+        339
+      ],
+      "srInputSize": [
+        92,
+        339
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-308.webp",
+      "outputBytes": 102758
+    },
+    {
+      "code": "309",
+      "source": "p30-s2-h0.png",
+      "sourceSize": [
+        109,
+        349
+      ],
+      "srInputSize": [
+        109,
+        349
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-309.webp",
+      "outputBytes": 123644
+    },
+    {
+      "code": "311",
+      "source": "p31-s0-h0.png",
+      "sourceSize": [
+        115,
+        342
+      ],
+      "srInputSize": [
+        115,
+        342
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-311.webp",
+      "outputBytes": 115052
+    },
+    {
+      "code": "312",
+      "source": "p31-s1-h0.png",
+      "sourceSize": [
+        103,
+        335
+      ],
+      "srInputSize": [
+        103,
+        335
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-312.webp",
+      "outputBytes": 112954
+    },
+    {
+      "code": "313",
+      "source": "p31-s2-h0.png",
+      "sourceSize": [
+        93,
+        340
+      ],
+      "srInputSize": [
+        93,
+        340
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-313.webp",
+      "outputBytes": 104028
+    },
+    {
+      "code": "314",
+      "source": "p32-s0-h0.png",
+      "sourceSize": [
+        91,
+        346
+      ],
+      "srInputSize": [
+        91,
+        346
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-314.webp",
+      "outputBytes": 89010
+    },
+    {
+      "code": "315",
+      "source": "p32-s1-h0.png",
+      "sourceSize": [
+        142,
+        312
+      ],
+      "srInputSize": [
+        142,
+        312
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-315.webp",
+      "outputBytes": 138170
+    },
+    {
+      "code": "310",
+      "source": "p32-s2-h0.png",
+      "sourceSize": [
+        138,
+        311
+      ],
+      "srInputSize": [
+        138,
+        311
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-310.webp",
+      "outputBytes": 163996
+    },
+    {
+      "code": "316",
+      "source": "p33-s0-h0.png",
+      "sourceSize": [
+        174,
+        329
+      ],
+      "srInputSize": [
+        174,
+        329
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-316.webp",
+      "outputBytes": 172420
+    },
+    {
+      "code": "317",
+      "source": "p33-s1-h0.png",
+      "sourceSize": [
+        169,
+        317
+      ],
+      "srInputSize": [
+        169,
+        317
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-317.webp",
+      "outputBytes": 158166
+    },
+    {
+      "code": "318",
+      "source": "p33-s2-h0.png",
+      "sourceSize": [
+        129,
+        337
+      ],
+      "srInputSize": [
+        129,
+        337
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-318.webp",
+      "outputBytes": 135134
+    },
+    {
+      "code": "319",
+      "source": "p34-s0-h0.png",
+      "sourceSize": [
+        178,
+        328
+      ],
+      "srInputSize": [
+        178,
+        328
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-319.webp",
+      "outputBytes": 190028
+    },
+    {
+      "code": "320",
+      "source": "p34-s1-h0.png",
+      "sourceSize": [
+        194,
+        327
+      ],
+      "srInputSize": [
+        194,
+        327
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-320.webp",
+      "outputBytes": 183868
+    },
+    {
+      "code": "321",
+      "source": "p34-s2-h0.png",
+      "sourceSize": [
+        188,
+        335
+      ],
+      "srInputSize": [
+        188,
+        335
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-321.webp",
+      "outputBytes": 216412
+    },
+    {
+      "code": "322",
+      "source": "p35-s0-h0.png",
+      "sourceSize": [
+        188,
+        327
+      ],
+      "srInputSize": [
+        188,
+        327
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-322.webp",
+      "outputBytes": 181376
+    },
+    {
+      "code": "323",
+      "source": "p35-s1-h0.png",
+      "sourceSize": [
+        172,
+        319
+      ],
+      "srInputSize": [
+        172,
+        319
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-323.webp",
+      "outputBytes": 242994
+    },
+    {
+      "code": "337",
+      "source": "p35-s2-h0.png",
+      "sourceSize": [
+        203,
+        326
+      ],
+      "srInputSize": [
+        203,
+        326
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-337.webp",
+      "outputBytes": 246624
+    },
+    {
+      "code": "324",
+      "source": "p36-s0-h0.png",
+      "sourceSize": [
+        147,
+        322
+      ],
+      "srInputSize": [
+        147,
+        322
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-324.webp",
+      "outputBytes": 159672
+    },
+    {
+      "code": "338",
+      "source": "p36-s1-h0.png",
+      "sourceSize": [
+        121,
+        315
+      ],
+      "srInputSize": [
+        121,
+        315
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-338.webp",
+      "outputBytes": 156710
+    },
+    {
+      "code": "325",
+      "source": "p36-s2-h0.png",
+      "sourceSize": [
+        293,
+        320
+      ],
+      "srInputSize": [
+        293,
+        320
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-325.webp",
+      "outputBytes": 312768
+    },
+    {
+      "code": "326",
+      "source": "p37-s0-h0.png",
+      "sourceSize": [
+        299,
+        323
+      ],
+      "srInputSize": [
+        299,
+        323
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-326.webp",
+      "outputBytes": 357982
+    },
+    {
+      "code": "327",
+      "source": "p37-s1-h0.png",
+      "sourceSize": [
+        228,
+        319
+      ],
+      "srInputSize": [
+        228,
+        319
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-327.webp",
+      "outputBytes": 204620
+    },
+    {
+      "code": "339",
+      "source": "p37-s2-h0.png",
+      "sourceSize": [
+        222,
+        322
+      ],
+      "srInputSize": [
+        222,
+        322
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-339.webp",
+      "outputBytes": 357256
+    },
+    {
+      "code": "340",
+      "source": "p38-s0-h0.png",
+      "sourceSize": [
+        204,
+        331
+      ],
+      "srInputSize": [
+        204,
+        331
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-340.webp",
+      "outputBytes": 174338
+    },
+    {
+      "code": "328",
+      "source": "p38-s1-h0.png",
+      "sourceSize": [
+        406,
+        267
+      ],
+      "srInputSize": [
+        406,
+        267
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-328.webp",
+      "outputBytes": 181058
+    },
+    {
+      "code": "332",
+      "source": "p38-s2-h0.png",
+      "sourceSize": [
+        209,
+        321
+      ],
+      "srInputSize": [
+        209,
+        321
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-332.webp",
+      "outputBytes": 206576
+    },
+    {
+      "code": "329",
+      "source": "p39-s0-h0.png",
+      "sourceSize": [
+        302,
+        298
+      ],
+      "srInputSize": [
+        302,
+        298
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-329.webp",
+      "outputBytes": 251822
+    },
+    {
+      "code": "342",
+      "source": "p39-s1-h0.png",
+      "sourceSize": [
+        288,
+        308
+      ],
+      "srInputSize": [
+        288,
+        308
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-342.webp",
+      "outputBytes": 254158
+    },
+    {
+      "code": "330",
+      "source": "p39-s2-h0.png",
+      "sourceSize": [
+        92,
+        336
+      ],
+      "srInputSize": [
+        92,
+        336
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-330.webp",
+      "outputBytes": 107910
+    },
+    {
+      "code": "343",
+      "source": "p40-s0-h0.png",
+      "sourceSize": [
+        71,
+        328
+      ],
+      "srInputSize": [
+        71,
+        328
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-343.webp",
+      "outputBytes": 85586
+    },
+    {
+      "code": "331",
+      "source": "p40-s1-h0.png",
+      "sourceSize": [
+        103,
+        330
+      ],
+      "srInputSize": [
+        103,
+        330
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-331.webp",
+      "outputBytes": 95184
+    },
+    {
+      "code": "344",
+      "source": "p40-s2-h0.png",
+      "sourceSize": [
+        92,
+        339
+      ],
+      "srInputSize": [
+        92,
+        339
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-344.webp",
+      "outputBytes": 103324
+    },
+    {
+      "code": "401",
+      "source": "p44-s0-h0.png",
+      "sourceSize": [
+        148,
+        304
+      ],
+      "srInputSize": [
+        148,
+        304
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-401.webp",
+      "outputBytes": 87170
+    },
+    {
+      "code": "402",
+      "source": "p44-s1-h0.png",
+      "sourceSize": [
+        178,
+        341
+      ],
+      "srInputSize": [
+        178,
+        341
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-402.webp",
+      "outputBytes": 103948
+    },
+    {
+      "code": "403",
+      "source": "p44-s2-h0.png",
+      "sourceSize": [
+        169,
+        323
+      ],
+      "srInputSize": [
+        169,
+        323
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-403.webp",
+      "outputBytes": 114182
+    },
+    {
+      "code": "404",
+      "source": "p45-s0-h0.png",
+      "sourceSize": [
+        180,
+        316
+      ],
+      "srInputSize": [
+        180,
+        316
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-404.webp",
+      "outputBytes": 114478
+    },
+    {
+      "code": "405",
+      "source": "p45-s1-h0.png",
+      "sourceSize": [
+        200,
+        309
+      ],
+      "srInputSize": [
+        200,
+        309
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-405.webp",
+      "outputBytes": 137500
+    },
+    {
+      "code": "410",
+      "source": "p45-s2-h0.png",
+      "sourceSize": [
+        214,
+        339
+      ],
+      "srInputSize": [
+        214,
+        339
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-410.webp",
+      "outputBytes": 195784
+    },
+    {
+      "code": "501",
+      "source": "p48-s0-h0.png",
+      "sourceSize": [
+        355,
+        255
+      ],
+      "srInputSize": [
+        355,
+        255
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-501.webp",
+      "outputBytes": 95290
+    },
+    {
+      "code": "502",
+      "source": "p48-s1-h0.png",
+      "sourceSize": [
+        371,
+        271
+      ],
+      "srInputSize": [
+        371,
+        271
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-502.webp",
+      "outputBytes": 98532
+    },
+    {
+      "code": "503",
+      "source": "p48-s2-h0.png",
+      "sourceSize": [
+        386,
+        256
+      ],
+      "srInputSize": [
+        386,
+        256
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-503.webp",
+      "outputBytes": 102504
+    },
+    {
+      "code": "504",
+      "source": "p49-s0-h0.png",
+      "sourceSize": [
+        510,
+        198
+      ],
+      "srInputSize": [
+        510,
+        198
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-504.webp",
+      "outputBytes": 103292
+    },
+    {
+      "code": "505",
+      "source": "p49-s1-h0.png",
+      "sourceSize": [
+        506,
+        192
+      ],
+      "srInputSize": [
+        506,
+        192
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-505.webp",
+      "outputBytes": 108924
+    },
+    {
+      "code": "506",
+      "source": "p49-s2-h0.png",
+      "sourceSize": [
+        484,
+        218
+      ],
+      "srInputSize": [
+        484,
+        218
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-506.webp",
+      "outputBytes": 102316
+    },
+    {
+      "code": "590",
+      "source": "p50-s0-h0.png",
+      "sourceSize": [
+        438,
+        232
+      ],
+      "srInputSize": [
+        438,
+        232
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-590.webp",
+      "outputBytes": 85126
+    },
+    {
+      "code": "591",
+      "source": "p50-s1-h0.png",
+      "sourceSize": [
+        130,
+        480
+      ],
+      "srInputSize": [
+        130,
+        480
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-591.webp",
+      "outputBytes": 89736
+    },
+    {
+      "code": "592",
+      "source": "p50-s1-h1.png",
+      "sourceSize": [
+        118,
+        504
+      ],
+      "srInputSize": [
+        118,
+        504
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-592.webp",
+      "outputBytes": 77208
+    },
+    {
+      "code": "553",
+      "source": "p50-s2-h0.png",
+      "sourceSize": [
+        162,
+        466
+      ],
+      "srInputSize": [
+        162,
+        466
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-553.webp",
+      "outputBytes": 97694
+    },
+    {
+      "code": "554",
+      "source": "p50-s2-h1.png",
+      "sourceSize": [
+        117,
+        343
+      ],
+      "srInputSize": [
+        117,
+        343
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-554.webp",
+      "outputBytes": 83034
+    },
+    {
+      "code": "507",
+      "source": "p51-s0-h0.png",
+      "sourceSize": [
+        489,
+        167
+      ],
+      "srInputSize": [
+        489,
+        167
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-507.webp",
+      "outputBytes": 104968
+    },
+    {
+      "code": "508",
+      "source": "p51-s1-h0.png",
+      "sourceSize": [
+        495,
+        173
+      ],
+      "srInputSize": [
+        495,
+        173
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-508.webp",
+      "outputBytes": 115456
+    },
+    {
+      "code": "509",
+      "source": "p51-s2-h0.png",
+      "sourceSize": [
+        505,
+        187
+      ],
+      "srInputSize": [
+        505,
+        187
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-509.webp",
+      "outputBytes": 127934
+    },
+    {
+      "code": "510",
+      "source": "p52-s0-h0.png",
+      "sourceSize": [
+        544,
+        212
+      ],
+      "srInputSize": [
+        512,
+        200
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-510.webp",
+      "outputBytes": 109496
+    },
+    {
+      "code": "511",
+      "source": "p52-s1-h0.png",
+      "sourceSize": [
+        546,
+        207
+      ],
+      "srInputSize": [
+        512,
+        194
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-511.webp",
+      "outputBytes": 107820
+    },
+    {
+      "code": "512",
+      "source": "p52-s2-h0.png",
+      "sourceSize": [
+        520,
+        179
+      ],
+      "srInputSize": [
+        512,
+        176
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-512.webp",
+      "outputBytes": 102924
+    },
+    {
+      "code": "513",
+      "source": "p53-s0-h0.png",
+      "sourceSize": [
+        483,
+        234
+      ],
+      "srInputSize": [
+        483,
+        234
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-513.webp",
+      "outputBytes": 130030
+    },
+    {
+      "code": "514",
+      "source": "p53-s1-h0.png",
+      "sourceSize": [
+        484,
+        247
+      ],
+      "srInputSize": [
+        484,
+        247
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-514.webp",
+      "outputBytes": 141870
+    },
+    {
+      "code": "515",
+      "source": "p53-s2-h0.png",
+      "sourceSize": [
+        483,
+        223
+      ],
+      "srInputSize": [
+        483,
+        223
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-515.webp",
+      "outputBytes": 120680
+    },
+    {
+      "code": "534",
+      "source": "p56-s0-h0.png",
+      "sourceSize": [
+        495,
+        219
+      ],
+      "srInputSize": [
+        495,
+        219
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-534.webp",
+      "outputBytes": 100880
+    },
+    {
+      "code": "551",
+      "source": "p56-s1-h0.png",
+      "sourceSize": [
+        496,
+        247
+      ],
+      "srInputSize": [
+        496,
+        247
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-551.webp",
+      "outputBytes": 99282
+    },
+    {
+      "code": "552",
+      "source": "p56-s2-h0.png",
+      "sourceSize": [
+        489,
+        237
+      ],
+      "srInputSize": [
+        489,
+        237
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-552.webp",
+      "outputBytes": 150444
+    },
+    {
+      "code": "541",
+      "source": "p57-s0-h0.png",
+      "sourceSize": [
+        219,
+        302
+      ],
+      "srInputSize": [
+        219,
+        302
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-541.webp",
+      "outputBytes": 219580
+    },
+    {
+      "code": "542",
+      "source": "p57-s1-h0.png",
+      "sourceSize": [
+        235,
+        305
+      ],
+      "srInputSize": [
+        235,
+        305
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-542.webp",
+      "outputBytes": 212708
+    },
+    {
+      "code": "543",
+      "source": "p57-s2-h0.png",
+      "sourceSize": [
+        218,
+        324
+      ],
+      "srInputSize": [
+        218,
+        324
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-543.webp",
+      "outputBytes": 226506
+    },
+    {
+      "code": "544",
+      "source": "p58-s0-h0.png",
+      "sourceSize": [
+        180,
+        317
+      ],
+      "srInputSize": [
+        180,
+        317
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-544.webp",
+      "outputBytes": 123864
+    },
+    {
+      "code": "ARS01",
+      "source": "p58-s1-h0.png",
+      "sourceSize": [
+        206,
+        316
+      ],
+      "srInputSize": [
+        206,
+        316
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-ars01.webp",
+      "outputBytes": 172990
+    },
+    {
+      "code": "ARS02",
+      "source": "p58-s2-h0.png",
+      "sourceSize": [
+        212,
+        327
+      ],
+      "srInputSize": [
+        212,
+        327
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-ars02.webp",
+      "outputBytes": 175838
+    },
+    {
+      "code": "561",
+      "source": "p59-s0-h0.png",
+      "sourceSize": [
+        174,
+        282
+      ],
+      "srInputSize": [
+        174,
+        282
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-561.webp",
+      "outputBytes": 132958
+    },
+    {
+      "code": "561 - ÜÇG",
+      "source": "p59-s0-h1.png",
+      "sourceSize": [
+        189,
+        286
+      ],
+      "srInputSize": [
+        189,
+        286
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-561-ucg.webp",
+      "outputBytes": 175782
+    },
+    {
+      "code": "562",
+      "source": "p59-s1-h0.png",
+      "sourceSize": [
+        177,
+        299
+      ],
+      "srInputSize": [
+        177,
+        299
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-562.webp",
+      "outputBytes": 190482
+    },
+    {
+      "code": "562 - ÜÇG",
+      "source": "p59-s1-h1.png",
+      "sourceSize": [
+        188,
+        302
+      ],
+      "srInputSize": [
+        188,
+        302
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-562-ucg.webp",
+      "outputBytes": 190938
+    },
+    {
+      "code": "563",
+      "source": "p59-s2-h0.png",
+      "sourceSize": [
+        179,
+        297
+      ],
+      "srInputSize": [
+        179,
+        297
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-563.webp",
+      "outputBytes": 176900
+    },
+    {
+      "code": "563 - ÜÇG",
+      "source": "p59-s2-h1.png",
+      "sourceSize": [
+        204,
+        297
+      ],
+      "srInputSize": [
+        204,
+        297
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-563-ucg.webp",
+      "outputBytes": 168874
+    },
+    {
+      "code": "567",
+      "source": "p60-s0-h0.png",
+      "sourceSize": [
+        160,
+        311
+      ],
+      "srInputSize": [
+        160,
+        311
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-567.webp",
+      "outputBytes": 137236
+    },
+    {
+      "code": "568",
+      "source": "p60-s1-h0.png",
+      "sourceSize": [
+        164,
+        319
+      ],
+      "srInputSize": [
+        164,
+        319
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-568.webp",
+      "outputBytes": 148136
+    },
+    {
+      "code": "569",
+      "source": "p60-s2-h0.png",
+      "sourceSize": [
+        155,
+        315
+      ],
+      "srInputSize": [
+        155,
+        315
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-569.webp",
+      "outputBytes": 154254
+    },
+    {
+      "code": "580",
+      "source": "p61-s0-h0.png",
+      "sourceSize": [
+        227,
+        406
+      ],
+      "srInputSize": [
+        227,
+        406
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-580.webp",
+      "outputBytes": 197320
+    },
+    {
+      "code": "581",
+      "source": "p61-s1-h0.png",
+      "sourceSize": [
+        212,
+        434
+      ],
+      "srInputSize": [
+        212,
+        434
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-581.webp",
+      "outputBytes": 193864
+    },
+    {
+      "code": "570",
+      "source": "p62-s0-h0.png",
+      "sourceSize": [
+        197,
+        407
+      ],
+      "srInputSize": [
+        197,
+        407
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-570.webp",
+      "outputBytes": 154912
+    },
+    {
+      "code": "570 - ÜÇG",
+      "source": "p62-s0-h1.png",
+      "sourceSize": [
+        214,
+        392
+      ],
+      "srInputSize": [
+        214,
+        392
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-570-ucg.webp",
+      "outputBytes": 167388
+    },
+    {
+      "code": "571",
+      "source": "p62-s1-h0.png",
+      "sourceSize": [
+        232,
+        440
+      ],
+      "srInputSize": [
+        232,
+        440
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-571.webp",
+      "outputBytes": 168514
+    },
+    {
+      "code": "571 - ÜÇG",
+      "source": "p62-s1-h1.png",
+      "sourceSize": [
+        215,
+        404
+      ],
+      "srInputSize": [
+        215,
+        404
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-571-ucg.webp",
+      "outputBytes": 182162
+    },
+    {
+      "code": "572",
+      "source": "p63-s0-h0.png",
+      "sourceSize": [
+        228,
+        404
+      ],
+      "srInputSize": [
+        228,
+        404
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-572.webp",
+      "outputBytes": 196066
+    },
+    {
+      "code": "572 - ÜÇG",
+      "source": "p63-s0-h1.png",
+      "sourceSize": [
+        207,
+        408
+      ],
+      "srInputSize": [
+        207,
+        408
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-572-ucg.webp",
+      "outputBytes": 168946
+    },
+    {
+      "code": "573",
+      "source": "p63-s1-h0.png",
+      "sourceSize": [
+        236,
+        406
+      ],
+      "srInputSize": [
+        236,
+        406
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-573.webp",
+      "outputBytes": 203890
+    },
+    {
+      "code": "573 - ÜÇG",
+      "source": "p63-s1-h1.png",
+      "sourceSize": [
+        212,
+        387
+      ],
+      "srInputSize": [
+        212,
+        387
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-573-ucg.webp",
+      "outputBytes": 177462
+    },
+    {
+      "code": "574",
+      "source": "p64-s0-h0.png",
+      "sourceSize": [
+        258,
+        416
+      ],
+      "srInputSize": [
+        258,
+        416
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-574.webp",
+      "outputBytes": 187650
+    },
+    {
+      "code": "575",
+      "source": "p64-s1-h0.png",
+      "sourceSize": [
+        251,
+        425
+      ],
+      "srInputSize": [
+        251,
+        425
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-575.webp",
+      "outputBytes": 185782
+    },
+    {
+      "code": "601",
+      "source": "p68-s0-h0.png",
+      "sourceSize": [
+        183,
+        326
+      ],
+      "srInputSize": [
+        183,
+        326
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-601.webp",
+      "outputBytes": 126066
+    },
+    {
+      "code": "602",
+      "source": "p68-s1-h0.png",
+      "sourceSize": [
+        172,
+        307
+      ],
+      "srInputSize": [
+        172,
+        307
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-602.webp",
+      "outputBytes": 113384
+    },
+    {
+      "code": "603",
+      "source": "p68-s2-h0.png",
+      "sourceSize": [
+        168,
+        318
+      ],
+      "srInputSize": [
+        168,
+        318
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-603.webp",
+      "outputBytes": 108966
+    },
+    {
+      "code": "701",
+      "source": "p69-s0-h0.png",
+      "sourceSize": [
+        76,
+        340
+      ],
+      "srInputSize": [
+        76,
+        340
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-701.webp",
+      "outputBytes": 58412
+    },
+    {
+      "code": "702",
+      "source": "p69-s1-h0.png",
+      "sourceSize": [
+        53,
+        330
+      ],
+      "srInputSize": [
+        53,
+        330
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-702.webp",
+      "outputBytes": 56292
+    },
+    {
+      "code": "703",
+      "source": "p69-s2-h0.png",
+      "sourceSize": [
+        81,
+        338
+      ],
+      "srInputSize": [
+        81,
+        338
+      ],
+      "output": "/uploads/catalog-imports/baki-koc-2026-09-4k/products/bk-703.webp",
+      "outputBytes": 68692
+    }
+  ]
+}
