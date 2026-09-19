@@ -79,6 +79,17 @@ if [ -f "$DATA_DIR/data/catalog-store.json" ] && [ ! -f "$ARC_REPAIR_MARKER" ]; 
   fi
 fi
 
+# Yalnızca müşteri getiren Yetkili Panel hesabını (Eren) bir kez Pazarlamacı moduna al; %20 satıcı farkı kalkar.
+# Hata veya eşleşme yoksa açılış durmaz, işaret yazılmaz ve sonraki açılışta yeniden denenir.
+REFERRAL_SELLER_MARKER="$DATA_DIR/.referral-sellers-2026-09-19-v1"
+if [ -f "$DATA_DIR/data/customer-accounts.json" ] && [ ! -f "$REFERRAL_SELLER_MARKER" ]; then
+  if node /app/scripts/set-referral-sellers.mjs "$DATA_DIR/data/customer-accounts.json" --apply; then
+    date -u +%Y-%m-%dT%H:%M:%SZ > "$REFERRAL_SELLER_MARKER"
+  else
+    echo "[entrypoint] Pazarlamacı hesap güncellemesi uygulanmadı; sunucu açılışı sürüyor"
+  fi
+fi
+
 chown -R nextjs:nodejs "$DATA_DIR/data" "$DATA_DIR/uploads"
 
 cd /app/apps/web
