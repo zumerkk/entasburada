@@ -40,3 +40,10 @@ it("credentials require both application and account ownership and unchanged tem
  m.customers.mockResolvedValue([{id:"buyer",email:app.email,status:"approved",password:hashPassword("temporary"),mustChangePassword:true,referral:{sellerId:"eren"},...patch}]);expect(await ownDealerCredentials(approved,"eren")).toBeNull();
  }
 });
+
+it("finishes approved applications whose account creation failed", async () => {
+ m.application.mockResolvedValue({...app,status:"approved"});
+ await approveOwnDealer("app");
+ expect(m.provision).toHaveBeenCalledOnce();
+ expect(m.record).toHaveBeenCalledWith("app",expect.objectContaining({accountId:"buyer"}));
+});

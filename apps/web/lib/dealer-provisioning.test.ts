@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
@@ -55,8 +55,10 @@ const application: DealerApplication = {
 };
 
 describe("dealer provisioning", () => {
+  afterEach(() => vi.unstubAllEnvs());
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.stubEnv("DEALER_CREDENTIAL_SECRET", "test-credential-encryption-secret-2026");
     mocks.findCustomerByEmail.mockResolvedValue(null);
     mocks.createCustomerAccount.mockImplementation(async (account) => ({ ...account, password: "stored-hash" }));
     mocks.sendMail.mockResolvedValue(true);
@@ -80,6 +82,14 @@ describe("dealer provisioning", () => {
         html: expect.stringContaining(temporaryPassword)
       })
     );
+  });
+
+  it("does not create an orphan account when credential encryption is unavailable", async () => {
+    vi.stubEnv("DEALER_CREDENTIAL_SECRET", "");
+    vi.stubEnv("ADMIN_SESSION_SECRET", "");
+    vi.stubEnv("AUTH_SECRET", "");
+    await expect(provisionDealerAccount(application)).rejects.toThrow("anahtari");
+    expect(mocks.createCustomerAccount).not.toHaveBeenCalled();
   });
 
   it("preserves the seller attribution when approving an application", async () => {

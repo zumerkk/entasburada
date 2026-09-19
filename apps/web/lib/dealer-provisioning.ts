@@ -1,4 +1,5 @@
 import "server-only";
+import { sealTemporaryCredential } from "./temporary-credential";
 import { randomBytes, randomUUID } from "node:crypto";
 import { createCustomerAccount, findCustomerByEmail, normalizeSellerAccess, updateCustomerAccount, type CustomerAccount, type SellerAccess } from "./customer-auth";
 import type { DealerApplication } from "./dealer-application-repository";
@@ -51,6 +52,8 @@ export async function provisionDealerAccount(application: DealerApplication, opt
   }
 
   const tempPassword = generateTempPassword();
+  // Fail before creating the account if its temporary credential cannot be stored.
+  sealTemporaryCredential(tempPassword);
   const account: Omit<CustomerAccount, "password"> & { plainPassword: string } = {
     id: `cust-${randomUUID()}`,
     email: application.email.trim().toLowerCase(),

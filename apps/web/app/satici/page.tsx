@@ -249,10 +249,10 @@ export default async function SellerDashboardPage({
                   </td>
                   <td>{new Date(c.createdAt).toLocaleDateString("tr-TR")}</td>
                   <td>
-                    {!["approved", "rejected"].includes(c.status) ? (
+                    {c.status !== "rejected" && (c.status !== "approved" || !c.accountId) ? (
                       <form action={approveOwnDealerAction}>
                         <input type="hidden" name="applicationId" value={c.id} />
-                        <button className="btn btnPrimary" type="submit">Bayiyi onayla</button>
+                        <button className="btn btnPrimary" type="submit">{c.status === "approved" ? "Hesap oluşturmayı tamamla" : "Bayiyi onayla"}</button>
                       </form>
                     ) : null}
                     {credentials.get(c.id) ? <details>

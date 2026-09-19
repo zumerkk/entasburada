@@ -12,8 +12,8 @@ export async function approveOwnDealer(applicationId: string) {
     const application = await getDealerApplication(applicationId);
     if (!application || application.referral?.sellerId !== seller.id)
       throw new Error("Bu başvuruyu onaylama yetkiniz yok.");
-    if (application.status === "approved") return;
-    if (!["pending", "reviewing"].includes(application.status))
+    if (application.status === "approved" && application.accountId) return;
+    if (!["pending", "reviewing", "approved"].includes(application.status))
       throw new Error("Bu başvuru onaya uygun değil. Yöneticiyle iletişime geçin.");
 
     if (application.accountId) {
