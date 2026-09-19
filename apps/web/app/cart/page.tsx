@@ -1,6 +1,7 @@
 import { AlertTriangle, ArrowLeft, BookmarkPlus, CreditCard, FileText, RotateCcw, ShoppingCart, Trash2, Truck } from "lucide-react";
 import { EmptyState, StatusPill } from "@entas/ui";
 import { CartQuantityField } from "../../components/CartQuantityField";
+import { EnexAskButton } from "../../components/EnexAskButton";
 import { loadPricedCart } from "../../lib/cart-repository";
 import { requireCustomer } from "../../lib/customer-auth";
 import { convertToTry, normalizeCurrencyCode } from "../../lib/fx";
@@ -48,6 +49,11 @@ export default async function CartPage({ searchParams }: { searchParams: Promise
           </a>
           <a className="btn btnSecondary" href="/quick-order">Hızlı Sipariş</a>
         </div>
+      </section>
+
+      <section className="shell enexCartInvite" aria-label="EnexAI tekrar sipariş yardımı">
+        <div><strong>Daha önce aldıklarınız yeniden lazım mı?</strong><p>EnexAI ile önceki siparişinizden ürünleri seçin, miktarlarını belirleyin ve bu sepete ekleyin.</p></div>
+        <EnexAskButton label="Önceki siparişlerimden seç" tab="orders" />
       </section>
 
       <section className="shell trackingGrid">

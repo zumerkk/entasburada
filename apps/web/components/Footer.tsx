@@ -34,6 +34,7 @@ export async function Footer() {
           <a href="/catalog?group=kampanyali-urunler">Kampanyalar</a>
           <a href="/catalog?group=yeni-urunler">Yeni ürünler</a>
           <a href="/technical-documents">Teknik dokümanlar</a>
+          <a href="/enexai">EnexAI alışveriş asistanı</a>
         </div>
         <div>
           <strong>Bayi</strong>

@@ -8,6 +8,7 @@ import { FavoriteButton } from "../../../components/FavoriteButton";
 import { ProductViewTracker } from "../../../components/AnalyticsTracker";
 import { FreeShippingBanner } from "../../../components/FreeShippingBanner";
 import { StockAlertButton } from "../../../components/StockAlertButton";
+import { EnexAskButton } from "../../../components/EnexAskButton";
 import { getPricedPublicProductBySlug, getPublicProductBySlug } from "../../../lib/catalog-repository";
 import { getCurrentCustomer } from "../../../lib/customer-auth";
 import { isFavorite } from "../../../lib/favorites-repository";
@@ -123,6 +124,13 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           />
 
           <FreeShippingBanner variant="product" />
+
+          <EnexAskButton
+            label={product.stockTone === "out_of_stock" || product.stockTone === "incoming" ? "EnexAI ile alternatifini bul" : "Bu ürünü EnexAI'ye sor"}
+            prompt={product.stockTone === "out_of_stock" || product.stockTone === "incoming"
+              ? "Şu an incelediğim ürünün stokta olan alternatiflerini göster."
+              : "Şu an incelediğim ürünün özelliklerini anlat ve yanında gerekebilecek tamamlayıcı ürünleri göster."}
+          />
 
           <div className="purchaseRules">
             <div>

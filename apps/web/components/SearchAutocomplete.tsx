@@ -89,6 +89,12 @@ export function SearchAutocomplete({ mobile = false }: { mobile?: boolean }) {
           <a className="searchAllResults" href={`/catalog?q=${encodeURIComponent(query)}`}>
             “{query}” için tüm sonuçları göster
           </a>
+          <button className="enexSearchAssist" type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => {
+            setOpen(false);
+            window.dispatchEvent(new CustomEvent("entas-enexai-open", { detail: { prompt: `${query.trim()} arıyorum. Uygun ürünleri ve seçenekleri göster.` } }));
+          }}>
+            <Sparkles size={16} aria-hidden="true" /> EnexAI ile birlikte bulalım
+          </button>
         </div>
       ) : null}
     </form>

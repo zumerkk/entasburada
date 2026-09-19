@@ -4,6 +4,7 @@ import { Footer } from "../components/Footer";
 import { PresenceBeacon } from "../components/PresenceBeacon";
 import { QuoteBasketBar } from "../components/QuoteBasketBar";
 import { VideoPopup } from "../components/VideoPopup";
+import { EnexAssistant } from "../components/enexai/EnexAssistant";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -31,6 +32,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <QuoteBasketBar />
         <VideoPopup />
         <PresenceBeacon />
+        <EnexAssistant />
         <Footer />
       </body>
     </html>

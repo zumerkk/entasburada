@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "https://entasburada.com";
 
-const staticPaths = ["", "/catalog", "/about", "/contact", "/delivery", "/technical-documents", "/corporate-purchase", "/dealer-application", "/kvkk"];
+const staticPaths = ["", "/catalog", "/about", "/contact", "/delivery", "/technical-documents", "/corporate-purchase", "/dealer-application", "/kvkk", "/enexai"];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const store = await loadCatalogStore();

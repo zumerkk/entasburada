@@ -97,6 +97,10 @@ Smoke test public teklif oluşturur, admin fiyatlandırır, siparişe çevirir, 
 
 Onaylı bayi oturumu yoksa ürün fiyatı, indirim, sepet ve ödeme alanları görünmez. UI tarafında `PriceGate`, domain tarafında `calculateB2BPrice` aynı kuralı uygular.
 
+## EnexAI alışveriş asistanı
+
+Her sayfada erişilen hareketli Entaş maskotu, gerçek katalog önerileri, sepet yardımı ve seçerek tekrar sipariş. `/enexai` sayfası 24 hazır başlangıç sorusuyla asistanı açar. OpenAI sohbeti ve seslendirme için sunucuda `OPENAI_API_KEY` tanımlanmalıdır; anahtar olmadan katalog yardımı sürer. Kurulum ve veri akışı: [docs/enexai.md](docs/enexai.md).
+
 ## Satıcı / Dropshipping API
 
 Admin `/admin/dealers` ekranından doğrudan satıcı hesabı açabilir; geçici şifre ve API anahtarı yalnızca üretildiği anda düz metin gösterilir. Ürün verisi yetkiye göre JSON, CSV ve XML olarak alınabilir:

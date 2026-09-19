@@ -32,6 +32,7 @@ export async function Header() {
           </a>
           <span>Güvenli bayi alışverişi</span>
           <span>Teknik destek</span>
+          <a href="/enexai">EnexAI ✦</a>
           <a href="/orders">Sipariş takibi</a>
           <a href={quickOrderHref}>Hızlı sipariş</a>
           <a href={projectsHref}>Projeler</a>

@@ -1,0 +1,114 @@
+.mascot {
+  display: block;
+  flex: none;
+  overflow: visible;
+  user-select: none;
+  pointer-events: none;
+  contain: layout style;
+}
+
+.character {
+  transform-origin: 130px 345px;
+  animation: breathe 4.8s ease-in-out infinite;
+}
+
+.eyes {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: blink 6.2s ease-in-out infinite;
+}
+
+.waveArm {
+  transform-origin: 143px 151px;
+  animation: wave 11s ease-in-out infinite;
+}
+
+.pupil { transition: transform 250ms ease; }
+.face { transition: transform 300ms ease; }
+.talkingMouth, .listeningMarks, .thinkingDots, .sparkles { opacity: 0; }
+.talkingMouth {
+  transform-origin: 139px 104px;
+  transform: scaleY(var(--enex-mouth-open, 0.45));
+  transition: transform 75ms linear;
+}
+
+.mascot[data-state="speaking"] .talkingMouth { opacity: 1; }
+.mascot[data-state="speaking"] .smile { opacity: 0; }
+.mascot[data-state="speaking"][data-audio-driven="false"] .talkingMouth {
+  animation: talk 360ms ease-in-out infinite alternate;
+}
+.mascot[data-state="speaking"] .waveArm { animation: explain 1.8s ease-in-out infinite; }
+.mascot[data-state="speaking"] .character { animation: speakBody 2.1s ease-in-out infinite; }
+.mascot[data-state="listening"] .character { transform: rotate(-4deg); animation: listenBody 3s ease-in-out infinite; }
+.mascot[data-state="listening"] .waveArm { animation: none; transform: rotate(-9deg); }
+.mascot[data-state="listening"] .listeningMarks { animation: listenPulse 1.6s ease-in-out infinite; }
+.mascot[data-state="thinking"] .pupil { transform: translate(1px, -2px); }
+.mascot[data-state="thinking"] .waveArm { animation: none; transform: rotate(9deg); }
+.mascot[data-state="thinking"] .thinkingDots { opacity: 1; }
+.thinkingDots circle { animation: thinkPulse 1.4s ease-in-out infinite; }
+.thinkingDots circle:nth-child(2) { animation-delay: 160ms; }
+.thinkingDots circle:nth-child(3) { animation-delay: 320ms; }
+.mascot[data-state="celebrating"] .character { animation: celebrate 680ms ease-in-out infinite alternate; }
+.mascot[data-state="celebrating"] .waveArm { animation: happyWave 550ms ease-in-out infinite alternate; }
+.mascot[data-state="celebrating"] .sparkles { animation: sparkle 1.2s ease-in-out infinite; }
+
+@keyframes breathe {
+  0%, 100% { transform: translateY(0) rotate(-0.7deg); }
+  50% { transform: translateY(-3px) rotate(0.7deg); }
+}
+@keyframes blink {
+  0%, 41%, 45%, 71%, 75%, 100% { transform: scaleY(1); }
+  43%, 73% { transform: scaleY(0.08); }
+}
+@keyframes wave {
+  0%, 7%, 15%, 100% { transform: rotate(0); }
+  3%, 11% { transform: rotate(-12deg); }
+}
+@keyframes explain {
+  0%, 100% { transform: rotate(-4deg); }
+  50% { transform: rotate(7deg); }
+}
+@keyframes speakBody {
+  0%, 100% { transform: translateY(0) rotate(-0.6deg); }
+  50% { transform: translateY(-2px) rotate(1.2deg); }
+}
+@keyframes talk {
+  0% { transform: scaleY(0.12); }
+  35% { transform: scaleY(0.82); }
+  65% { transform: scaleY(0.4); }
+  100% { transform: scaleY(1); }
+}
+@keyframes listenBody {
+  0%, 100% { transform: rotate(-4deg) translateY(0); }
+  50% { transform: rotate(-3deg) translateY(-2px); }
+}
+@keyframes listenPulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+@keyframes thinkPulse {
+  0%, 70%, 100% { opacity: 0.25; }
+  35% { opacity: 1; }
+}
+@keyframes celebrate {
+  0% { transform: translateY(0) rotate(-3deg); }
+  100% { transform: translateY(-9px) rotate(3deg); }
+}
+@keyframes happyWave {
+  from { transform: rotate(-15deg); }
+  to { transform: rotate(4deg); }
+}
+@keyframes sparkle {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mascot *, .mascot[data-state] * {
+    animation: none !important;
+    transition: none !important;
+  }
+  .mascot[data-state="speaking"] .talkingMouth { transform: scaleY(0.35); }
+  .mascot[data-state="listening"] .listeningMarks,
+  .mascot[data-state="celebrating"] .sparkles { opacity: 0.65; }
+}
