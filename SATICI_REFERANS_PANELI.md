@@ -33,3 +33,9 @@ Uygulamanın aktif çalışma deposu Prisma değil, `data/customer-accounts.json
 Referans çözümleme, sunucudan satıcı atama, isteğe bağlı kod, pasif satıcı/kendi kendine referans/çalışan engeli, bayi onayında referansın korunması, ürün komisyonu, ZiraatPay tahsilatı, kısmi/tam iade, eşzamanlı ödeme ve dosya kilidi testleri eklenmiştir. Masaüstü ve 390 px mobil görünüm izole yerel örnekte kontrol edilmiştir.
 
 Canlı ortama dağıtım ve gerçek Eren hesabının oluşturulması bu değişikliklerle otomatik yapılmaz.
+
+## Yetkilinin kendi müşterisini onaylaması
+
+Yetkili Panel → Müşterilerim bölümündeki “Bayiyi onayla” yalnızca oturumdaki yetkiliye bağlı bekleyen/incelemedeki başvurular için çalışır. Referans koduyla gelen başvurular da aynı sahiplik kuralına tabidir. Reddedilmiş başvurular yöneticiye bırakılır; başka mevcut hesaplar sahiplenilemez. Onaylayan yetkilinin e-postası başvuru geçmişine kaydedilir.
+
+Onay sonrası giriş e-postası ve şifrelenmiş olarak saklanan geçici şifre gösterilir. Müşteri ilk girişte şifresini değiştirir; değişiklikten sonra geçici şifre gösterilmez. Yönetici şifreyi sıfırladığında eski geçici şifre de gösterilmez. Bu akış dışarıya otomatik mesaj göndermez; yetkili bilgileri müşterisine iletebilir.

@@ -44,7 +44,7 @@ export function generateTempPassword(): string {
   return `Entas-${block(4)}-${block(3)}${numeric}!`;
 }
 
-export async function provisionDealerAccount(application: DealerApplication): Promise<ProvisionResult> {
+export async function provisionDealerAccount(application: DealerApplication, options: { sendWelcomeEmail?: boolean } = {}): Promise<ProvisionResult> {
   const existing = await findCustomerByEmail(application.email);
   if (existing) {
     return { status: "already-exists", accountId: existing.id, email: existing.email, mailSent: false, passwordChangeRequired: Boolean(existing.mustChangePassword) };
@@ -73,7 +73,7 @@ export async function provisionDealerAccount(application: DealerApplication): Pr
   };
 
   const record = await createCustomerAccount(account);
-  const mailSent = await sendMail({
+  const mailSent = options.sendWelcomeEmail === false ? false : await sendMail({
     to: record.email,
     subject: "ENTAŞBURADA bayi hesabınız açıldı",
     html: buildWelcomeEmail(application, tempPassword)

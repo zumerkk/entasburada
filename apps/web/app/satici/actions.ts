@@ -1,5 +1,8 @@
 "use server";
 
+import { approveOwnDealer } from "../../lib/seller-approval";
+import { requireReferralSeller } from "../../lib/seller-dashboard";
+
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { clearCart, loadPricedCart } from "../../lib/cart-repository";
@@ -36,3 +39,11 @@ export async function createDropshipOrderFromCartAction(formData: FormData): Pro
 }
 
 function getString(formData: FormData, key: string): string { const value = formData.get(key); return typeof value === "string" ? value.trim() : ""; }
+
+export async function approveOwnDealerAction(form: FormData) {
+  await requireReferralSeller();
+  try { await approveOwnDealer(String(form.get("applicationId") ?? "")); }
+  catch (error) { redirect(`/satici?error=${encodeURIComponent(error instanceof Error ? error.message : "Onay başarısız.")}`); }
+  for (const path of ["/satici", "/admin/dealers", "/admin/sellers"]) revalidatePath(path);
+  redirect("/satici?approved=1");
+}

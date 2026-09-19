@@ -193,3 +193,26 @@ describe("real persisted Eren seller lifecycle",()=>{
     expect((await buy(buyer)).sellerCommission?.referral.sellerId).toBe(eren.id);
   });
 });
+
+
+it("seller approves only own applications, exposes working temporary credentials and hides them after change", async () => {
+  const { approveOwnDealer, ownDealerCredentials } = await import("./seller-approval");
+  login(eren);
+  const app = await submit(form("seller"));
+  login(other);
+  await expect(approveOwnDealer(app.id)).rejects.toThrow("yetkiniz");
+  login(eren);
+  await Promise.all([approveOwnDealer(app.id), approveOwnDealer(app.id)]);
+  const approved = (await applications.getDealerApplication(app.id))!;
+  expect(approved.status).toBe("approved");
+  expect(approved.reviewedBy).toBe(eren.email);
+  const credentials = (await ownDealerCredentials(approved, eren.id))!;
+  expect(credentials).toBeTruthy();
+  const buyer = (await auth.authenticateCustomer(credentials.email, credentials.password))!;
+  expect(buyer.referral?.sellerId).toBe(eren.id);
+  expect(buyer.sellerAccess?.enabled).toBe(false);
+  expect(await ownDealerCredentials(approved, other.id)).toBeNull();
+  await auth.changeCustomerPassword(buyer.id, credentials.password, "Buyer-New-2026!");
+  expect(await ownDealerCredentials(approved, eren.id)).toBeNull();
+  expect((await applications.getDealerApplication(app.id))?.temporaryPasswordEncrypted).toBeUndefined();
+});

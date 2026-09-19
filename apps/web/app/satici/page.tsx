@@ -1,3 +1,5 @@
+import { approveOwnDealerAction } from "./actions";
+import { ownDealerCredentials } from "../../lib/seller-approval";
 import {
   Users,
   Wallet,
@@ -42,6 +44,7 @@ export default async function SellerDashboardPage({
       Number.parseInt(String(params.page ?? "1"), 10) || 1,
     ),
   );
+  const credentials = new Map(await Promise.all(customers.slice((page - 1) * 15, page * 15).map(async c => [c.id, await ownDealerCredentials(c, seller.id)] as const)));
   const balances = Object.entries(data.totals);
   const total = (field: "pending" | "payable" | "paid") =>
     balances.length
@@ -103,10 +106,11 @@ export default async function SellerDashboardPage({
           {String(params.error)}
         </p>
       ) : null}
+      {params.approved ? <p className="shell sellerSuccessNotice" role="status">Bayi onaylandı. Müşteri satırındaki “Giriş bilgilerini göster” bölümünden e-posta ve geçici şifreyi alabilirsiniz.</p> : null}
       {params.submitted ? (
         <p className="shell sellerSuccessNotice" role="status">
           <CircleCheck size={20} /> Müşteri kaydı alındı. Başvuru:{" "}
-          {String(params.submitted)}. Yönetici onayından sonra hesap etkinleşir.
+          {String(params.submitted)}. Müşterilerim bölümünden başvuruyu onaylayabilirsiniz.
         </p>
       ) : null}
       {params.passwordChanged ? (
@@ -212,6 +216,7 @@ export default async function SellerDashboardPage({
                 <th>Kayıt kanalı</th>
                 <th>Durum</th>
                 <th>Kayıt tarihi</th>
+                <th>Onay / giriş bilgileri</th>
               </tr>
             </thead>
             <tbody>
@@ -243,6 +248,21 @@ export default async function SellerDashboardPage({
                     </span>
                   </td>
                   <td>{new Date(c.createdAt).toLocaleDateString("tr-TR")}</td>
+                  <td>
+                    {!["approved", "rejected"].includes(c.status) ? (
+                      <form action={approveOwnDealerAction}>
+                        <input type="hidden" name="applicationId" value={c.id} />
+                        <button className="btn btnPrimary" type="submit">Bayiyi onayla</button>
+                      </form>
+                    ) : null}
+                    {credentials.get(c.id) ? <details>
+                      <summary>Giriş bilgilerini göster</summary>
+                      <p>E-posta: {credentials.get(c.id)!.email}</p>
+                      <p>Geçici şifre: <code>{credentials.get(c.id)!.password}</code></p>
+                      <p>Giriş: <a href="/login">entasburada.com/login</a></p>
+                      <small>Müşteri ilk girişte şifresini değiştirir. Sonrasında şifresi burada gösterilmez.</small>
+                    </details> : c.status === "approved" ? <small>Hesap etkin. Geçici şifre artık gösterilemiyor.</small> : null}
+                  </td>
                 </tr>
               ))}
             </tbody>

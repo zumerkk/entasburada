@@ -37,3 +37,7 @@ Masaüstü ve 390 px mobil görünüm önceki ekran kontrolünde incelendi. Son 
 ## Kapsam sınırları
 
 Canlı yayın, gerçek Eren hesabı, gerçek banka transferi ve dış e-posta teslimatı doğrulanmadı. Eren test hesabı yalnızca izole önizlemededir. Aktif dosya tabanlı depolama için kalıcı disk ve tek uygulama örneği gereklidir; işletim ayrıntıları SATICI_REFERANS_PANELI.md içindedir. Test başarısı bütün olası üretim koşullarında hatasızlık garantisi değildir.
+
+## 19 Eylül 2026 — Yetkili müşteri onayı
+
+41 dosyada 270 test başarılı; yeni akışın TypeScript kontrolü başarılı. Gerçek dosya depolarıyla yetkilinin kendi başvurusunu onaylaması, paralel tekrar onayın tek hesap üretmesi, giriş bilgilerinin çalışması, referansın korunması ve şifre değişimi sonrası geçici şifrenin gizlenmesi doğrulandı. Başka yetkilinin başvurusu, sahte başvuru kimliği, pasif/oturumsuz yetkili, reddedilmiş başvuru ve mevcut hesaba el koyma girişimleri engellendi. Yönetici tarafından sıfırlanan şifrenin eski değeri gösterilmiyor.
