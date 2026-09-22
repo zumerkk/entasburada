@@ -31,3 +31,17 @@ describe("seller referral attribution", () => {
     await expect(resolveSellerReferral(sellerReferenceCode(seller), "new@example.test")).rejects.toThrow();
   });
 });
+
+const liveErenId = "cust-c9dcde02-88f2-4b70-ba64-d6ad614e498b";
+it("uses Eren's short code and accepts the previously shared long code", async () => {
+  memory.customers = [{ ...seller, id: liveErenId }];
+  expect(sellerReferenceCode({ id: liveErenId })).toBe("ERN-ENT");
+  for (const code of ["ERN-ENT", " ern-ent ", "ENT-DAD4E744523A7BB5443C"]) {
+    expect(await resolveSellerReferral(code, "new@example.test")).toMatchObject({ sellerId: liveErenId, code: "ERN-ENT" });
+  }
+  expect(sellerReferenceCode(seller)).not.toBe("ERN-ENT");
+});
+it("rejects both Eren aliases if the account is inactive", async () => {
+  memory.customers = [{ ...seller, id: liveErenId, status: "suspended" }];
+  for (const code of ["ERN-ENT", "ENT-DAD4E744523A7BB5443C"]) await expect(resolveSellerReferral(code, "new@example.test")).rejects.toThrow();
+});

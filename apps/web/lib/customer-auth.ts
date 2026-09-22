@@ -83,14 +83,20 @@ function enqueueCustomerMutation<T>(mutation: () => Promise<T>): Promise<T> {
   return operation;
 }
 
-export function sellerReferenceCode(customer: Pick<CustomerAccount, "id">): string {
+function legacySellerReferenceCode(customer: Pick<CustomerAccount, "id">): string {
   return `ENT-${createHash("sha256").update(customer.id).digest("hex").slice(0, 20).toUpperCase()}`;
+}
+
+// Alias is tied to the immutable account identity, never a changeable display name.
+export function sellerReferenceCode(customer: Pick<CustomerAccount, "id">): string {
+  const legacy = legacySellerReferenceCode(customer);
+  return legacy === "ENT-DAD4E744523A7BB5443C" ? "ERN-ENT" : legacy;
 }
 
 export async function resolveSellerReferral(code: string, email: string, source: SellerReferral["source"] = "code"): Promise<SellerReferral | undefined> {
   if (!code.trim()) return undefined;
   const customers = await getCustomers();
-  const seller = customers.find((c) => sellerReferenceCode(c) === code.trim().toUpperCase() && c.status === "approved" && c.sellerAccess?.enabled && (c.companyId ?? c.id) === c.id);
+  const seller = customers.find((c) => [sellerReferenceCode(c), legacySellerReferenceCode(c)].includes(code.trim().toUpperCase()) && c.status === "approved" && c.sellerAccess?.enabled && (c.companyId ?? c.id) === c.id);
   if (!seller) throw new Error("Referans kodu geçersiz veya satıcı hesabı aktif değil.");
   if (customers.some((c) => normalizeEmail(c.email) === normalizeEmail(email))) throw new Error("Bu e-posta zaten kayıtlı; mevcut hesaplara referans eklenemez.");
   return { sellerId: seller.id, sellerName: seller.authorizedPerson, code: sellerReferenceCode(seller), linkedAt: new Date().toISOString(), source };
