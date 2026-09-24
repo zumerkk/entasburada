@@ -1,4 +1,5 @@
 import { approveOwnDealerAction } from "./actions";
+import { buildCredentialsWhatsappHref } from "../../lib/dealer-provisioning";
 import { ownDealerCredentials } from "../../lib/seller-approval";
 import {
   Users,
@@ -10,6 +11,7 @@ import {
   ReceiptText,
   CircleCheck,
   Search,
+  MessageCircle,
 } from "lucide-react";
 import { SellerReference } from "../../components/SellerReference";
 import { sellerReferenceCode } from "../../lib/customer-auth";
@@ -255,13 +257,17 @@ export default async function SellerDashboardPage({
                         <button className="btn btnPrimary" type="submit">{c.status === "approved" ? "Hesap oluşturmayı tamamla" : "Bayiyi onayla"}</button>
                       </form>
                     ) : null}
-                    {credentials.get(c.id) ? <details>
+                    {credentials.get(c.id) ? <>
+                    <a className="btn btnPrimary" href={buildCredentialsWhatsappHref(c, credentials.get(c.id)!.email, credentials.get(c.id)!.password)} target="_blank" rel="noopener noreferrer">
+                      <MessageCircle size={16} aria-hidden="true" /> WhatsApp ile Gönder
+                    </a>
+                    <details>
                       <summary>Giriş bilgilerini göster</summary>
                       <p>E-posta: {credentials.get(c.id)!.email}</p>
                       <p>Geçici şifre: <code>{credentials.get(c.id)!.password}</code></p>
                       <p>Giriş: <a href="/login">entasburada.com/login</a></p>
                       <small>Müşteri ilk girişte şifresini değiştirir. Sonrasında şifresi burada gösterilmez.</small>
-                    </details> : c.status === "approved" ? <small>Hesap etkin. Geçici şifre artık gösterilemiyor.</small> : null}
+                    </details></> : c.status === "approved" ? <small>Hesap etkin. Geçici şifre artık gösterilemiyor.</small> : null}
                   </td>
                 </tr>
               ))}

@@ -19,6 +19,15 @@ describe("referral registration actions", () => {
     await expect(submitDealerApplicationAction(form())).rejects.toThrow("REDIRECT:/dealer-application?submitted=BSV-TEST");
     expect(mocks.create).toHaveBeenCalledWith(expect.not.objectContaining({referral:expect.anything()}));
   });
+  it("uses the invoice address when same-address is selected", async () => {
+    const data = form(); data.set("sameAddress", "on"); data.delete("deliveryAddress");
+    await expect(submitDealerApplicationAction(data)).rejects.toThrow("REDIRECT:");
+    expect(mocks.create).toHaveBeenCalledWith(expect.objectContaining({ invoiceAddress: "Test fatura adresi", deliveryAddress: "Test fatura adresi" }));
+  });
+  it("keeps a separate delivery address when same-address is not selected", async () => {
+    await expect(submitDealerApplicationAction(form())).rejects.toThrow("REDIRECT:");
+    expect(mocks.create).toHaveBeenCalledWith(expect.objectContaining({ deliveryAddress: "Test teslimat adresi" }));
+  });
   it("derives panel referral server-side, ignores a forged submitted code", async () => {
     mocks.current.mockResolvedValue({id:"eren",sellerAccess:{enabled:true}});
     const referral={sellerId:"eren",sellerName:"Eren",code:"ENT-SERVER-CODE",source:"seller",linkedAt:"now"}; mocks.resolve.mockResolvedValue(referral);

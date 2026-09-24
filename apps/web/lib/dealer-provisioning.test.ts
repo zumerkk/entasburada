@@ -98,6 +98,12 @@ describe("dealer provisioning", () => {
     expect(mocks.createCustomerAccount).toHaveBeenCalledWith(expect.objectContaining({ referral }));
   });
 
+  it("uses the registration phone when no separate WhatsApp number exists", () => {
+    const url = new URL(buildCredentialsWhatsappHref({ ...application, whatsapp: undefined, phone: "0532 444 55 66" }, application.email, "Temp-123!"));
+    expect(url.pathname).toBe("/905324445566");
+    expect(url.searchParams.get("text")).toContain(application.email);
+  });
+
   it("builds a WhatsApp message containing login, email and temporary password", () => {
     const href = buildCredentialsWhatsappHref(application, application.email, "Entas-K7KM-Q4T7!");
     const url = new URL(href);

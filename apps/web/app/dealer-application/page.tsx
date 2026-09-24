@@ -1,6 +1,7 @@
 import { requireCustomer, sellerReferenceCode } from "../../lib/customer-auth";
 import { redirect } from "next/navigation";
 import { Building2, CheckCircle2, FileText, ShieldCheck } from "lucide-react";
+import { AddressFields } from "./AddressFields";
 import { ApplicationForm } from "./ApplicationForm";
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -135,14 +136,7 @@ export default async function DealerApplicationPage({ searchParams }: { searchPa
               E-posta
               <input name="email" type="email" required />
             </label>
-            <label className="spanTwo">
-              Fatura adresi
-              <textarea name="invoiceAddress" required />
-            </label>
-            <label className="spanTwo">
-              Teslimat adresi
-              <textarea name="deliveryAddress" required />
-            </label>
+            <AddressFields />
           </fieldset>
 
           <fieldset>

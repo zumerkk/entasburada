@@ -44,7 +44,7 @@ export async function submitDealerApplicationAction(formData: FormData): Promise
     whatsapp: value("whatsapp") || undefined,
     email: value("email"),
     invoiceAddress: value("invoiceAddress"),
-    deliveryAddress: value("deliveryAddress"),
+    deliveryAddress: formData.get("sameAddress") === "on" ? value("invoiceAddress") : value("deliveryAddress"),
     city: value("city"),
     district: value("district"),
     activityArea: value("activityArea"),
