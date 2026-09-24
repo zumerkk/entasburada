@@ -103,7 +103,7 @@ export default async function AdminDealersPage({ searchParams }: { searchParams:
           </span>
           <span>
             <MapPin size={15} aria-hidden="true" />
-            {application.city} / {application.district} · {application.activityArea}
+            {application.city} / {application.district}{application.activityArea ? ` · ${application.activityArea}` : ""}
           </span>
         </div>
 

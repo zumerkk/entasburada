@@ -54,7 +54,7 @@ function loginAdmin() {context.cookies.set(adminAuth.ADMIN_COOKIE,adminAuth.crea
 function form(source:"seller"|"code"|"none", seller=eren) {
   sequence++;
   const data=new FormData();
-  Object.entries({companyTitle:`E2E Müşteri ${sequence}`,authorizedPerson:`Müşteri ${sequence}`,email:`buyer-${sequence}@example.test`,taxOffice:"Merkez",taxNumber:String(1000000000+sequence),companyType:"dealer",phone:"05320000001",invoiceAddress:"İzole test fatura adresi",deliveryAddress:"İzole test teslimat adresi",city:"İstanbul",district:"Kadıköy",activityArea:"Hırdavat",dealershipType:"standard",kvkkAccepted:"on"}).forEach(([k,v])=>data.set(k,v));
+  Object.entries({companyTitle:`E2E Müşteri ${sequence}`,authorizedPerson:`Müşteri ${sequence}`,email:`buyer-${sequence}@example.test`,taxOffice:"Merkez",taxNumber:String(1000000000+sequence),companyType:"dealer",phone:"05320000001",invoiceAddress:"İzole test fatura adresi",deliveryAddress:"İzole test teslimat adresi",city:"İstanbul",district:"Kadıköy",dealershipType:"standard",kvkkAccepted:"on"}).forEach(([k,v])=>data.set(k,v));
   if(source==="seller")data.set("sellerEntry","1");
   if(source!=="none")data.set("referralCode",auth.sellerReferenceCode(seller));
   return data;
@@ -212,7 +212,10 @@ it("seller approves only own applications, exposes working temporary credentials
   expect(buyer.referral?.sellerId).toBe(eren.id);
   expect(buyer.sellerAccess?.enabled).toBe(false);
   expect(await ownDealerCredentials(approved, other.id)).toBeNull();
-  await auth.changeCustomerPassword(buyer.id, credentials.password, "Buyer-New-2026!");
+  await expect(auth.changeCustomerPassword(buyer.id, credentials.password, "12345")).rejects.toThrow("6 karakter");
+  await auth.changeCustomerPassword(buyer.id, credentials.password, "123456");
+  expect((await auth.authenticateCustomer(credentials.email, "123456"))?.id).toBe(buyer.id);
+  expect(await auth.authenticateCustomer(credentials.email, credentials.password)).toBeNull();
   expect(await ownDealerCredentials(approved, eren.id)).toBeNull();
   expect((await applications.getDealerApplication(app.id))?.temporaryPasswordEncrypted).toBeUndefined();
 });

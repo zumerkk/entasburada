@@ -111,14 +111,6 @@ export default async function DealerApplicationPage({ searchParams }: { searchPa
               <input name="taxNumber" inputMode="numeric" required />
             </label>
             <label>
-              Ticaret sicil numarası
-              <input name="tradeRegistryNumber" />
-            </label>
-            <label>
-              MERSİS numarası
-              <input name="mersisNumber" />
-            </label>
-            <label>
               Firma tipi
               <select name="companyType" required>
                 <option value="dealer">Hırdavat bayisi</option>
@@ -138,10 +130,6 @@ export default async function DealerApplicationPage({ searchParams }: { searchPa
             <label>
               Telefon
               <input name="phone" type="tel" required />
-            </label>
-            <label>
-              WhatsApp
-              <input name="whatsapp" type="tel" />
             </label>
             <label>
               E-posta
@@ -166,10 +154,6 @@ export default async function DealerApplicationPage({ searchParams }: { searchPa
             <label>
               İlçe
               <input name="district" required />
-            </label>
-            <label>
-              Faaliyet alanı
-              <input name="activityArea" required />
             </label>
             <label>
               Yıllık tahmini satın alma hacmi

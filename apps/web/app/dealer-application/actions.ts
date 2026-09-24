@@ -19,8 +19,7 @@ const REQUIRED_FIELDS: Array<[keyof DealerApplicationInput, string]> = [
   ["invoiceAddress", "Fatura adresi"],
   ["deliveryAddress", "Teslimat adresi"],
   ["city", "İl"],
-  ["district", "İlçe"],
-  ["activityArea", "Faaliyet alanı"]
+  ["district", "İlçe"]
 ];
 
 export async function submitDealerApplicationAction(formData: FormData): Promise<{ error: string }> {

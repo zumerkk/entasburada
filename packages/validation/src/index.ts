@@ -14,7 +14,7 @@ export const dealerApplicationSchema = z.object({
   deliveryAddress: z.string().trim().min(10, "Teslimat adresi zorunludur.").max(600),
   city: z.string().trim().min(2, "İl seçimi zorunludur.").max(80),
   district: z.string().trim().min(2, "İlçe seçimi zorunludur.").max(80),
-  activityArea: z.string().trim().min(2, "Faaliyet alanı zorunludur.").max(160),
+  activityArea: z.string().trim().max(160).optional(),
   companyType: z.enum(["dealer", "industrial", "construction", "workshop", "corporate_purchase"]),
   annualPurchaseVolume: z.string().trim().max(80).optional(),
   website: z.string().url().optional().or(z.literal("")),

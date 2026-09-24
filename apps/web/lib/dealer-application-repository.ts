@@ -41,7 +41,7 @@ export interface DealerApplication {
   // Ticari profil
   city: string;
   district: string;
-  activityArea: string;
+  activityArea?: string | undefined;
   annualPurchaseVolume?: string | undefined;
   dealershipType?: string | undefined;
   referral?: SellerReferral | undefined;
@@ -78,7 +78,7 @@ export interface DealerApplicationInput {
   deliveryAddress: string;
   city: string;
   district: string;
-  activityArea: string;
+  activityArea?: string | undefined;
   annualPurchaseVolume?: string | undefined;
   dealershipType?: string | undefined;
   referral?: SellerReferral | undefined;
@@ -208,7 +208,7 @@ function normalizeApplicationInput(input: DealerApplicationInput): DealerApplica
     deliveryAddress: required(input.deliveryAddress, "Teslimat adresi", 10, 600),
     city: required(input.city, "İl", 2, 80),
     district: required(input.district, "İlçe", 2, 80),
-    activityArea: required(input.activityArea, "Faaliyet alanı", 2, 160),
+    activityArea: optional(input.activityArea, "Faaliyet alanı", 160),
     annualPurchaseVolume: optional(input.annualPurchaseVolume, "Yıllık alım hacmi", 80),
     dealershipType: optional(input.dealershipType, "Bayilik türü", 80),
     referenceCompany: optional(input.referenceCompany, "Referans firma", 180),

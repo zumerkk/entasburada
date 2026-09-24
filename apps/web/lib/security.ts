@@ -142,12 +142,9 @@ export function getClientAddress(headers: Pick<Headers, "get">): string {
 }
 
 export function validatePasswordStrength(password: string): string | null {
-  if (password.length < 12) return "Şifre en az 12 karakter olmalı.";
+  if (password.length < 6) return "Şifre en az 6 karakter olmalı.";
   if (password.length > 128) return "Şifre en fazla 128 karakter olabilir.";
   if (/\s/.test(password)) return "Şifre boşluk içeremez.";
-  if (!/[a-zçğıöşü]/.test(password) || !/[A-ZÇĞİÖŞÜ]/.test(password) || !/\d/.test(password) || !/[^\p{L}\p{N}]/u.test(password)) {
-    return "Şifre küçük harf, büyük harf, rakam ve özel karakter içermeli.";
-  }
   return null;
 }
 

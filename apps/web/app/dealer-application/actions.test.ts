@@ -10,7 +10,7 @@ vi.mock("next/navigation", () => ({ redirect:(url:string) => {throw new Error(`R
 import { submitDealerApplicationAction } from "./actions";
 function form() {
   const data=new FormData();
-  Object.entries({ companyTitle:"Test Bayi",taxOffice:"Merkez",taxNumber:"1234567890",companyType:"dealer",authorizedPerson:"Test Müşteri",phone:"05320000000",email:"buyer@example.test",invoiceAddress:"Test fatura adresi",deliveryAddress:"Test teslimat adresi",city:"İstanbul",district:"Kadıköy",activityArea:"Hırdavat",dealershipType:"standard",kvkkAccepted:"on" }).forEach(([k,v]) => data.set(k,v));
+  Object.entries({ companyTitle:"Test Bayi",taxOffice:"Merkez",taxNumber:"1234567890",companyType:"dealer",authorizedPerson:"Test Müşteri",phone:"05320000000",email:"buyer@example.test",invoiceAddress:"Test fatura adresi",deliveryAddress:"Test teslimat adresi",city:"İstanbul",district:"Kadıköy",dealershipType:"standard",kvkkAccepted:"on" }).forEach(([k,v]) => data.set(k,v));
   return data;
 }
 beforeEach(() => {vi.clearAllMocks();mocks.current.mockResolvedValue(null);mocks.resolve.mockResolvedValue(undefined);mocks.create.mockResolvedValue({reference:"BSV-TEST"});});

@@ -82,8 +82,9 @@ describe("security helpers", () => {
     expect(trustedMutationError(accepted)).toBeNull();
   });
 
-  it("requires a strong customer password", () => {
-    expect(validatePasswordStrength("weakpassword")).not.toBeNull();
+  it("accepts simple customer passwords of at least six characters", () => {
+    for (const password of ["123456", "abcdef", "ABCDEF", "weakpassword"]) expect(validatePasswordStrength(password)).toBeNull();
+    for (const password of ["12345", "", "abc def", "a".repeat(129)]) expect(validatePasswordStrength(password)).not.toBeNull();
     expect(validatePasswordStrength("Güçlü-Şifre-2026!")).toBeNull();
   });
 });

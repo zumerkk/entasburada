@@ -60,7 +60,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
             </p>
             <ol className="accountActivationSteps">
               <li className="complete"><BadgeCheck size={20} aria-hidden="true" /><span><strong>Kimlik doğrulandı</strong><small>{customer.email}</small></span></li>
-              <li className="current"><ShieldCheck size={20} aria-hidden="true" /><span><strong>Kalıcı şifre belirleyin</strong><small>En az 8 karakter ve güçlü bir parola kullanın.</small></span></li>
+              <li className="current"><ShieldCheck size={20} aria-hidden="true" /><span><strong>Kalıcı şifre belirleyin</strong><small>En az 6 karakter kullanın. Büyük/küçük harf ve özel karakter zorunlu değildir.</small></span></li>
               <li><Gauge size={20} aria-hidden="true" /><span><strong>{isSeller ? "Yetkili paneli" : "Bayi paneli"}</strong><small>Şifre kaydedildikten sonra otomatik açılır.</small></span></li>
             </ol>
           </div>
@@ -84,12 +84,12 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
                 <input name="currentPassword" type="password" autoComplete="current-password" required autoFocus />
               </label>
               <label>
-                Yeni şifre
-                <input name="newPassword" type="password" autoComplete="new-password" minLength={8} required />
+                Yeni şifre (en az 6 karakter)
+                <input name="newPassword" type="password" autoComplete="new-password" minLength={6} required />
               </label>
               <label>
                 Yeni şifre (tekrar)
-                <input name="newPasswordRepeat" type="password" autoComplete="new-password" minLength={8} required />
+                <input name="newPasswordRepeat" type="password" autoComplete="new-password" minLength={6} required />
               </label>
               <button className="btn btnPrimary" type="submit">
                 Hesabı Etkinleştir
@@ -540,12 +540,12 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
                 <input name="currentPassword" type="password" autoComplete="current-password" required />
               </label>
               <label>
-                Yeni şifre
-                <input name="newPassword" type="password" autoComplete="new-password" minLength={8} required />
+                Yeni şifre (en az 6 karakter)
+                <input name="newPassword" type="password" autoComplete="new-password" minLength={6} required />
               </label>
               <label>
                 Yeni şifre (tekrar)
-                <input name="newPasswordRepeat" type="password" autoComplete="new-password" minLength={8} required />
+                <input name="newPasswordRepeat" type="password" autoComplete="new-password" minLength={6} required />
               </label>
               <button className="btn btnPrimary" type="submit">
                 Şifreyi Güncelle
