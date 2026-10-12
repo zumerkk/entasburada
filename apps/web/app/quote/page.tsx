@@ -14,6 +14,7 @@ export default async function QuotePage({ searchParams }: { searchParams: Promis
   const customer = await getCurrentCustomer();
   const error = getParam(params, "error");
   const initialSku = getParam(params, "sku");
+  const initialProductSlug = getParam(params, "productSlug");
   const initialName = getParam(params, "name");
   const initialUnit = getParam(params, "unit") || "Adet";
 
@@ -60,7 +61,7 @@ export default async function QuotePage({ searchParams }: { searchParams: Promis
 
           <fieldset>
             <legend>Ürün satırları</legend>
-            <QuoteLines units={[...units]} initialSku={initialSku || undefined} initialName={initialName || undefined} initialUnit={initialUnit || undefined} />
+            <QuoteLines units={[...units]} initialProductSlug={initialProductSlug || undefined} initialSku={initialSku || undefined} initialName={initialName || undefined} initialUnit={initialUnit || undefined} />
           </fieldset>
 
           <fieldset>

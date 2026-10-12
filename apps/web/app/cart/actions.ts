@@ -89,6 +89,8 @@ export async function reorderAction(formData: FormData): Promise<void> {
 
   const items: CartItemInput[] = order.items
     .map((item) => ({
+      productSlug: item.productSlug,
+      catalogProductId: item.catalogProductId,
       sku: item.sku,
       productName: item.productName,
       quantity: Number(item.quantity) || 1,
@@ -144,6 +146,7 @@ export async function payCartWithCardAction(): Promise<void> {
 }
 
 function itemsFromForm(formData: FormData): CartItemInput[] {
+  const productSlugs = formData.getAll("itemProductSlug").map(String);
   const skus = formData.getAll("itemSku").map(String);
   const names = formData.getAll("itemName").map(String);
   const quantities = formData.getAll("itemQuantity").map(String);
@@ -151,6 +154,7 @@ function itemsFromForm(formData: FormData): CartItemInput[] {
 
   return skus
     .map<CartItemInput>((sku, index) => ({
+      productSlug: productSlugs[index] ?? "",
       sku,
       productName: names[index] ?? "",
       quantity: Number(quantities[index] ?? "1"),

@@ -20,6 +20,8 @@ const quoteSchema = z.object({
   paymentPreference: z.string().trim().max(80).optional(),
   notes: z.string().trim().max(2_000).optional(),
   items: z.array(z.object({
+    productSlug: z.string().trim().max(240).optional(),
+    catalogProductId: z.string().trim().max(240).optional(),
     sku: z.string().trim().max(160).optional(),
     productName: z.string().trim().max(300).optional(),
     quantity: z.coerce.number().int().min(1).max(999_999),

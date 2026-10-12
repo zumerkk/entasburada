@@ -120,6 +120,19 @@ describe("Enex privacy and truthful fallback", () => {
     expect(result[0]?.items[0]).toMatchObject({ available: false, productSlug: "" });
     expect(ownEnexOrders([order()], "", catalog)).toEqual([]);
   });
+  it("uses the saved product identity when reorder products share a code and name", () => {
+    const existingOrder = order();
+    existingOrder.items[0]!.catalogProductId = "p2";
+    existingOrder.items[0]!.productSlug = "diger-batarya";
+    const duplicate = product({ id: "duplicate", sku: "BAT-02", slug: "duplicate", name: "Lavabo Bataryası" });
+    const result = ownEnexOrders([existingOrder], customer.email, [duplicate, catalog[1]!]);
+    expect(result[0]?.items[0]).toMatchObject({ available: true, productSlug: "diger-batarya", minOrder: 6 });
+  });
+  it("does not substitute another current product for a stale reorder identity", () => {
+    const existingOrder = order();
+    existingOrder.items[0]!.productSlug = "removed-product";
+    expect(ownEnexOrders([existingOrder], customer.email, catalog)[0]?.items[0]).toMatchObject({ available: false, productSlug: "" });
+  });
   it("searches for products even when the message asks for help", async () => {
     const answer = await chat("Batarya bulmama yardım et");
     expect(answer.mode).toBe("catalog");

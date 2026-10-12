@@ -102,6 +102,7 @@ export async function rejectQuoteByTrackingCodeAction(formData: FormData): Promi
 }
 
 function itemsFromForm(formData: FormData): CreateQuoteItemInput[] {
+  const productSlugs = formData.getAll("itemProductSlug").map(String);
   const skus = formData.getAll("itemSku").map(String);
   const names = formData.getAll("itemName").map(String);
   const quantities = formData.getAll("itemQuantity").map(String);
@@ -111,6 +112,7 @@ function itemsFromForm(formData: FormData): CreateQuoteItemInput[] {
 
   return skus
     .map<CreateQuoteItemInput>((sku, index) => ({
+      productSlug: productSlugs[index] ?? "",
       sku,
       productName: names[index] ?? "",
       quantity: Number(quantities[index] ?? "1"),

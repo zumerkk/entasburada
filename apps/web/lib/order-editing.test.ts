@@ -51,6 +51,18 @@ describe("order editing", () => {
     expect(result.items[0]).toMatchObject({ id: "a", quantity: 6, lineTotal: "525.60" });
   });
 
+  it("keeps distinct catalog products with the same SKU and price on separate order lines", () => {
+    const source = order({ items: [{ id: "drill-line", catalogProductId: "drill", productSlug: "matkap-ucu", sku: "5202", productName: "Matkap Ucu", unit: "Adet", quantity: 1, unitPrice: "100.00", lineTotal: "100.00", currency: "TRY" }] });
+    const result = applyOrderItemChanges(source, [], [{ catalogProductId: "distributor", productSlug: "dagitici", sku: "5202", productName: "Dağıtıcı", unit: "Adet", quantity: 2, unitPrice: 100, currency: "TRY" }], createId);
+    expect(result.items.map((item) => [item.catalogProductId, item.productName, item.quantity])).toEqual([["drill", "Matkap Ucu", 1], ["distributor", "Dağıtıcı", 2]]);
+  });
+
+  it("does not merge different legacy products merely because their SKU and price match", () => {
+    const result = applyOrderItemChanges(order(), [], [{ sku: "BK-101", productName: "Başka ürün", unit: "ADET", quantity: 1, unitPrice: 87.6, currency: "TRY" }], createId);
+    expect(result.items).toHaveLength(3);
+    expect(result.items[0]?.quantity).toBe(5);
+  });
+
   it("rejects empty orders, invalid quantities, unpriced and foreign-currency products", () => {
     expect(() => applyOrderItemChanges(order(), [{ itemId: "a", quantity: 0 }, { itemId: "b", quantity: 0 }], [], createId)).toThrow("en az bir ürün");
     expect(() => applyOrderItemChanges(order(), [{ itemId: "a", quantity: 1.5 }], [], createId)).toThrow("tam sayı");

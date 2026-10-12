@@ -178,6 +178,8 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
                 <ProductCard
                   key={product.slug}
                   href={`/products/${product.slug}`}
+                  productSlug={product.slug}
+                  unit={product.unitType}
                   brand={product.brand}
                   name={product.name}
                   sku={product.sku}
@@ -219,6 +221,8 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
                   <ProductCard
                     key={product.slug}
                     href={`/products/${product.slug}`}
+                    productSlug={product.slug}
+                    unit={product.unitType}
                     brand={product.brand}
                     name={product.name}
                     sku={product.sku}

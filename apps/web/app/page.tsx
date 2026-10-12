@@ -97,6 +97,8 @@ export default async function HomePage() {
             <ProductCard
               key={product.slug}
               href={`/products/${product.slug}`}
+              productSlug={product.slug}
+              unit={product.unitType}
               brand={product.brand}
               name={product.name}
               sku={product.sku}

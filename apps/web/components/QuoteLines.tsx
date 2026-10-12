@@ -3,18 +3,11 @@
 import { useEffect, useState } from "react";
 import { Plus, X } from "lucide-react";
 import { readQuoteBasket, removeFromQuoteBasket } from "./quote-basket";
-
-interface LineState {
-  key: string;
-  sku: string;
-  name: string;
-  quantity: string;
-  unit: string;
-  fromBasket: boolean;
-}
+import { editQuoteLine, mergeQuoteBasketLines, type QuoteLineState } from "./quote-line-state";
 
 interface QuoteLinesProps {
   units: string[];
+  initialProductSlug?: string | undefined;
   initialSku?: string | undefined;
   initialName?: string | undefined;
   initialUnit?: string | undefined;
@@ -23,16 +16,16 @@ interface QuoteLinesProps {
 let keySeq = 0;
 const nextKey = () => `line-${Date.now()}-${keySeq++}`;
 
-function emptyLine(unit = "Adet"): LineState {
-  return { key: nextKey(), sku: "", name: "", quantity: "", unit, fromBasket: false };
+function emptyLine(unit = "Adet"): QuoteLineState {
+  return { key: nextKey(), sku: "", name: "", quantity: "", unit };
 }
 
-export function QuoteLines({ units, initialSku, initialName, initialUnit }: QuoteLinesProps) {
+export function QuoteLines({ units, initialProductSlug, initialSku, initialName, initialUnit }: QuoteLinesProps) {
   // Sunucu render'ı: yalnızca URL'den gelen satır + boşlar (hydration uyumu için sepet mount'ta yüklenir)
-  const [lines, setLines] = useState<LineState[]>(() => {
-    const start: LineState[] = [];
+  const [lines, setLines] = useState<QuoteLineState[]>(() => {
+    const start: QuoteLineState[] = [];
     if (initialSku || initialName) {
-      start.push({ key: "initial", sku: initialSku ?? "", name: initialName ?? "", quantity: "1", unit: initialUnit || "Adet", fromBasket: false });
+      start.push({ key: "initial", productSlug: initialProductSlug, sku: initialSku ?? "", name: initialName ?? "", quantity: "1", unit: initialUnit || "Adet" });
     }
     while (start.length < 3) {
       start.push(emptyLine());
@@ -45,36 +38,18 @@ export function QuoteLines({ units, initialSku, initialName, initialUnit }: Quot
     if (basket.length === 0) {
       return;
     }
-    setLines((current) => {
-      const merged: LineState[] = [];
-      const seen = new Set<string>();
-      // 1) sepettekiler
-      for (const item of basket) {
-        merged.push({ key: `basket-${item.sku}`, sku: item.sku, name: item.name, quantity: String(item.quantity), unit: item.unit, fromBasket: true });
-        seen.add(item.sku);
-      }
-      // 2) URL'den gelen (sepette yoksa)
-      for (const line of current) {
-        if ((line.sku || line.name) && !seen.has(line.sku)) {
-          merged.push(line);
-          seen.add(line.sku);
-        }
-      }
-      // 3) en az bir boş satır
-      merged.push(emptyLine());
-      return merged;
-    });
+    setLines((current) => [...mergeQuoteBasketLines(basket, current), emptyLine()]);
   }, []);
 
-  const updateLine = (key: string, patch: Partial<LineState>) => {
-    setLines((current) => current.map((line) => (line.key === key ? { ...line, ...patch } : line)));
+  const updateLine = (key: string, patch: Partial<QuoteLineState>) => {
+    setLines((current) => current.map((line) => (line.key === key ? editQuoteLine(line, patch) : line)));
   };
 
   const removeLine = (key: string) => {
     setLines((current) => {
       const target = current.find((line) => line.key === key);
-      if (target?.fromBasket && target.sku) {
-        removeFromQuoteBasket(target.sku);
+      if (target?.basketKey) {
+        removeFromQuoteBasket(target.basketKey);
       }
       const next = current.filter((line) => line.key !== key);
       return next.length > 0 ? next : [emptyLine()];
@@ -87,7 +62,8 @@ export function QuoteLines({ units, initialSku, initialName, initialUnit }: Quot
     <div className="quoteLines">
       {filled > 1 ? <p className="quoteLinesSummary">Sepetinizdeki {filled} ürün aşağıda listelendi. Kataloğa dönüp eklemeye devam edebilirsiniz; sepetiniz kaybolmaz.</p> : null}
       {lines.map((line) => (
-        <div className={`quoteLine liveQuoteLine${line.fromBasket ? " fromBasket" : ""}`} key={line.key}>
+        <div className={`quoteLine liveQuoteLine${line.basketKey ? " fromBasket" : ""}`} key={line.key}>
+          <input name="itemProductSlug" type="hidden" value={line.productSlug ?? ""} />
           <input name="itemSku" placeholder="SKU veya barkod" value={line.sku} onChange={(e) => updateLine(line.key, { sku: e.target.value })} />
           <input name="itemName" placeholder="Ürün adı" value={line.name} onChange={(e) => updateLine(line.key, { name: e.target.value })} />
           <input

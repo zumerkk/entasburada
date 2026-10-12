@@ -36,19 +36,19 @@ export default async function ProjectDetailPage({ params, searchParams }: { para
           <div><FileText size={18} /><span>Teklif / sipariş</span><strong>{quotes.length} / {orders.length}</strong></div>
         </div>
         <article className="panel projectMaterialPanel">
-          <div className="panelHeader"><div><h2>Malzeme eşleştirme</h2><p>Tam eşleşmeleri kullanın; önerilen satırlarda gerekirse muadil ürünü değiştirin.</p></div></div>
+          <div className="panelHeader"><div><h2>Malzeme eşleştirme</h2><p>Tam eşleşmeler sepete eklenebilir. Önerilen satırlarda kullanmak istediğiniz ürünü seçin.</p></div></div>
           <div className="projectMaterialTable">
             {project.items.map((item) => (
               <div className="projectMaterialRow" key={item.id}>
                 <span><strong>{item.requestedName || item.requestedSku}</strong><small>{item.requestedSku || "Kod belirtilmedi"} · {item.quantity} {item.unit}</small></span>
                 <StatusPill tone={item.matchStatus === "EXACT" ? "success" : item.matchStatus === "SUGGESTED" ? "warning" : "danger"}>{item.matchStatus === "EXACT" ? "Tam eşleşti" : item.matchStatus === "SUGGESTED" ? "Muadil önerildi" : "Bulunamadı"}</StatusPill>
-                <span>{item.selectedMatch ? <><a href={`/products/${item.selectedMatch.productSlug}`}><strong>{item.selectedMatch.productName}</strong></a><small>{item.selectedMatch.brand} · {item.selectedMatch.sku} · {stockLabel(item.selectedMatch.stockStatus)}</small></> : <small>Temsilci özel ürün olarak tekliflendirebilir.</small>}</span>
+                <span>{item.selectedMatch ? <><a href={`/products/${item.selectedMatch.productSlug}`}><strong>{item.selectedMatch.productName}</strong></a><small>{item.selectedMatch.brand} · {item.selectedMatch.sku} · {stockLabel(item.selectedMatch.stockStatus)}</small></> : <small>{item.alternatives.length ? "Ürün seçimi bekleniyor." : "Temsilci özel ürün olarak tekliflendirebilir."}</small>}</span>
                 <span>
-                  {item.alternatives.length > 1 ? (
+                  {item.alternatives.length > 0 && (!item.selectedMatch || item.alternatives.length > 1) ? (
                     <form action={selectProjectMatchAction} className="projectMatchForm">
                       <input type="hidden" name="projectId" value={project.id} /><input type="hidden" name="itemId" value={item.id} />
-                      <select name="productSlug" defaultValue={item.selectedMatch?.productSlug}>{item.alternatives.map((alternative) => <option value={alternative.productSlug} key={alternative.productSlug}>{alternative.productName} · {alternative.sku}</option>)}</select>
-                      <button type="submit">Muadili kullan</button>
+                      <select name="productSlug" required defaultValue={item.selectedMatch?.productSlug ?? ""}><option value="" disabled>Ürün seçin</option>{item.alternatives.map((alternative) => <option value={alternative.productSlug} key={alternative.productSlug}>{alternative.productName} · {alternative.sku}</option>)}</select>
+                      <button type="submit">Seçilen ürünü kullan</button>
                     </form>
                   ) : <small>{item.alternatives.length ? "Tek uygun eşleşme" : "Satın alma kontrolü gerekli"}</small>}
                 </span>

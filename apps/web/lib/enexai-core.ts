@@ -2,6 +2,7 @@ import type { CatalogProductRecord } from "@entas/catalog";
 import type { AdminOrder } from "./commercial-repository";
 import type { EnexOrder, EnexProduct } from "./enexai-types";
 import { orderStatusLabel } from "./commercial-labels";
+import { createCatalogProductLookup, resolveCatalogProduct } from "./catalog-product-identity";
 
 export function normalizeEnexText(value: string): string {
   return value.toLocaleLowerCase("tr-TR").replace(/ı/g, "i").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -134,11 +135,7 @@ export function complementaryEnexCatalog(products: CatalogProductRecord[], ancho
 export function ownEnexOrders(orders: AdminOrder[], customerEmail: string, products: CatalogProductRecord[]): EnexOrder[] {
   const normalizeEmail = (value: string) => value.trim().toLowerCase();
   if (!normalizeEmail(customerEmail)) return [];
-  const bySku = new Map<string, CatalogProductRecord[]>();
-  for (const product of visibleEnexCatalog(products)) {
-    const key = normalizeEnexText(product.sku);
-    bySku.set(key, [...(bySku.get(key) ?? []), product]);
-  }
+  const productLookup = createCatalogProductLookup(visibleEnexCatalog(products));
   return orders.filter((order) => normalizeEmail(order.email) === normalizeEmail(customerEmail))
     .sort((a, b) => b.orderedAt.localeCompare(a.orderedAt)).slice(0, 4).map((order) => ({
       id: order.id,
@@ -146,9 +143,7 @@ export function ownEnexOrders(orders: AdminOrder[], customerEmail: string, produ
       date: order.orderedAt,
       status: orderStatusLabel(order.status).label,
       items: order.items.slice(0, 50).map((item) => {
-        const matches = bySku.get(normalizeEnexText(item.sku)) ?? [];
-        const namedMatches = matches.filter((product) => normalizeEnexText(product.name) === normalizeEnexText(item.productName));
-        const product = matches.length === 1 ? matches[0] : namedMatches.length === 1 ? namedMatches[0] : undefined;
+        const { product } = resolveCatalogProduct(productLookup, item);
         return { productSlug: product?.slug ?? "", sku: item.sku, productName: item.productName, unit: product?.unitType || item.unit, quantity: item.quantity, minOrder: product?.minOrder ?? 1, available: Boolean(product && isEnexAvailable(product)) };
       })
     }));

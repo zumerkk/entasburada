@@ -50,6 +50,7 @@ export async function addProjectToCartAction(formData: FormData): Promise<void> 
   const items = project.items
     .filter((item) => item.selectedMatch)
     .map((item) => ({
+      productSlug: item.selectedMatch!.productSlug,
       sku: item.selectedMatch!.sku,
       productName: item.selectedMatch!.productName,
       quantity: item.quantity,
@@ -79,6 +80,7 @@ export async function createProjectQuoteAction(formData: FormData): Promise<void
     paymentPreference: "Bayi çalışma koşulları",
     notes: [project.note, project.desiredDeliveryDate ? `İstenen teslim: ${project.desiredDeliveryDate}` : ""].filter(Boolean).join(" · "),
     items: project.items.map((item) => ({
+      productSlug: item.selectedMatch?.productSlug,
       sku: item.selectedMatch?.sku || item.requestedSku,
       productName: item.selectedMatch?.productName || item.requestedName,
       quantity: item.quantity,

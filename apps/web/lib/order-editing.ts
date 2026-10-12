@@ -1,4 +1,5 @@
 import type { SellerCommission } from "./seller-commission";
+import { normalizeProductIdentity, type CatalogProductIdentity } from "./catalog-product-identity";
 
 /**
  * Admin sipariş düzeltmesi (ürün ekle/çıkar, adet değiştir) ve reddedilen
@@ -8,6 +9,8 @@ import type { SellerCommission } from "./seller-commission";
 
 export interface EditableOrderItem {
   id: string;
+  catalogProductId?: string | undefined;
+  productSlug?: string | undefined;
   sku: string;
   productName: string;
   brand?: string;
@@ -39,6 +42,8 @@ export interface OrderItemChange {
 
 /** Fiyatı sunucuda katalogdan hesaplanmış yeni satır. */
 export interface PricedOrderAddition {
+  catalogProductId?: string | undefined;
+  productSlug?: string | undefined;
   sku: string;
   productName: string;
   brand?: string;
@@ -138,7 +143,7 @@ export function applyOrderItemChanges(
       throw new Error(`${addition.sku} farklı para biriminde (${addition.currency}); aynı siparişe eklenemez.`);
     }
     const unitPrice = money(addition.unitPrice);
-    const existingIndex = items.findIndex((item) => item.sku === addition.sku && item.unitPrice === unitPrice);
+    const existingIndex = items.findIndex((item) => sameProduct(item, addition) && item.unitPrice === unitPrice);
     if (existingIndex >= 0) {
       const existing = items[existingIndex]!;
       items[existingIndex] = withQuantity(existing, validQuantity(existing.quantity + quantity, false));
@@ -147,6 +152,8 @@ export function applyOrderItemChanges(
     }
     items.push(stripUndefined({
       id: createItemId(),
+      catalogProductId: addition.catalogProductId,
+      productSlug: addition.productSlug,
       sku: addition.sku,
       productName: addition.productName,
       brand: addition.brand,
@@ -192,6 +199,14 @@ export function rebuildCommissionLines(commission: SellerCommission, items: Edit
 
 function withQuantity(item: EditableOrderItem, quantity: number): EditableOrderItem {
   return { ...item, quantity, lineTotal: money(parseMoney(item.unitPrice) * quantity) };
+}
+
+function sameProduct(left: CatalogProductIdentity, right: CatalogProductIdentity): boolean {
+  if (left.catalogProductId && right.catalogProductId) return left.catalogProductId === right.catalogProductId;
+  if (left.productSlug && right.productSlug) return left.productSlug === right.productSlug;
+  if (left.catalogProductId || right.catalogProductId || left.productSlug || right.productSlug) return false;
+  return normalizeProductIdentity(left.sku) === normalizeProductIdentity(right.sku)
+    && normalizeProductIdentity(left.productName) === normalizeProductIdentity(right.productName);
 }
 
 function validQuantity(value: number, allowZero: boolean): number {

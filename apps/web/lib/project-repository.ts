@@ -5,6 +5,7 @@ import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { searchCatalogRecords, type CatalogProductRecord } from "@entas/catalog";
 import { loadCatalogStore } from "./catalog-repository";
+import { createCatalogProductLookup, normalizeProductIdentity, resolveCatalogProduct } from "./catalog-product-identity";
 import type { CustomerAccount } from "./customer-auth";
 import type { MaterialListRow } from "./material-list-parser";
 
@@ -147,20 +148,20 @@ export function deleteCustomerProject(customer: CustomerAccount, projectId: stri
   });
 }
 
-function matchMaterialRow(row: MaterialListRow, products: CatalogProductRecord[]): CustomerProjectItem {
+export function matchMaterialRow(row: MaterialListRow, products: CatalogProductRecord[]): CustomerProjectItem {
   const eligible = products.filter((product) => product.status === "ACTIVE" && product.isVisible);
   const requestedSku = clean(row.sku);
   const requestedName = clean(row.productName);
-  const normalizedSku = normalize(requestedSku);
-  const exact = normalizedSku
-    ? eligible.find((product) => [product.sku, product.barcode ?? "", product.manufacturerCode ?? ""].some((value) => normalize(value) === normalizedSku))
-    : undefined;
+  const lookup = createCatalogProductLookup(eligible);
+  const exact = resolveCatalogProduct(lookup, { sku: requestedSku, productName: requestedName }).product;
+  const codeMatches = lookup.byCode.get(normalizeProductIdentity(requestedSku)) ?? [];
   const store = { version: 1 as const, updatedAt: "", products: eligible, importSummary: emptySummary() };
   const suggestions = exact
     ? [exact]
+    : !requestedName && codeMatches.length > 1 ? codeMatches
     : searchCatalogRecords(store, { q: requestedName || requestedSku, publicOnly: true, limit: 4 }).items;
   const alternatives = suggestions.map(toMatch);
-  const selected = exact ? toMatch(exact) : alternatives[0];
+  const selected = exact ? toMatch(exact) : undefined;
 
   return {
     id: `project-item-${randomUUID()}`,
@@ -170,7 +171,7 @@ function matchMaterialRow(row: MaterialListRow, products: CatalogProductRecord[]
     unit: clean(row.unit) || exact?.unitType || "Adet",
     targetPrice: clean(row.targetPrice),
     note: clean(row.note).slice(0, 500),
-    matchStatus: exact ? "EXACT" : selected ? "SUGGESTED" : "UNMATCHED",
+    matchStatus: exact ? "EXACT" : alternatives.length ? "SUGGESTED" : "UNMATCHED",
     ...(selected ? { selectedMatch: selected } : {}),
     alternatives
   };

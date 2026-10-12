@@ -3,6 +3,7 @@ import { ArrowRight, Boxes, FileText, Layers, Truck } from "lucide-react";
 interface BulkQuoteCampaignProps {
   variant: "home" | "catalog" | "product";
   product?: {
+    productSlug: string;
     sku: string;
     name: string;
     unit: string;
@@ -19,7 +20,7 @@ const TIERS = [
 
 export function BulkQuoteCampaign({ variant, product }: BulkQuoteCampaignProps) {
   const quoteHref = product
-    ? `/quote?sku=${encodeURIComponent(product.sku)}&name=${encodeURIComponent(product.name)}&unit=${encodeURIComponent(product.unit)}`
+    ? `/quote?productSlug=${encodeURIComponent(product.productSlug)}&sku=${encodeURIComponent(product.sku)}&name=${encodeURIComponent(product.name)}&unit=${encodeURIComponent(product.unit)}`
     : "/quote";
 
   return (

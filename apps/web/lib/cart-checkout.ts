@@ -43,6 +43,8 @@ async function createQuoteFromCart(customer: CustomerAccount, cart: CartSummary)
     paymentPreference: "Cari hesap",
     notes: `${pricePolicyLabel} · ${cart.shippingMessage}${cart.canCreateOrder ? "" : ` · ${cart.orderBlockReason ?? "Fiyat teyidi gerekli"}`}`,
     items: cart.items.map((item) => ({
+      catalogProductId: item.catalogProductId,
+      productSlug: item.productSlug,
       sku: item.sku,
       productName: item.productName,
       quantity: item.quantity,
@@ -55,7 +57,6 @@ async function createQuoteFromCart(customer: CustomerAccount, cart: CartSummary)
     return quote;
   }
 
-  const priceBySku = new Map(cart.items.map((item) => [item.sku, item.unitNetPrice]));
   return priceQuote(
     {
       quoteId: quote.id,
@@ -63,7 +64,7 @@ async function createQuoteFromCart(customer: CustomerAccount, cart: CartSummary)
       internalNote: `Sepet/hızlı sipariş akışı ${pricePolicyLabel.toLocaleLowerCase("tr-TR")} ile otomatik fiyatlandırıldı. ${cart.shippingMessage}`,
       prices: quote.items.map((item) => ({
         itemId: item.id,
-        quotedUnitPrice: priceBySku.get(item.sku) ?? item.targetPrice ?? "0"
+        quotedUnitPrice: item.targetPrice ?? "0"
       }))
     },
     pricingActor

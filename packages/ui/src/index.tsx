@@ -88,6 +88,8 @@ export function StockBadge({ tone, label }: { tone: StockTone; label: string }) 
 
 export interface ProductCardProps {
   href: string;
+  productSlug: string;
+  unit: string;
   brand: string;
   name: string;
   sku: string;
@@ -148,7 +150,7 @@ export function ProductCard(props: ProductCardProps) {
             <Search size={17} aria-hidden="true" />
             İncele
           </a>
-          <a className="productActionLink" href={`/quote?sku=${encodeURIComponent(props.sku)}&name=${encodeURIComponent(props.name)}`}>
+          <a className="productActionLink" href={`/quote?productSlug=${encodeURIComponent(props.productSlug)}&sku=${encodeURIComponent(props.sku)}&name=${encodeURIComponent(props.name)}&unit=${encodeURIComponent(props.unit)}`}>
             <FileText size={17} aria-hidden="true" />
             Teklif
           </a>

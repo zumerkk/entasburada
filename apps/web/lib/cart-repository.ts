@@ -5,11 +5,13 @@ import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { CatalogProductRecord } from "@entas/catalog";
 import { loadCatalogStore, toCustomerFacingProduct } from "./catalog-repository";
+import { createCatalogProductLookup, hasStrongCatalogProductIdentity, normalizeProductIdentity, resolveCatalogProduct, type CatalogProductLookup } from "./catalog-product-identity";
 import { MAX_CART_LINES, normalizeCartQuantity, summarizeCartPricing, type CartPricingPolicy } from "./cart-policy";
 import type { CustomerAccount } from "./customer-auth";
 import { formatMoney, money, parseMoney, priceProductForCustomer, priceUnavailableMessage } from "./customer-pricing";
 
 export interface CartItemInput {
+  catalogProductId?: string | undefined;
   productSlug?: string | undefined;
   sku?: string | undefined;
   productName?: string | undefined;
@@ -19,6 +21,7 @@ export interface CartItemInput {
 
 export interface CartItem {
   id: string;
+  catalogProductId?: string | undefined;
   sku: string;
   productName: string;
   productSlug?: string | undefined;
@@ -65,12 +68,6 @@ export interface CartSummary extends CartPricingPolicy {
   currency: string;
 }
 
-interface CatalogProductLookup {
-  bySlug: Map<string, CatalogProductRecord[]>;
-  byCode: Map<string, CatalogProductRecord[]>;
-  byName: Map<string, CatalogProductRecord[]>;
-}
-
 const rootDir = findWorkspaceRoot(process.cwd());
 const dataDir = process.env.ENTAS_CART_DATA_DIR ? path.resolve(process.env.ENTAS_CART_DATA_DIR) : path.join(rootDir, "data");
 const cartsPath = path.join(dataDir, "carts.json");
@@ -100,10 +97,10 @@ export async function addCartItems(
     for (const input of inputs) {
       const sku = clean(input.sku);
       const productName = clean(input.productName);
-      if (!sku && !productName) continue;
+      if (!sku && !productName && !hasStrongCatalogProductIdentity(input)) continue;
 
-      const product = findCatalogProduct(productLookup, clean(input.productSlug), sku, productName);
-      if (!product && options.catalogOnly) {
+      const product = resolveCatalogProduct(productLookup, input).product;
+      if (!product && (options.catalogOnly || hasStrongCatalogProductIdentity(input))) {
         throw new CartInputError(`${sku || productName} aktif katalogda bulunamadı veya birden fazla ürünle eşleşti.`);
       }
 
@@ -112,13 +109,15 @@ export async function addCartItems(
       const quantity = normalizeCartQuantity(input.quantity, minimum);
       const existingItem = nextItems.find((item) =>
         product
-          ? item.productSlug === product.slug || (!item.productSlug && normalize(item.sku) === normalize(normalizedSku) && normalize(item.productName) === normalize(product.name))
+          ? resolveCatalogProduct(productLookup, item).product?.id === product.id
           : normalize(item.sku) === normalize(normalizedSku) && normalize(item.productName) === normalize(productName)
       );
 
       if (existingItem) {
         existingItem.quantity = normalizeCartQuantity(existingItem.quantity + quantity, minimum);
+        existingItem.sku = normalizedSku;
         existingItem.productName = product?.name || productName || existingItem.productName;
+        existingItem.catalogProductId = product?.id || existingItem.catalogProductId;
         existingItem.productSlug = product?.slug || existingItem.productSlug;
         existingItem.unit = product?.unitType || clean(input.unit) || existingItem.unit;
         continue;
@@ -126,6 +125,7 @@ export async function addCartItems(
 
       nextItems.push({
         id: `cart-item-${randomUUID()}`,
+        catalogProductId: product?.id,
         sku: normalizedSku,
         productName: product?.name || productName || normalizedSku,
         productSlug: product?.slug,
@@ -159,7 +159,7 @@ export async function updateCartQuantities(customer: CustomerAccount, quantities
         const requested = quantityById.get(item.id);
         if (requested == null) return [{ ...item }];
         if (Number(requested) <= 0) return [];
-        const product = findCatalogProduct(productLookup, item.productSlug ?? "", item.sku, item.productName);
+        const product = resolveCatalogProduct(productLookup, item).product;
         return [{ ...item, quantity: normalizeCartQuantity(requested, product?.minOrder ?? 1), unit: product?.unitType || item.unit }];
       })
     };
@@ -259,7 +259,7 @@ async function ensureFile(): Promise<void> {
 }
 
 function priceCartItem(item: CartItem, customer: CustomerAccount, productLookup: CatalogProductLookup): PricedCartItem {
-  const product = findCatalogProduct(productLookup, item.productSlug ?? "", item.sku, item.productName);
+  const product = resolveCatalogProduct(productLookup, item).product;
   const publicProduct = product ? toCustomerFacingProduct(product) : null;
   const currency = product?.currency === "TL" ? "TRY" : product?.currency || "TRY";
   const price = product ? priceProductForCustomer(product, customer) : null;
@@ -269,6 +269,9 @@ function priceCartItem(item: CartItem, customer: CustomerAccount, productLookup:
 
   return stripUndefined({
     ...item,
+    catalogProductId: product?.id || item.catalogProductId,
+    productSlug: product?.slug || item.productSlug,
+    sku: product?.sku || item.sku,
     productName: product?.name || item.productName,
     unit: product?.unitType || item.unit,
     slug: publicProduct?.slug,
@@ -298,59 +301,8 @@ function createEmptyCart(customerId: string): CustomerCart {
   return { customerId, updatedAt: new Date().toISOString(), items: [] };
 }
 
-function findCatalogProduct(productLookup: CatalogProductLookup, productSlug: string, sku: string, productName: string): CatalogProductRecord | undefined {
-  const normalizedSlug = normalize(productSlug);
-  const normalizedSku = normalize(sku);
-  const normalizedName = normalize(productName);
-
-  if (normalizedSlug) {
-    const slugMatches = productLookup.bySlug.get(normalizedSlug) ?? [];
-    if (slugMatches.length === 1) return slugMatches[0];
-    return undefined;
-  }
-
-  if (normalizedSku) {
-    const matches = productLookup.byCode.get(normalizedSku) ?? [];
-    if (matches.length === 1) return matches[0];
-    if (matches.length > 1 && normalizedName) {
-      const namedMatches = matches.filter((product) => normalize(product.name) === normalizedName);
-      return namedMatches.length === 1 ? namedMatches[0] : undefined;
-    }
-    if (matches.length > 1) return undefined;
-  }
-
-  if (normalizedName) {
-    const exactMatches = productLookup.byName.get(normalizedName) ?? [];
-    return exactMatches.length === 1 ? exactMatches[0] : undefined;
-  }
-
-  return undefined;
-}
-
 function getEligibleProducts(products: CatalogProductRecord[]): CatalogProductRecord[] {
   return products.filter((product) => product.status === "ACTIVE" && product.isVisible);
-}
-
-function createCatalogProductLookup(products: CatalogProductRecord[]): CatalogProductLookup {
-  const lookup: CatalogProductLookup = { bySlug: new Map(), byCode: new Map(), byName: new Map() };
-  for (const product of products) {
-    addToProductLookup(lookup.bySlug, normalize(product.slug), product);
-    addToProductLookup(lookup.byName, normalize(product.name), product);
-    for (const code of [product.sku, product.barcode ?? "", product.manufacturerCode ?? ""]) {
-      addToProductLookup(lookup.byCode, normalize(code), product);
-    }
-  }
-  return lookup;
-}
-
-function addToProductLookup(map: Map<string, CatalogProductRecord[]>, key: string, product: CatalogProductRecord): void {
-  if (!key) return;
-  const matches = map.get(key);
-  if (matches) {
-    if (!matches.includes(product)) matches.push(product);
-  } else {
-    map.set(key, [product]);
-  }
 }
 
 async function readJson<T>(filePath: string, fallback: T): Promise<T> {
@@ -371,14 +323,7 @@ function clean(value: unknown): string {
 }
 
 function normalize(value: string): string {
-  return clean(value)
-    .toLocaleLowerCase("tr-TR")
-    .replace(/[ç]/g, "c")
-    .replace(/[ğ]/g, "g")
-    .replace(/[ı]/g, "i")
-    .replace(/[ö]/g, "o")
-    .replace(/[ş]/g, "s")
-    .replace(/[ü]/g, "u");
+  return normalizeProductIdentity(value);
 }
 
 function customSku(productName: string): string {

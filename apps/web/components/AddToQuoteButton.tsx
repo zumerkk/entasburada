@@ -4,11 +4,11 @@ import { useState } from "react";
 import { Check, FilePlus2 } from "lucide-react";
 import { addToQuoteBasket } from "./quote-basket";
 
-export function AddToQuoteButton({ sku, name, unit }: { sku: string; name: string; unit: string }) {
+export function AddToQuoteButton({ productSlug, sku, name, unit }: { productSlug: string; sku: string; name: string; unit: string }) {
   const [justAdded, setJustAdded] = useState(false);
 
   const handleAdd = () => {
-    addToQuoteBasket({ sku, name, unit });
+    addToQuoteBasket({ productSlug, sku, name, unit });
     setJustAdded(true);
     window.setTimeout(() => setJustAdded(false), 2600);
   };

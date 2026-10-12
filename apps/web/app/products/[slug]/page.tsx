@@ -159,7 +159,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
           <BulkQuoteCampaign
             variant="product"
-            product={{ sku: product.sku, name: product.name, unit: product.unitType }}
+            product={{ productSlug: product.slug, sku: product.sku, name: product.name, unit: product.unitType }}
           />
 
           <div className="detailActions">
@@ -172,7 +172,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               isAuthenticated={Boolean(customer)}
               variant="detail"
             />
-            <AddToQuoteButton sku={product.sku} name={product.name} unit={product.unitType} />
+            <AddToQuoteButton productSlug={product.slug} sku={product.sku} name={product.name} unit={product.unitType} />
             <FavoriteButton
               sku={product.sku}
               slug={product.slug}
@@ -183,7 +183,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             />
             <a
               className="btn btnSecondary"
-              href={customer ? `/quick-order?sku=${encodeURIComponent(product.sku)}&name=${encodeURIComponent(product.name)}` : "/login?next=/quick-order"}
+              href={customer ? `/quick-order?productSlug=${encodeURIComponent(product.slug)}&sku=${encodeURIComponent(product.sku)}&name=${encodeURIComponent(product.name)}&unit=${encodeURIComponent(product.unitType)}` : "/login?next=/quick-order"}
             >
               <ShoppingCart size={18} aria-hidden="true" />
               Toplu Sipariş Ekranı

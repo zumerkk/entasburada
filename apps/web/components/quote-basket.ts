@@ -4,6 +4,7 @@
 // localStorage'da yaşar; her değişiklikte pencereye olay yayılır (rozet güncellemesi).
 
 export interface QuoteBasketItem {
+  productSlug?: string | undefined;
   sku: string;
   name: string;
   unit: string;
@@ -23,6 +24,7 @@ export function readQuoteBasket(): QuoteBasketItem[] {
       ? parsed
           .filter((item) => item && typeof item.sku === "string")
           .map((item) => ({
+            ...(typeof item.productSlug === "string" && item.productSlug.trim() ? { productSlug: item.productSlug.trim() } : {}),
             sku: String(item.sku),
             name: String(item.name ?? ""),
             unit: String(item.unit ?? "Adet"),
@@ -41,18 +43,23 @@ function writeQuoteBasket(items: QuoteBasketItem[]): void {
 
 export function addToQuoteBasket(item: Omit<QuoteBasketItem, "quantity"> & { quantity?: number }): QuoteBasketItem[] {
   const items = readQuoteBasket();
-  const existing = items.find((entry) => entry.sku === item.sku);
+  const existing = items.find((entry) => quoteBasketItemKey(entry) === quoteBasketItemKey(item));
   if (existing) {
     existing.quantity += Math.max(1, item.quantity ?? 1);
   } else {
-    items.push({ sku: item.sku, name: item.name, unit: item.unit || "Adet", quantity: Math.max(1, item.quantity ?? 1) });
+    items.push({ ...(item.productSlug?.trim() ? { productSlug: item.productSlug.trim() } : {}), sku: item.sku, name: item.name, unit: item.unit || "Adet", quantity: Math.max(1, item.quantity ?? 1) });
   }
   writeQuoteBasket(items);
   return items;
 }
 
-export function removeFromQuoteBasket(sku: string): QuoteBasketItem[] {
-  const items = readQuoteBasket().filter((entry) => entry.sku !== sku);
+export function quoteBasketItemKey(item: Pick<QuoteBasketItem, "productSlug" | "sku" | "name">): string {
+  if (item.productSlug?.trim()) return `slug:${item.productSlug.trim()}`;
+  return `legacy:${JSON.stringify([item.sku.trim().toLocaleLowerCase("tr-TR"), item.name.trim().toLocaleLowerCase("tr-TR")])}`;
+}
+
+export function removeFromQuoteBasket(itemKey: string): QuoteBasketItem[] {
+  const items = readQuoteBasket().filter((entry) => quoteBasketItemKey(entry) !== itemKey);
   writeQuoteBasket(items);
   return items;
 }

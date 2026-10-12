@@ -86,6 +86,8 @@ async function createSellerOrderUnlocked(customer: CustomerAccount, input: Selle
     sellerOrderReference: externalOrderId,
     blindShipping: Boolean(input.blindShipping),
     items: resolved.map((line) => ({
+      catalogProductId: line.product.id,
+      productSlug: line.product.slug,
       sku: line.product.sku,
       productName: line.product.name,
       quantity: line.quantity,

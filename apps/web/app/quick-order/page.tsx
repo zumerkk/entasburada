@@ -1,5 +1,6 @@
 import { AlertTriangle, FileSpreadsheet, ShoppingCart } from "lucide-react";
 import { requireCustomer } from "../../lib/customer-auth";
+import { QuickOrderLines } from "../../components/QuickOrderLines";
 import { addQuickOrderItemsAction } from "../cart/actions";
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -14,11 +15,8 @@ export default async function QuickOrderPage({ searchParams }: { searchParams: P
   const error = getParam(params, "error");
   const initialSku = getParam(params, "sku");
   const initialName = getParam(params, "name");
-  const rows = Array.from({ length: 10 }, (_, index) => ({
-    sku: index === 0 ? initialSku : "",
-    name: index === 0 ? initialName : "",
-    quantity: index === 0 && initialSku ? "1" : ""
-  }));
+  const initialProductSlug = getParam(params, "productSlug");
+  const initialUnit = getParam(params, "unit");
 
   return (
     <main>
@@ -35,22 +33,7 @@ export default async function QuickOrderPage({ searchParams }: { searchParams: P
           {error ? <div className="cartAlert danger spanTwo"><AlertTriangle size={18} aria-hidden="true" /><span>{error}</span></div> : null}
           <fieldset>
             <legend>Ürün satırları</legend>
-            <div className="quoteLines">
-              {rows.map((line, index) => (
-                <div className="quoteLine quickOrderLine" key={index}>
-                  <input name="itemSku" placeholder="SKU veya barkod" defaultValue={line.sku} />
-                  <input name="itemName" placeholder="Ürün adı" defaultValue={line.name} />
-                  <input name="itemQuantity" type="number" min="1" placeholder="Adet" defaultValue={line.quantity} />
-                  <select name="itemUnit" defaultValue="Adet">
-                    {units.map((unit) => (
-                      <option value={unit} key={unit}>
-                        {unit}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              ))}
-            </div>
+            <QuickOrderLines initialSku={initialSku} initialName={initialName} initialProductSlug={initialProductSlug} initialUnit={initialUnit} units={units} />
           </fieldset>
 
           <fieldset>

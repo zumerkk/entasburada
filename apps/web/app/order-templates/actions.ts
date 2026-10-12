@@ -22,7 +22,7 @@ export async function applyOrderTemplateAction(formData: FormData): Promise<void
   const customer = await requireCustomer();
   const template = (await listOrderTemplates(customer)).find((entry) => entry.id === value(formData, "templateId"));
   if (!template) redirect("/order-templates?error=" + encodeURIComponent("Şablon bulunamadı."));
-  await addCartItems(customer, template.items.map((item) => ({ sku: item.sku, productName: item.productName, quantity: item.quantity, unit: item.unit })));
+  await addCartItems(customer, template.items.map((item) => ({ productSlug: item.productSlug, catalogProductId: item.catalogProductId, sku: item.sku, productName: item.productName, quantity: item.quantity, unit: item.unit })));
   await markTemplateUsed(customer, template.id);
   revalidatePaths();
   redirect("/cart?template=success");
@@ -32,7 +32,7 @@ export async function addFavoritesToCartAction(): Promise<void> {
   const customer = await requireCustomer();
   const favorites = await listFavorites(customer.id);
   if (favorites.length === 0) redirect("/account?error=" + encodeURIComponent("Favori ürününüz bulunmuyor.") + "#favorites");
-  await addCartItems(customer, favorites.map((item) => ({ sku: item.sku, productName: item.productName, quantity: 1, unit: "Adet" })));
+  await addCartItems(customer, favorites.map((item) => ({ productSlug: item.productSlug, sku: item.sku, productName: item.productName, quantity: 1, unit: "Adet" })));
   revalidatePaths();
   redirect("/cart?favorites=success");
 }

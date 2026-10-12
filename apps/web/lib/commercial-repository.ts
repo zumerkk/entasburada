@@ -7,6 +7,7 @@ import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { CatalogProductRecord } from "@entas/catalog";
 import { loadCatalogStore } from "./catalog-repository";
+import { createCatalogProductLookup, hasStrongCatalogProductIdentity, resolveCatalogProduct } from "./catalog-product-identity";
 import { createNotification } from "./notification-repository";
 import { queueNewOrderAlert } from "./order-alerts";
 import { canApproveCompanyOrders, findCustomerByEmail, getCompanyMembers, type CustomerAccount } from "./customer-auth";
@@ -63,7 +64,8 @@ export interface QuoteItem {
   productName: string;
   brand?: string;
   category?: string;
-  catalogProductId?: string;
+  catalogProductId?: string | undefined;
+  productSlug?: string | undefined;
   unit: string;
   quantity: number;
   targetPrice?: string;
@@ -95,6 +97,8 @@ export interface QuoteMessage {
 
 export interface OrderItem {
   id: string;
+  catalogProductId?: string | undefined;
+  productSlug?: string | undefined;
   sku: string;
   productName: string;
   brand?: string;
@@ -191,6 +195,8 @@ export interface AdminOrder {
 }
 
 export interface CreateQuoteItemInput {
+  catalogProductId?: string | undefined;
+  productSlug?: string | undefined;
   sku?: string;
   productName?: string;
   quantity?: number;
@@ -623,6 +629,8 @@ async function convertQuoteToOrderUnlocked(id: string, actorName: string, actor:
     const unitPrice = parseMoney(item.quotedUnitPrice ?? item.targetPrice ?? "0");
     return stripUndefined({
       id: `order-item-${randomUUID()}`,
+      catalogProductId: item.catalogProductId,
+      productSlug: item.productSlug,
       sku: item.sku,
       productName: item.productName,
       brand: item.brand,
@@ -1164,6 +1172,8 @@ async function priceCatalogLines(lines: CatalogOrderLineInput[], customer: Custo
     const price = priceProductForCustomer(product, pricingCustomer);
     if (!price) throw new Error(`${product.sku} için satış fiyatı yok; bu ürünü teklif üzerinden fiyatlandırın.`);
     return stripUndefined({
+      catalogProductId: product.id,
+      productSlug: product.slug,
       sku: product.sku,
       productName: product.name,
       brand: product.brand,
@@ -1304,15 +1314,19 @@ function normalizeCreateQuoteInput(input: CreateQuoteInput): Required<CreateQuot
 }
 
 function buildQuoteItems(inputItems: CreateQuoteItemInput[], catalogProducts: CatalogProductRecord[]): QuoteItem[] {
+  const productLookup = createCatalogProductLookup(catalogProducts);
   return inputItems
     .map((input) => {
       const sku = clean(input.sku);
       const productName = clean(input.productName);
-      if (!sku && !productName) {
+      if (!sku && !productName && !hasStrongCatalogProductIdentity(input)) {
         return null;
       }
 
-      const catalogProduct = findCatalogProduct(catalogProducts, sku, productName);
+      const catalogProduct = resolveCatalogProduct(productLookup, input).product;
+      if (!catalogProduct && hasStrongCatalogProductIdentity(input)) {
+        throw new Error(`${sku || productName || input.productSlug || input.catalogProductId} ürün kimliği katalogla eşleşmiyor; ürünü yeniden seçin.`);
+      }
       const quantity = Math.min(999_999, Math.max(1, Math.trunc(Number(input.quantity) || 1)));
       const currency = catalogProduct?.currency === "TL" ? "TRY" : catalogProduct?.currency || DEFAULT_CURRENCY;
       return stripUndefined({
@@ -1324,6 +1338,7 @@ function buildQuoteItems(inputItems: CreateQuoteItemInput[], catalogProducts: Ca
         brand: catalogProduct?.brand,
         category: catalogProduct?.category,
         catalogProductId: catalogProduct?.id,
+        productSlug: catalogProduct?.slug,
         unit: clean(input.unit) || catalogProduct?.unitType || "Adet",
         quantity,
         targetPrice: normalizeOptionalMoney(input.targetPrice),
@@ -1336,40 +1351,17 @@ function buildQuoteItems(inputItems: CreateQuoteItemInput[], catalogProducts: Ca
     .filter((item): item is QuoteItem => item !== null);
 }
 
-function findCatalogProduct(products: CatalogProductRecord[], sku: string, productName: string): CatalogProductRecord | undefined {
-  const normalizedSku = normalize(sku);
-  const normalizedName = normalize(productName);
-
-  if (normalizedSku) {
-    const exact = products.find((product) =>
-      [product.sku, product.barcode ?? "", product.manufacturerCode ?? ""].some((value) => normalize(value) === normalizedSku)
-    );
-    if (exact) {
-      return exact;
-    }
-
-    const loose = products.find((product) => normalize(product.name).includes(normalizedSku));
-    if (loose) {
-      return loose;
-    }
-  }
-
-  if (normalizedName) {
-    return products.find((product) => normalize(product.name).includes(normalizedName) || normalizedName.includes(normalize(product.name)));
-  }
-
-  return undefined;
-}
-
 async function enforceSellerChannelQuoteFloor(quote: AdminQuote, priceByItemId: Map<string, number>): Promise<void> {
   const customer = await findCustomerByEmail(quote.email);
   if (!customer || !usesSellerChannelPricing(customer) || customer.status !== "approved") return;
 
   const catalog = await loadCatalogStore();
+  const productLookup = createCatalogProductLookup(catalog.products);
   for (const item of quote.items) {
-    const product = item.catalogProductId
-      ? catalog.products.find((entry) => entry.id === item.catalogProductId)
-      : findCatalogProduct(catalog.products, item.sku, item.productName);
+    const product = resolveCatalogProduct(productLookup, item).product;
+    if (!product && hasStrongCatalogProductIdentity(item)) {
+      throw new Error(`${item.sku} ürün kimliği katalogla eşleşmiyor; ürünü yeniden seçin.`);
+    }
     if (!product) continue;
 
     const channelPrice = priceProductForCustomer(product, customer);
